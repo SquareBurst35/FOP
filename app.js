@@ -13,7 +13,7 @@ import {
   levelFromNex,
   skillSelectionStatus,
   usesSeparateLevel,
-} from "./rules.js";
+} from "./rules.js?v=4";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -297,11 +297,9 @@ function renderCreator() {
         </nav>
       </section>
     </section>
-    ${renderOptionalRulesDialog()}
   `;
 
   bindCreatorStep();
-  bindOptionalRulesDialog();
   document.querySelector("#previous-step").addEventListener("click", () => {
     saveCreatorFields();
     currentStep = Math.max(0, currentStep - 1);
@@ -325,12 +323,10 @@ function renderCreatorStep() {
 
   if (currentStep === 1) {
     const isMundane = isMundaneCharacter(creatorState);
-    const separated = usesSeparateLevel(creatorState);
     return `
       <p class="eyebrow">Etapa 2 de ${STEPS.length}</p>
       <h1>Formação</h1>
-      <p class="muted">${separated ? "Nível e NEX estão separados pelas regras opcionais." : "Cada 5% de NEX equivale a um nível. Em 0%, o personagem é Mundano."}</p>
-      ${renderSupplementSettingsButton()}
+      <p class="muted">Cada 5% de NEX equivale a um nível. Em 0%, o personagem é Mundano.</p>
       <div class="form-grid">
         <div class="field">
           <label for="origem">Origem</label>
@@ -339,7 +335,6 @@ function renderCreatorStep() {
           </select>
         </div>
         ${renderNexPicker()}
-        ${separated ? renderLevelPicker() : ""}
         ${
           isMundane
             ? `<div class="field"><span class="field-label">Classe</span><div class="locked-value">Mundano <small>NEX 0%</small></div></div>`
@@ -414,7 +409,6 @@ function renderCreatorStep() {
       ${reviewRow("Jogador", creatorState.jogador || "Não informado")}
       ${reviewRow("Formação", `${creatorState.origem || "Origem pendente"} · ${creatorState.classe || "Classe pendente"}${creatorState.trilha ? ` · ${creatorState.trilha}` : ""}`)}
       ${reviewRow("Progressão", `Nível ${characterLevel(creatorState)} · NEX ${numberOr(creatorState.nex, 0)}% · ${creatorState.patente || "Sem patente"}`)}
-      ${reviewRow("Regras opcionais", optionalRulesSummary(creatorState))}
       ${reviewRow("Perícias treinadas", creatorState.periciasTreinadas?.join(", ") || "Nenhuma")}
       ${reviewRow("Recursos", resourceSummary(creatorState))}
     </div>
@@ -471,15 +465,6 @@ function bindCreatorStep() {
         renderCreator();
       });
     });
-    document.querySelectorAll("[data-level-delta]").forEach((button) => {
-      button.addEventListener("click", () => {
-        saveCreatorFields();
-        setCreatorLevel(
-          clamp(numberOr(creatorState.nivel, 1) + Number(button.dataset.levelDelta), 1, 20),
-        );
-        renderCreator();
-      });
-    });
   }
 
   if (currentStep === 3) {
@@ -528,15 +513,6 @@ function setCreatorNex(nex) {
     }
     if (creatorState.nex < 10) creatorState.trilha = "";
   }
-  creatorState.periciasOrigemEscolhidas = [];
-  creatorState.periciasClasseObrigatorias = [];
-  creatorState.periciasEscolhidas = [];
-  skillSelectionStatus(creatorState);
-}
-
-function setCreatorLevel(level) {
-  creatorState.nivel = Math.round(clamp(level, 1, 20));
-  if (creatorState.nivel < 2) creatorState.trilha = "";
   creatorState.periciasOrigemEscolhidas = [];
   creatorState.periciasClasseObrigatorias = [];
   creatorState.periciasEscolhidas = [];
@@ -677,6 +653,10 @@ function renderSheet(id) {
         </div>
 
         <div class="status-line"><span class="status-dot"></span> Salvo neste dispositivo</div>
+        <button class="sheet-supplement-button" id="optional-rules-button" type="button">
+          <span class="supplement-sigil" aria-hidden="true">S</span>
+          <span><strong>Sobrevivendo ao Horror</strong><small>Regras opcionais</small></span>
+        </button>
       </aside>
 
       <section class="sheet-main panel">
@@ -717,6 +697,7 @@ function renderSheet(id) {
         ${notesSection("Anotações", "anotacoes", character.anotacoes, "Pistas, contatos e lembretes da sessão.")}
       </section>
     </section>
+    ${renderOptionalRulesDialog(character)}
   `;
 
   document.querySelector("#back-home").addEventListener("click", () => navigate("home"));
@@ -745,6 +726,8 @@ function renderSheet(id) {
       showToast("Alteração salva.");
     });
   });
+
+  bindOptionalRulesDialog(character);
 }
 
 function editCharacterCore(character) {
@@ -794,21 +777,6 @@ function renderNexPicker() {
   `;
 }
 
-function renderLevelPicker() {
-  const level = characterLevel(creatorState);
-  return `
-    <div class="field nex-field">
-      <label for="nivel">Nível de experiência</label>
-      <input id="nivel" name="nivel" type="hidden" value="${level}" />
-      <div class="nex-picker level-picker">
-        <button type="button" data-level-delta="-1" aria-label="Diminuir nível" ${level === 1 ? "disabled" : ""}>−</button>
-        <output for="nivel"><strong>${level}</strong><small>de 20 níveis</small></output>
-        <button type="button" data-level-delta="1" aria-label="Aumentar nível" ${level === 20 ? "disabled" : ""}>+</button>
-      </div>
-    </div>
-  `;
-}
-
 function ensureOptionalRules(character) {
   character.optionalRules ??= {};
   character.optionalRules.separateLevelNex = Boolean(
@@ -817,21 +785,9 @@ function ensureOptionalRules(character) {
   character.optionalRules.determination = Boolean(character.optionalRules.determination);
 }
 
-function renderSupplementSettingsButton() {
-  const rules = creatorState.optionalRules;
-  const activeRules = Object.values(rules).filter(Boolean).length;
-  return `
-    <button class="supplement-settings" id="optional-rules-button" type="button">
-      <span class="supplement-sigil" aria-hidden="true">S</span>
-      <span><strong>Sobrevivendo ao Horror</strong><small>Regras opcionais · ${activeRules} ${activeRules === 1 ? "ligada" : "ligadas"}</small></span>
-      <span class="supplement-arrow" aria-hidden="true">›</span>
-    </button>
-  `;
-}
-
-function renderOptionalRulesDialog() {
-  const rules = creatorState.optionalRules;
-  const determinationUnavailable = isMundaneCharacter(creatorState);
+function renderOptionalRulesDialog(character) {
+  ensureOptionalRules(character);
+  const rules = character.optionalRules;
   return `
     <dialog class="optional-rules-dialog" id="optional-rules-dialog" aria-labelledby="optional-rules-title">
       <div class="dialog-heading">
@@ -851,30 +807,27 @@ function renderOptionalRulesDialog() {
         ${renderOptionalRule({
           key: "determination",
           title: "Jogando sem Sanidade",
-          description: determinationUnavailable
-            ? "Disponível após escolher uma classe de agente."
-            : "Substitui PE e Sanidade por Pontos de Determinação.",
+          description: "Substitui PE e Sanidade por Pontos de Determinação.",
           enabled: rules.determination,
-          disabled: determinationUnavailable,
         })}
       </div>
     </dialog>
   `;
 }
 
-function renderOptionalRule({ key, title, description, enabled, disabled = false }) {
+function renderOptionalRule({ key, title, description, enabled }) {
   return `
-    <section class="optional-rule ${disabled ? "disabled" : ""}">
+    <section class="optional-rule">
       <div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(description)}</p></div>
       <div class="binary-toggle" role="group" aria-label="${escapeAttribute(title)}">
-        <button type="button" data-rule-key="${key}" data-rule-value="false" class="${!enabled ? "active" : ""}" ${disabled ? "disabled" : ""}>Desligado</button>
-        <button type="button" data-rule-key="${key}" data-rule-value="true" class="${enabled ? "active" : ""}" ${disabled ? "disabled" : ""}>Ligado</button>
+        <button type="button" data-rule-key="${key}" data-rule-value="false" class="${!enabled ? "active" : ""}" aria-pressed="${!enabled}">Desligado</button>
+        <button type="button" data-rule-key="${key}" data-rule-value="true" class="${enabled ? "active" : ""}" aria-pressed="${enabled}">Ligado</button>
       </div>
     </section>
   `;
 }
 
-function bindOptionalRulesDialog() {
+function bindOptionalRulesDialog(character) {
   const dialog = document.querySelector("#optional-rules-dialog");
   document.querySelector("#optional-rules-button")?.addEventListener("click", () => {
     dialog?.showModal();
@@ -885,38 +838,24 @@ function bindOptionalRulesDialog() {
   });
   document.querySelectorAll("[data-rule-key]").forEach((button) => {
     button.addEventListener("click", () => {
-      applyOptionalRule(button.dataset.ruleKey, button.dataset.ruleValue === "true");
-      renderCreator();
+      applyOptionalRule(character, button.dataset.ruleKey, button.dataset.ruleValue === "true");
+      upsertCharacter(character);
+      renderSheet(character.id);
       document.querySelector("#optional-rules-dialog")?.showModal();
     });
   });
 }
 
-function applyOptionalRule(key, enabled) {
-  ensureOptionalRules(creatorState);
-  if (key === "determination" && isMundaneCharacter(creatorState)) return;
-  creatorState.optionalRules[key] = enabled;
+function applyOptionalRule(character, key, enabled) {
+  ensureOptionalRules(character);
+  character.optionalRules[key] = enabled;
 
   if (key === "separateLevelNex") {
     if (enabled) {
-      creatorState.nivel = Math.max(1, levelFromNex(creatorState.nex));
-      if (creatorState.classe === "Mundano") creatorState.classe = "";
-      if (!creatorState.patente || creatorState.patente === "Sem patente") {
-        creatorState.patente = "Recruta";
-      }
+      character.nivel = Math.max(1, levelFromNex(character.nex));
     } else {
-      creatorState.nivel = levelFromNex(creatorState.nex);
-      if (creatorState.nex === 0) {
-        creatorState.classe = "Mundano";
-        creatorState.trilha = "";
-        creatorState.patente = "Sem patente";
-        creatorState.optionalRules.determination = false;
-      }
+      character.nivel = levelFromNex(character.nex);
     }
-    creatorState.periciasOrigemEscolhidas = [];
-    creatorState.periciasClasseObrigatorias = [];
-    creatorState.periciasEscolhidas = [];
-    skillSelectionStatus(creatorState);
   }
 }
 
@@ -1223,13 +1162,6 @@ function statCard(label, value) {
 
 function reviewRow(label, value) {
   return `<div class="review-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`;
-}
-
-function optionalRulesSummary(character) {
-  const enabled = [];
-  if (character.optionalRules?.separateLevelNex) enabled.push("NEX e experiência separados");
-  if (character.optionalRules?.determination) enabled.push("Pontos de Determinação");
-  return enabled.join(" · ") || "Nenhuma";
 }
 
 function resourceSummary(character) {
