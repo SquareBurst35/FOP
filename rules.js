@@ -88,6 +88,7 @@ export const CLASSES = {
   Mundano: {
     initial: { pv: 8, pe: 1, san: 8 },
     gain: { pv: 0, pe: 0, san: 0 },
+    determination: { initial: 4, gain: 0 },
     fixedSkills: [],
     skillChoiceGroups: [],
     choiceSkills: (intellect) => Math.max(1, 1 + intellect),
