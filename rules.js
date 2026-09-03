@@ -1,0 +1,191 @@
+export const ATTRIBUTE_TARGET = 9;
+export const ATTRIBUTE_MAX_AT_CREATION = 3;
+
+export const ORIGINS = [
+  { name: "Acadêmico", skills: ["Ciências", "Investigação"], power: "Saber é Poder", source: "Livro base" },
+  { name: "Agente de Saúde", skills: ["Intuição", "Medicina"], power: "Técnica Medicinal", source: "Livro base" },
+  { name: "Amnésico", skills: ["Duas perícias definidas pelo mestre"], power: "Vislumbres do Passado", source: "Livro base" },
+  { name: "Artista", skills: ["Artes", "Diplomacia"], power: "Magnum Opus", source: "Livro base" },
+  { name: "Atleta", skills: ["Atletismo", "Fortitude"], power: "110%", source: "Livro base" },
+  { name: "Criminoso", skills: ["Crime", "Furtividade"], power: "O Crime Compensa", source: "Livro base" },
+  { name: "Cultista Arrependido", skills: ["Enganação", "Ocultismo"], power: "Traços do Outro Lado", source: "Livro base" },
+  { name: "Desgarrado", skills: ["Fortitude", "Sobrevivência"], power: "Calejado", source: "Livro base" },
+  { name: "Engenheiro", skills: ["Profissão", "Tecnologia"], power: "Ferramentas Favoritas", source: "Livro base" },
+  { name: "Executivo", skills: ["Diplomacia", "Profissão"], power: "Processo Otimizado", source: "Livro base" },
+  { name: "Investigador", skills: ["Investigação", "Percepção"], power: "Faro para Pistas", source: "Livro base" },
+  { name: "Lutador", skills: ["Acrobacia", "Iniciativa"], power: "Mão Pesada", source: "Livro base" },
+  { name: "Magnata", skills: ["Diplomacia", "Pilotagem"], power: "Patrocinador da Ordem", source: "Livro base" },
+  { name: "Mercenário", skills: ["Iniciativa", "Tática"], power: "Posição de Combate", source: "Livro base" },
+  { name: "Militar", skills: ["Atletismo", "Pontaria"], power: "Treinamento Militar", source: "Livro base" },
+  { name: "Operário", skills: ["Fortitude", "Profissão"], power: "Ferramentas da Profissão", source: "Livro base" },
+  { name: "Policial", skills: ["Percepção", "Pontaria"], power: "Patrulha", source: "Livro base" },
+  { name: "Religioso", skills: ["Religião", "Vontade"], power: "Exorcismo", source: "Livro base" },
+  { name: "Servidor Público", skills: ["Intuição", "Vontade"], power: "Espírito Cívico", source: "Livro base" },
+  { name: "Teórico da Conspiração", skills: ["Investigação", "Ocultismo"], power: "Eu Já Sabia", source: "Livro base" },
+  { name: "T.I.", skills: ["Investigação", "Tecnologia"], power: "Computação Avançada", source: "Livro base" },
+  { name: "Trabalhador Rural", skills: ["Adestramento", "Sobrevivência"], power: "Trilhas e Rumos", source: "Livro base" },
+  { name: "Trambiqueiro", skills: ["Crime", "Enganação"], power: "Impostor", source: "Livro base" },
+  { name: "Universitário", skills: ["Atualidades", "Investigação"], power: "Empenho", source: "Livro base" },
+
+  { name: "Amigo dos Animais", skills: ["Adestramento", "Percepção"], power: "Companheiro Animal", source: "Sobrevivendo ao Horror" },
+  { name: "Astronauta", skills: ["Ciências", "Fortitude"], power: "Acostumado ao Extremo", source: "Sobrevivendo ao Horror" },
+  { name: "Chef do Outro Lado", skills: ["Ocultismo", "Profissão (cozinheiro)"], power: "Fome do Outro Lado", source: "Sobrevivendo ao Horror" },
+  { name: "Colegial", skills: ["Atualidades", "Tecnologia"], power: "Poder da Amizade", source: "Sobrevivendo ao Horror" },
+  { name: "Cosplayer", skills: ["Artes", "Vontade"], power: "Não é fantasia, é cosplay!", source: "Sobrevivendo ao Horror" },
+  { name: "Diplomata", skills: ["Atualidades", "Diplomacia"], power: "Conexões", source: "Sobrevivendo ao Horror" },
+  { name: "Explorador", skills: ["Fortitude", "Sobrevivência"], power: "Manual do Sobrevivente", source: "Sobrevivendo ao Horror" },
+  { name: "Experimento", skills: ["Atletismo", "Fortitude"], power: "Mutação", source: "Sobrevivendo ao Horror" },
+  { name: "Fanático por Criaturas", skills: ["Investigação", "Ocultismo"], power: "Conhecimento Oculto", source: "Sobrevivendo ao Horror" },
+  { name: "Fotógrafo", skills: ["Artes", "Percepção"], power: "Através da Lente", source: "Sobrevivendo ao Horror" },
+  { name: "Inventor Paranormal", skills: ["Profissão (engenheiro)", "Vontade"], power: "Invenção Paranormal", source: "Sobrevivendo ao Horror" },
+  { name: "Jovem Místico", skills: ["Ocultismo", "Religião"], power: "A Culpa é das Estrelas", source: "Sobrevivendo ao Horror" },
+  { name: "Legista do Turno da Noite", skills: ["Ciências", "Medicina"], power: "Luto Habitual", source: "Sobrevivendo ao Horror" },
+  { name: "Mateiro", skills: ["Percepção", "Sobrevivência"], power: "Mapa Celeste", source: "Sobrevivendo ao Horror" },
+  { name: "Mergulhador", skills: ["Atletismo", "Fortitude"], power: "Fôlego de Nadador", source: "Sobrevivendo ao Horror" },
+  { name: "Motorista", skills: ["Pilotagem", "Reflexos"], power: "Mãos no Volante", source: "Sobrevivendo ao Horror" },
+  { name: "Nerd Entusiasta", skills: ["Ciências", "Tecnologia"], power: "O Inteligentão", source: "Sobrevivendo ao Horror" },
+  { name: "Profetizado", skills: ["Vontade", "Uma perícia à escolha"], power: "Luta ou Fuga", source: "Sobrevivendo ao Horror" },
+  { name: "Psicólogo", skills: ["Intuição", "Profissão (psicólogo)"], power: "Terapia", source: "Sobrevivendo ao Horror" },
+  { name: "Repórter Investigativo", skills: ["Atualidades", "Investigação"], power: "Encontrar a Verdade", source: "Sobrevivendo ao Horror" },
+
+  { name: "Ferido por Ritual", skills: ["Ocultismo", "Uma perícia definida pelo elemento"], power: "Mácula Ritualística", source: "Arquivos Secretos #1" },
+  { name: "Transtornado Arrependido", skills: ["Luta", "Ocultismo"], power: "Sofrimento de Sangue", source: "Arquivos Secretos #1" },
+];
+
+export const CLASSES = {
+  Combatente: {
+    initial: { pv: 20, pe: 2, san: 12 },
+    gain: { pv: 4, pe: 2, san: 3 },
+    fixedSkills: ["Luta ou Pontaria", "Fortitude ou Reflexos"],
+    choiceSkills: (intellect) => Math.max(1, 1 + intellect),
+    trails: [
+      "Aniquilador",
+      "Comandante de Campo",
+      "Guerreiro",
+      "Operações Especiais",
+      "Tropa de Choque",
+      "Agente Secreto",
+      "Caçador",
+      "Monstruoso",
+    ],
+  },
+  Especialista: {
+    initial: { pv: 16, pe: 3, san: 16 },
+    gain: { pv: 3, pe: 3, san: 4 },
+    fixedSkills: [],
+    choiceSkills: (intellect) => Math.max(1, 7 + intellect),
+    trails: [
+      "Atirador de Elite",
+      "Infiltrador",
+      "Médico de Campo",
+      "Negociador",
+      "Técnico",
+      "Bibliotecário",
+      "Perseverante",
+      "Muambeiro",
+    ],
+  },
+  Ocultista: {
+    initial: { pv: 12, pe: 4, san: 20 },
+    gain: { pv: 2, pe: 4, san: 5 },
+    fixedSkills: ["Ocultismo", "Vontade"],
+    choiceSkills: (intellect) => Math.max(1, 3 + intellect),
+    trails: [
+      "Conduíte",
+      "Flagelador",
+      "Graduado",
+      "Intuitivo",
+      "Lâmina Paranormal",
+      "Exorcista",
+      "Possuído",
+      "Parapsicólogo",
+      "Maledictólogo",
+    ],
+  },
+};
+
+export function findOrigin(name) {
+  return ORIGINS.find((origin) => origin.name === name) ?? null;
+}
+
+export function attributeBudget(attributes) {
+  const values = Object.values(attributes).map((value) => Number(value) || 0);
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return {
+    total,
+    remaining: ATTRIBUTE_TARGET - total,
+    zeroCount: values.filter((value) => value === 0).length,
+    valid:
+      total === ATTRIBUTE_TARGET &&
+      values.every((value) => value >= 0 && value <= ATTRIBUTE_MAX_AT_CREATION) &&
+      values.filter((value) => value === 0).length <= 1,
+  };
+}
+
+export function calculateDerived(character) {
+  const classData = CLASSES[character.classe];
+  const vigor = Number(character.atributos?.vigor) || 0;
+  const presenca = Number(character.atributos?.presenca) || 0;
+  const agilidade = Number(character.atributos?.agilidade) || 0;
+  const nex = Math.max(5, Number(character.nex) || 5);
+  const advances = Math.max(0, Math.floor((nex - 5) / 5));
+
+  if (!classData) {
+    return {
+      pvMax: 0,
+      peMax: 0,
+      sanMax: 0,
+      defesa: 10 + agilidade,
+      deslocamento: 9,
+      advances,
+      skillChoices: 0,
+      fixedSkills: [],
+    };
+  }
+
+  return {
+    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor),
+    peMax: classData.initial.pe + presenca + advances * (classData.gain.pe + presenca),
+    sanMax: classData.initial.san + advances * classData.gain.san,
+    defesa: 10 + agilidade,
+    deslocamento: 9,
+    advances,
+    skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
+    fixedSkills: classData.fixedSkills,
+  };
+}
+
+export function applyDerived(character, resetCurrent = false) {
+  const derived = calculateDerived(character);
+  character.recursos ??= {};
+
+  for (const resource of ["pv", "pe", "san"]) {
+    const maxKey = `${resource}Max`;
+    const currentKey = `${resource}Atual`;
+    const oldMax = Number(character.recursos[maxKey]) || 0;
+    character.recursos[maxKey] = derived[maxKey];
+
+    if (resetCurrent || character.recursos[currentKey] == null || character.recursos[currentKey] === oldMax) {
+      character.recursos[currentKey] = derived[maxKey];
+    } else {
+      character.recursos[currentKey] = Math.min(
+        Number(character.recursos[currentKey]) || 0,
+        derived[maxKey],
+      );
+    }
+  }
+
+  character.defesa = derived.defesa;
+  character.deslocamento = derived.deslocamento;
+
+  const origin = findOrigin(character.origem);
+  character.beneficiosOrigem = origin
+    ? { skills: [...origin.skills], power: origin.power, source: origin.source }
+    : null;
+  character.periciasClasse = {
+    fixed: [...derived.fixedSkills],
+    choices: derived.skillChoices,
+  };
+
+  return character;
+}
