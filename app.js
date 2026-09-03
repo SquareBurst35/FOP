@@ -7,8 +7,12 @@ import {
   attributeBudget,
   attributeTarget,
   calculateDerived,
+  characterLevel,
   findOrigin,
+  isMundaneCharacter,
+  levelFromNex,
   skillSelectionStatus,
+  usesSeparateLevel,
 } from "./rules.js";
 
 const STORAGE_KEY = "fop_personagens_v1";
@@ -44,7 +48,12 @@ function createBlankCharacter() {
     classe: "Mundano",
     trilha: "",
     nex: 0,
+    nivel: 0,
     patente: "Sem patente",
+    optionalRules: {
+      separateLevelNex: false,
+      determination: false,
+    },
     atributos: {
       agilidade: 1,
       forca: 1,
@@ -59,6 +68,8 @@ function createBlankCharacter() {
       peMax: 5,
       sanAtual: 10,
       sanMax: 10,
+      pdAtual: 0,
+      pdMax: 0,
     },
     defesa: 10,
     deslocamento: 9,
@@ -229,6 +240,7 @@ function renderCharacterGrid(characters) {
               </div>
               <div class="character-meta">
                 <span class="badge red">NEX ${numberOr(character.nex, 0)}%</span>
+                <span class="badge">Nível ${characterLevel(character)}</span>
                 <span class="badge">${escapeHtml(character.classe || "Classe pendente")}</span>
                 <span class="badge">${escapeHtml(character.origem || "Origem pendente")}</span>
                 ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
@@ -253,6 +265,7 @@ function startCreator() {
 }
 
 function renderCreator() {
+  ensureOptionalRules(creatorState);
   headerActions.innerHTML = `
     <button class="button ghost compact" id="cancel-creator" type="button">Cancelar</button>
   `;
@@ -284,9 +297,11 @@ function renderCreator() {
         </nav>
       </section>
     </section>
+    ${renderOptionalRulesDialog()}
   `;
 
   bindCreatorStep();
+  bindOptionalRulesDialog();
   document.querySelector("#previous-step").addEventListener("click", () => {
     saveCreatorFields();
     currentStep = Math.max(0, currentStep - 1);
@@ -309,11 +324,13 @@ function renderCreatorStep() {
   }
 
   if (currentStep === 1) {
-    const isMundane = Number(creatorState.nex) === 0;
+    const isMundane = isMundaneCharacter(creatorState);
+    const separated = usesSeparateLevel(creatorState);
     return `
       <p class="eyebrow">Etapa 2 de ${STEPS.length}</p>
       <h1>Formação</h1>
-      <p class="muted">Escolha o NEX em intervalos de 5. Em NEX 0%, o personagem é Mundano; a partir de 5%, você escolhe uma classe.</p>
+      <p class="muted">${separated ? "Nível e NEX estão separados pelas regras opcionais." : "Cada 5% de NEX equivale a um nível. Em 0%, o personagem é Mundano."}</p>
+      ${renderSupplementSettingsButton()}
       <div class="form-grid">
         <div class="field">
           <label for="origem">Origem</label>
@@ -322,6 +339,7 @@ function renderCreatorStep() {
           </select>
         </div>
         ${renderNexPicker()}
+        ${separated ? renderLevelPicker() : ""}
         ${
           isMundane
             ? `<div class="field"><span class="field-label">Classe</span><div class="locked-value">Mundano <small>NEX 0%</small></div></div>`
@@ -335,7 +353,10 @@ function renderCreatorStep() {
   }
 
   if (currentStep === 2) {
-    const pointsToDistribute = attributeTarget(creatorState.nex) - 5;
+    const pointsToDistribute = attributeTarget(
+      creatorState.nex,
+      usesSeparateLevel(creatorState),
+    ) - 5;
     return `
       <p class="eyebrow">Etapa 3 de ${STEPS.length}</p>
       <h1>Atributos</h1>
@@ -365,14 +386,18 @@ function renderCreatorStep() {
   }
 
   if (currentStep === 4) {
+    const derived = calculateDerived(creatorState);
     return `
       <p class="eyebrow">Etapa 5 de ${STEPS.length}</p>
       <h1>Recursos principais</h1>
       <p class="muted">Estes valores foram calculados usando classe, NEX e atributos. Na ficha, apenas os valores atuais mudam durante a sessão.</p>
       <div class="resource-grid">
-        ${calculatedResource("PV", creatorState.recursos.pvMax)}
-        ${calculatedResource("PE", creatorState.recursos.peMax)}
-        ${calculatedResource("SAN", creatorState.recursos.sanMax)}
+        ${calculatedResource("PV", derived.pvMax)}
+        ${
+          derived.usesDetermination
+            ? calculatedResource("PD", derived.pdMax)
+            : `${calculatedResource("PE", derived.peMax)}${calculatedResource("SAN", derived.sanMax)}`
+        }
       </div>
       <div class="calculation-box">
         ${renderCalculationBreakdown()}
@@ -388,9 +413,10 @@ function renderCreatorStep() {
       ${reviewRow("Agente", creatorState.nome || "Sem nome")}
       ${reviewRow("Jogador", creatorState.jogador || "Não informado")}
       ${reviewRow("Formação", `${creatorState.origem || "Origem pendente"} · ${creatorState.classe || "Classe pendente"}${creatorState.trilha ? ` · ${creatorState.trilha}` : ""}`)}
-      ${reviewRow("Progressão", `NEX ${numberOr(creatorState.nex, 0)}% · ${creatorState.patente || "Sem patente"}`)}
+      ${reviewRow("Progressão", `Nível ${characterLevel(creatorState)} · NEX ${numberOr(creatorState.nex, 0)}% · ${creatorState.patente || "Sem patente"}`)}
+      ${reviewRow("Regras opcionais", optionalRulesSummary(creatorState))}
       ${reviewRow("Perícias treinadas", creatorState.periciasTreinadas?.join(", ") || "Nenhuma")}
-      ${reviewRow("Recursos", `PV ${creatorState.recursos.pvMax} · PE ${creatorState.recursos.peMax} · SAN ${creatorState.recursos.sanMax}`)}
+      ${reviewRow("Recursos", resourceSummary(creatorState))}
     </div>
   `;
 }
@@ -401,7 +427,11 @@ function bindCreatorStep() {
       const input = document.querySelector(`#attr-${button.dataset.attribute}`);
       const key = button.dataset.attribute;
       const delta = Number(button.dataset.delta);
-      const budget = attributeBudget(readAttributeInputs(), creatorState.nex);
+      const budget = attributeBudget(
+        readAttributeInputs(),
+        creatorState.nex,
+        usesSeparateLevel(creatorState),
+      );
       const current = numberOr(input.value, 0);
       const next = clamp(current + delta, 0, ATTRIBUTE_MAX_AT_CREATION);
       if (delta > 0 && budget.remaining <= 0) {
@@ -441,6 +471,15 @@ function bindCreatorStep() {
         renderCreator();
       });
     });
+    document.querySelectorAll("[data-level-delta]").forEach((button) => {
+      button.addEventListener("click", () => {
+        saveCreatorFields();
+        setCreatorLevel(
+          clamp(numberOr(creatorState.nivel, 1) + Number(button.dataset.levelDelta), 1, 20),
+        );
+        renderCreator();
+      });
+    });
   }
 
   if (currentStep === 3) {
@@ -469,17 +508,35 @@ function bindCreatorStep() {
 
 function setCreatorNex(nex) {
   creatorState.nex = Math.round(nex / 5) * 5;
-  if (creatorState.nex === 0) {
+  if (usesSeparateLevel(creatorState)) {
+    creatorState.nivel = clamp(numberOr(creatorState.nivel, 1), 1, 20);
+    if (creatorState.classe === "Mundano") creatorState.classe = "";
+    if (!creatorState.patente || creatorState.patente === "Sem patente") {
+      creatorState.patente = "Recruta";
+    }
+  } else if (creatorState.nex === 0) {
     creatorState.classe = "Mundano";
+    creatorState.nivel = 0;
     creatorState.trilha = "";
     creatorState.patente = "Sem patente";
+    creatorState.optionalRules.determination = false;
   } else {
+    creatorState.nivel = levelFromNex(creatorState.nex);
     if (creatorState.classe === "Mundano") creatorState.classe = "";
     if (!creatorState.patente || creatorState.patente === "Sem patente") {
       creatorState.patente = "Recruta";
     }
     if (creatorState.nex < 10) creatorState.trilha = "";
   }
+  creatorState.periciasOrigemEscolhidas = [];
+  creatorState.periciasClasseObrigatorias = [];
+  creatorState.periciasEscolhidas = [];
+  skillSelectionStatus(creatorState);
+}
+
+function setCreatorLevel(level) {
+  creatorState.nivel = Math.round(clamp(level, 1, 20));
+  if (creatorState.nivel < 2) creatorState.trilha = "";
   creatorState.periciasOrigemEscolhidas = [];
   creatorState.periciasClasseObrigatorias = [];
   creatorState.periciasEscolhidas = [];
@@ -507,7 +564,14 @@ function advanceCreator() {
     return;
   }
 
-  if (currentStep === 2 && !attributeBudget(creatorState.atributos, creatorState.nex).valid) {
+  if (
+    currentStep === 2 &&
+    !attributeBudget(
+      creatorState.atributos,
+      creatorState.nex,
+      usesSeparateLevel(creatorState),
+    ).valid
+  ) {
     showToast("Distribua todos os pontos antes de continuar.");
     return;
   }
@@ -544,7 +608,10 @@ function saveCreatorFields() {
   if (currentStep === 1) {
     creatorState.origem = value("origem")?.trim() || "";
     creatorState.nex = clamp(numberOr(value("nex"), creatorState.nex), 0, 100);
-    if (creatorState.nex === 0) {
+    creatorState.nivel = usesSeparateLevel(creatorState)
+      ? clamp(numberOr(value("nivel"), creatorState.nivel), 1, 20)
+      : levelFromNex(creatorState.nex);
+    if (isMundaneCharacter(creatorState)) {
       creatorState.classe = "Mundano";
       creatorState.trilha = "";
       creatorState.patente = "Sem patente";
@@ -593,6 +660,7 @@ function renderSheet(id) {
           <p class="muted">${escapeHtml(character.jogador || "Jogador não informado")}</p>
           <div class="badge-row">
             <span class="badge red">NEX ${numberOr(character.nex, 0)}%</span>
+            <span class="badge">Nível ${characterLevel(character)}</span>
             <span class="badge">${escapeHtml(character.classe || "Sem classe")}</span>
             <span class="badge">${escapeHtml(character.origem || "Sem origem")}</span>
             ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
@@ -601,8 +669,11 @@ function renderSheet(id) {
 
         <div class="sheet-resources">
           ${liveResource("PV", "pv", character.recursos.pvAtual, character.recursos.pvMax)}
-          ${liveResource("PE", "pe", character.recursos.peAtual, character.recursos.peMax)}
-          ${liveResource("SAN", "san", character.recursos.sanAtual, character.recursos.sanMax)}
+          ${
+            calculateDerived(character).usesDetermination
+              ? liveResource("PD", "pd", character.recursos.pdAtual, character.recursos.pdMax)
+              : `${liveResource("PE", "pe", character.recursos.peAtual, character.recursos.peMax)}${liveResource("SAN", "san", character.recursos.sanAtual, character.recursos.sanMax)}`
+          }
         </div>
 
         <div class="status-line"><span class="status-dot"></span> Salvo neste dispositivo</div>
@@ -709,17 +780,144 @@ function numberField(label, id, value, min, max) {
 
 function renderNexPicker() {
   const nex = numberOr(creatorState.nex, 0);
+  const separated = usesSeparateLevel(creatorState);
   return `
     <div class="field nex-field">
       <label for="nex">NEX</label>
       <input id="nex" name="nex" type="hidden" value="${nex}" />
       <div class="nex-picker">
         <button type="button" data-nex-delta="-5" aria-label="Diminuir NEX em 5" ${nex === 0 ? "disabled" : ""}>−</button>
-        <output for="nex"><strong>${nex}%</strong><small>${nex === 0 ? "Mundano" : "Exposição paranormal"}</small></output>
+        <output for="nex"><strong>${nex}%</strong><small>${separated ? "NEX independente" : nex === 0 ? "Mundano · nível 0" : `Nível ${levelFromNex(nex)}`}</small></output>
         <button type="button" data-nex-delta="5" aria-label="Aumentar NEX em 5" ${nex === 100 ? "disabled" : ""}>+</button>
       </div>
     </div>
   `;
+}
+
+function renderLevelPicker() {
+  const level = characterLevel(creatorState);
+  return `
+    <div class="field nex-field">
+      <label for="nivel">Nível de experiência</label>
+      <input id="nivel" name="nivel" type="hidden" value="${level}" />
+      <div class="nex-picker level-picker">
+        <button type="button" data-level-delta="-1" aria-label="Diminuir nível" ${level === 1 ? "disabled" : ""}>−</button>
+        <output for="nivel"><strong>${level}</strong><small>de 20 níveis</small></output>
+        <button type="button" data-level-delta="1" aria-label="Aumentar nível" ${level === 20 ? "disabled" : ""}>+</button>
+      </div>
+    </div>
+  `;
+}
+
+function ensureOptionalRules(character) {
+  character.optionalRules ??= {};
+  character.optionalRules.separateLevelNex = Boolean(
+    character.optionalRules.separateLevelNex,
+  );
+  character.optionalRules.determination = Boolean(character.optionalRules.determination);
+}
+
+function renderSupplementSettingsButton() {
+  const rules = creatorState.optionalRules;
+  const activeRules = Object.values(rules).filter(Boolean).length;
+  return `
+    <button class="supplement-settings" id="optional-rules-button" type="button">
+      <span class="supplement-sigil" aria-hidden="true">S</span>
+      <span><strong>Sobrevivendo ao Horror</strong><small>Regras opcionais · ${activeRules} ${activeRules === 1 ? "ligada" : "ligadas"}</small></span>
+      <span class="supplement-arrow" aria-hidden="true">›</span>
+    </button>
+  `;
+}
+
+function renderOptionalRulesDialog() {
+  const rules = creatorState.optionalRules;
+  const determinationUnavailable = isMundaneCharacter(creatorState);
+  return `
+    <dialog class="optional-rules-dialog" id="optional-rules-dialog" aria-labelledby="optional-rules-title">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Configuração da ficha</p>
+          <h2 id="optional-rules-title">Regras opcionais — Sobrevivendo ao Horror</h2>
+        </div>
+        <button class="dialog-close" id="close-optional-rules" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="optional-rule-list">
+        ${renderOptionalRule({
+          key: "separateLevelNex",
+          title: "NEX e experiência",
+          description: "Separa o nível do personagem de sua exposição paranormal.",
+          enabled: rules.separateLevelNex,
+        })}
+        ${renderOptionalRule({
+          key: "determination",
+          title: "Jogando sem Sanidade",
+          description: determinationUnavailable
+            ? "Disponível após escolher uma classe de agente."
+            : "Substitui PE e Sanidade por Pontos de Determinação.",
+          enabled: rules.determination,
+          disabled: determinationUnavailable,
+        })}
+      </div>
+    </dialog>
+  `;
+}
+
+function renderOptionalRule({ key, title, description, enabled, disabled = false }) {
+  return `
+    <section class="optional-rule ${disabled ? "disabled" : ""}">
+      <div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(description)}</p></div>
+      <div class="binary-toggle" role="group" aria-label="${escapeAttribute(title)}">
+        <button type="button" data-rule-key="${key}" data-rule-value="false" class="${!enabled ? "active" : ""}" ${disabled ? "disabled" : ""}>Desligado</button>
+        <button type="button" data-rule-key="${key}" data-rule-value="true" class="${enabled ? "active" : ""}" ${disabled ? "disabled" : ""}>Ligado</button>
+      </div>
+    </section>
+  `;
+}
+
+function bindOptionalRulesDialog() {
+  const dialog = document.querySelector("#optional-rules-dialog");
+  document.querySelector("#optional-rules-button")?.addEventListener("click", () => {
+    dialog?.showModal();
+  });
+  document.querySelector("#close-optional-rules")?.addEventListener("click", () => dialog?.close());
+  dialog?.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  document.querySelectorAll("[data-rule-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      applyOptionalRule(button.dataset.ruleKey, button.dataset.ruleValue === "true");
+      renderCreator();
+      document.querySelector("#optional-rules-dialog")?.showModal();
+    });
+  });
+}
+
+function applyOptionalRule(key, enabled) {
+  ensureOptionalRules(creatorState);
+  if (key === "determination" && isMundaneCharacter(creatorState)) return;
+  creatorState.optionalRules[key] = enabled;
+
+  if (key === "separateLevelNex") {
+    if (enabled) {
+      creatorState.nivel = Math.max(1, levelFromNex(creatorState.nex));
+      if (creatorState.classe === "Mundano") creatorState.classe = "";
+      if (!creatorState.patente || creatorState.patente === "Sem patente") {
+        creatorState.patente = "Recruta";
+      }
+    } else {
+      creatorState.nivel = levelFromNex(creatorState.nex);
+      if (creatorState.nex === 0) {
+        creatorState.classe = "Mundano";
+        creatorState.trilha = "";
+        creatorState.patente = "Sem patente";
+        creatorState.optionalRules.determination = false;
+      }
+    }
+    creatorState.periciasOrigemEscolhidas = [];
+    creatorState.periciasClasseObrigatorias = [];
+    creatorState.periciasEscolhidas = [];
+    skillSelectionStatus(creatorState);
+  }
 }
 
 function renderSkillStep() {
@@ -890,11 +1088,11 @@ function originSkillSummary(origin) {
 }
 
 function renderTrailField() {
-  if (!creatorState.classe || numberOr(creatorState.nex, 5) < 10) return "";
+  if (!creatorState.classe || characterLevel(creatorState) < 2) return "";
   const trails = CLASSES[creatorState.classe]?.trails ?? [];
   return `
     <div class="field full">
-      <label for="trilha">Trilha disponível no NEX atual</label>
+      <label for="trilha">Trilha disponível no nível atual</label>
       <select id="trilha" name="trilha">
         ${selectOptions(["", ...trails], creatorState.trilha, "Escolha uma trilha")}
       </select>
@@ -912,7 +1110,11 @@ function readAttributeInputs() {
 }
 
 function renderAttributeBudget() {
-  const budget = attributeBudget(creatorState.atributos, creatorState.nex);
+  const budget = attributeBudget(
+    creatorState.atributos,
+    creatorState.nex,
+    usesSeparateLevel(creatorState),
+  );
   return `
     <div class="attribute-budget ${budget.remaining === 0 ? "complete" : ""}" id="attribute-budget">
       <span>Pontos restantes</span>
@@ -922,7 +1124,11 @@ function renderAttributeBudget() {
 }
 
 function updateAttributeBudget() {
-  const budget = attributeBudget(readAttributeInputs(), creatorState.nex);
+  const budget = attributeBudget(
+    readAttributeInputs(),
+    creatorState.nex,
+    usesSeparateLevel(creatorState),
+  );
   const element = document.querySelector("#attribute-budget");
   if (!element) return;
   element.classList.toggle("complete", budget.remaining === 0);
@@ -939,7 +1145,8 @@ function renderCalculationBreakdown() {
     <strong>Como o FOP calculou</strong>
     <div class="calculation-grid">
       <span>Defesa</span><b>10 + AGI = ${derived.defesa}</b>
-      <span>Avanços após NEX 5%</span><b>${derived.advances}</b>
+      <span>Nível usado nos cálculos</span><b>${derived.level}</b>
+      <span>Avanços após o nível 1</span><b>${derived.advances}</b>
       <span>Perícias fixas da classe</span><b>${escapeHtml(fixedSkills.join(", ") || "Nenhuma")}</b>
       <span>Perícias escolhidas</span><b>${escapeHtml(creatorState.periciasEscolhidas?.join(", ") || "Nenhuma")}</b>
       <span>Deslocamento</span><b>${derived.deslocamento} m</b>
@@ -1016,6 +1223,21 @@ function statCard(label, value) {
 
 function reviewRow(label, value) {
   return `<div class="review-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`;
+}
+
+function optionalRulesSummary(character) {
+  const enabled = [];
+  if (character.optionalRules?.separateLevelNex) enabled.push("NEX e experiência separados");
+  if (character.optionalRules?.determination) enabled.push("Pontos de Determinação");
+  return enabled.join(" · ") || "Nenhuma";
+}
+
+function resourceSummary(character) {
+  const derived = calculateDerived(character);
+  if (derived.usesDetermination) {
+    return `PV ${character.recursos.pvMax} · PD ${character.recursos.pdMax}`;
+  }
+  return `PV ${character.recursos.pvMax} · PE ${character.recursos.peMax} · SAN ${character.recursos.sanMax}`;
 }
 
 function selectOptions(options, selected, placeholder) {
