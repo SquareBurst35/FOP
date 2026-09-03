@@ -578,6 +578,68 @@ h3 {
   color: var(--faint);
 }
 
+.resource-card.calculated {
+  background: linear-gradient(145deg, rgba(226, 46, 58, 0.08), rgba(255, 255, 255, 0.02));
+}
+
+.calculated-value {
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+
+.calculation-box {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(126, 208, 214, 0.22);
+  border-radius: 12px;
+  background: rgba(126, 208, 214, 0.045);
+}
+
+.calculation-grid {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(0, 1.4fr);
+  gap: 8px 20px;
+}
+
+.calculation-grid span {
+  color: var(--muted);
+}
+
+.calculation-grid b {
+  text-align: right;
+}
+
+.origin-preview {
+  margin-top: 20px;
+}
+
+.attribute-budget {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.attribute-budget strong {
+  color: var(--warning);
+  font-size: 1.1rem;
+}
+
+.attribute-budget.complete {
+  border-color: rgba(82, 199, 124, 0.45);
+}
+
+.attribute-budget.complete strong {
+  color: var(--green);
+}
+
 .review-list {
   display: grid;
   gap: 10px;
@@ -675,6 +737,31 @@ h3 {
 
 .sheet-section + .sheet-section {
   margin-top: 14px;
+}
+
+.benefit-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.benefit-list > div {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.benefit-list span,
+.benefit-list strong {
+  display: block;
+}
+
+.benefit-list span {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
 }
 
 .section-heading {
@@ -864,8 +951,15 @@ h3 {
   }
 
   .form-grid,
-  .stat-grid {
+  .stat-grid,
+  .benefit-list,
+  .calculation-grid {
     grid-template-columns: 1fr;
+  }
+
+  .calculation-grid b {
+    margin-bottom: 6px;
+    text-align: left;
   }
 
   .wizard-sidebar,
