@@ -13,7 +13,18 @@ import {
   levelFromNex,
   skillSelectionStatus,
   usesSeparateLevel,
-} from "./rules.js?v=4";
+} from "./rules.js?v=5";
+import {
+  ABILITY_CATEGORIES,
+  CORE_CLASS_ABILITIES,
+  PATENTS,
+  RITUAL_CIRCLES,
+  RITUAL_ELEMENTS,
+  RITUALS,
+  SKILL_ATTRIBUTES,
+  TRAIL_ABILITIES,
+  allSelectableAbilities,
+} from "./content.js?v=5";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -35,6 +46,19 @@ const toastElement = document.querySelector("#toast");
 let toastTimer;
 let creatorState = null;
 let currentStep = 0;
+let activeSheetTab = "resumo";
+let activeAbilityCategory = "Combatente";
+let activeAbilityGroup = "";
+let abilitySearch = "";
+let activeRitualCircle = 1;
+let activeRitualElement = "Conhecimento";
+let ritualSearch = "";
+
+const ALL_ABILITIES = allSelectableAbilities(ORIGINS);
+const ABILITY_BY_ID = new Map(
+  [...CORE_CLASS_ABILITIES, ...ALL_ABILITIES].map((entry) => [entry.id, entry]),
+);
+const RITUAL_BY_ID = new Map(RITUALS.map((entry) => [entry.id, entry]));
 
 homeButton.addEventListener("click", () => navigate("home"));
 window.addEventListener("hashchange", renderRoute);
@@ -78,14 +102,76 @@ function createBlankCharacter() {
     periciasClasseObrigatorias: [],
     periciasEscolhidas: [],
     periciasTreinadas: [],
+    grausPericia: {},
+    outrosBonusPericia: {},
+    skillRanksVersion: 1,
     pericias: "",
     inventario: "",
     habilidades: "",
+    habilidadesNotas: "",
+    habilidadesSelecionadas: [],
+    rituaisSelecionados: [],
+    rituaisNotas: "",
     anotacoes: "",
     criadoEm: new Date().toISOString(),
     atualizadoEm: new Date().toISOString(),
   };
-  return applyDerived(character, true);
+  return applyDerived(normalizeCharacter(character), true);
+}
+
+function normalizeCharacter(character) {
+  if (!character || typeof character !== "object") return character;
+  ensureOptionalRules(character);
+  character.atributos ??= { agilidade: 1, forca: 1, intelecto: 1, presenca: 1, vigor: 1 };
+  character.periciasTreinadas = Array.isArray(character.periciasTreinadas)
+    ? character.periciasTreinadas
+    : [];
+
+  const isLegacySkillSheet = character.skillRanksVersion !== 1;
+  character.grausPericia ??= {};
+  character.outrosBonusPericia ??= {};
+  for (const skill of SKILLS) {
+    const legacyDefault = character.periciasTreinadas.includes(skill) ? 5 : 0;
+    const grade = Number(character.grausPericia[skill]);
+    character.grausPericia[skill] = [0, 5, 10, 15].includes(grade)
+      ? grade
+      : isLegacySkillSheet
+        ? legacyDefault
+        : 0;
+    character.outrosBonusPericia[skill] = clamp(
+      numberOr(character.outrosBonusPericia[skill], 0),
+      -99,
+      99,
+    );
+  }
+  character.skillRanksVersion = 1;
+
+  character.habilidadesNotas ??= character.habilidades ?? "";
+  character.rituaisNotas ??= "";
+  character.habilidadesSelecionadas = Array.isArray(character.habilidadesSelecionadas)
+    ? [...new Set(character.habilidadesSelecionadas.filter((id) => ABILITY_BY_ID.has(id)))]
+    : [];
+  character.rituaisSelecionados = Array.isArray(character.rituaisSelecionados)
+    ? [...new Set(character.rituaisSelecionados.filter((id) => RITUAL_BY_ID.has(id)))]
+    : [];
+  character.inventario ??= "";
+  character.anotacoes ??= "";
+  character.pericias ??= "";
+
+  if (isMundaneCharacter(character) || character.classe === "Mundano") {
+    character.patente = "Sem patente";
+  } else if (!PATENTS.includes(character.patente)) {
+    character.patente = "Recruta";
+  }
+  return character;
+}
+
+function setInitialTrainingGrades(character) {
+  for (const skill of character.periciasTreinadas ?? []) {
+    if (numberOr(character.grausPericia?.[skill], 0) === 0) {
+      character.grausPericia[skill] = 5;
+    }
+  }
 }
 
 function readCharacters() {
@@ -104,7 +190,10 @@ function writeCharacters(characters) {
 function upsertCharacter(character) {
   const characters = readCharacters();
   const index = characters.findIndex((item) => item.id === character.id);
-  const updated = { ...applyDerived(character), atualizadoEm: new Date().toISOString() };
+  const updated = {
+    ...applyDerived(normalizeCharacter(character)),
+    atualizadoEm: new Date().toISOString(),
+  };
 
   if (index >= 0) characters[index] = updated;
   else characters.push(updated);
@@ -115,7 +204,7 @@ function upsertCharacter(character) {
 
 function getCharacter(id) {
   const character = readCharacters().find((item) => item.id === id);
-  return character ? applyDerived(character) : undefined;
+  return character ? applyDerived(normalizeCharacter(character)) : undefined;
 }
 
 function removeCharacter(id) {
@@ -340,7 +429,7 @@ function renderCreatorStep() {
             ? `<div class="field"><span class="field-label">Classe</span><div class="locked-value">Mundano <small>NEX 0%</small></div></div>`
             : `<div class="field"><label for="classe">Classe</label><select id="classe" name="classe">${selectOptions(["", "Combatente", "Especialista", "Ocultista"], creatorState.classe, "Selecione")}</select></div>`
         }
-        ${isMundane ? "" : field("Patente", "patente", creatorState.patente, "Ex.: Recruta")}
+        ${isMundane ? "" : renderPatentField(creatorState.patente)}
         ${renderTrailField()}
       </div>
       ${renderOriginPreview(creatorState.origem)}
@@ -564,6 +653,7 @@ function advanceCreator() {
     return;
   }
 
+  setInitialTrainingGrades(creatorState);
   const saved = upsertCharacter(creatorState);
   showToast("Ficha criada e salva neste dispositivo.");
   creatorState = null;
@@ -594,7 +684,9 @@ function saveCreatorFields() {
     } else {
       creatorState.classe = value("classe") || "";
       creatorState.trilha = value("trilha") || "";
-      creatorState.patente = value("patente")?.trim() || "Recruta";
+      creatorState.patente = PATENTS.includes(value("patente"))
+        ? value("patente")
+        : "Recruta";
     }
   }
 
@@ -614,6 +706,15 @@ function saveCreatorFields() {
   }
 }
 
+const SHEET_TABS = [
+  ["resumo", "Resumo"],
+  ["pericias", "Perícias"],
+  ["habilidades", "Habilidades"],
+  ["rituais", "Rituais"],
+  ["inventario", "Inventário"],
+  ["anotacoes", "Anotações"],
+];
+
 function renderSheet(id) {
   const character = getCharacter(id);
   if (!character) {
@@ -624,7 +725,7 @@ function renderSheet(id) {
 
   headerActions.innerHTML = `
     <button class="button ghost compact" id="back-home" type="button">Arquivos</button>
-    <button class="button compact" id="edit-core" type="button">Editar dados</button>
+    <button class="button compact" id="edit-core" type="button">Editar nome</button>
   `;
 
   app.innerHTML = `
@@ -660,48 +761,354 @@ function renderSheet(id) {
       </aside>
 
       <section class="sheet-main panel">
-        <div class="sheet-section">
-          <div class="section-heading">
-            <h2>Atributos</h2>
-            <span class="muted small">Valores atuais</span>
-          </div>
-          <div class="sheet-attributes">
-            ${Object.entries(ATTRIBUTE_LABELS)
-              .map(
-                ([key, label]) => `
-                  <div class="sheet-attribute">
-                    <span>${label}</span>
-                    <strong>${numberOr(character.atributos[key], 1)}</strong>
-                  </div>
-                `,
-              )
-              .join("")}
-          </div>
-        </div>
-
-        ${renderAutomaticBenefits(character)}
-
-        <div class="sheet-section">
-          <div class="section-heading"><h2>Combate</h2></div>
-          <div class="stat-grid">
-            ${statCard("Defesa", character.defesa)}
-            ${statCard("Deslocamento", `${character.deslocamento} m`)}
-            ${statCard("Proteção", character.protecao || "Nenhuma")}
-          </div>
-        </div>
-
-        ${renderTrainedSkills(character)}
-        ${notesSection("Observações de perícias", "pericias", character.pericias, "Anote bônus, especializações e observações.")}
-        ${notesSection("Inventário", "inventario", character.inventario, "Equipamentos, armas, proteções e itens de investigação.")}
-        ${notesSection("Habilidades e rituais", "habilidades", character.habilidades, "Poderes, habilidades, rituais e custos.")}
-        ${notesSection("Anotações", "anotacoes", character.anotacoes, "Pistas, contatos e lembretes da sessão.")}
+        <nav class="sheet-tabs" aria-label="Seções da ficha">
+          ${SHEET_TABS.map(
+            ([key, label]) => `<button type="button" data-sheet-tab="${key}" class="${activeSheetTab === key ? "active" : ""}" aria-current="${activeSheetTab === key ? "page" : "false"}">${label}</button>`,
+          ).join("")}
+        </nav>
+        <div class="sheet-tab-content">${renderSheetTab(character)}</div>
       </section>
     </section>
     ${renderOptionalRulesDialog(character)}
+    ${renderAbilityDialog(character)}
+    ${renderRitualDialog(character)}
   `;
 
-  document.querySelector("#back-home").addEventListener("click", () => navigate("home"));
-  document.querySelector("#edit-core").addEventListener("click", () => editCharacterCore(character));
+  bindSheetInteractions(character);
+}
+
+function renderSheetTab(character) {
+  if (activeSheetTab === "pericias") return renderSkillsTab(character);
+  if (activeSheetTab === "habilidades") return renderAbilitiesTab(character);
+  if (activeSheetTab === "rituais") return renderRitualsTab(character);
+  if (activeSheetTab === "inventario") {
+    return notesSection(
+      "Inventário",
+      "inventario",
+      character.inventario,
+      "Equipamentos, armas, proteções e itens de investigação.",
+    );
+  }
+  if (activeSheetTab === "anotacoes") {
+    return notesSection(
+      "Anotações",
+      "anotacoes",
+      character.anotacoes,
+      "Pistas, contatos e lembretes da sessão.",
+    );
+  }
+  return renderSummaryTab(character);
+}
+
+function renderSummaryTab(character) {
+  const isMundane = isMundaneCharacter(character) || character.classe === "Mundano";
+  return `
+    <div class="sheet-section">
+      <div class="section-heading"><h2>Atributos</h2><span class="muted small">Valores atuais</span></div>
+      <div class="sheet-attributes">
+        ${Object.entries(ATTRIBUTE_LABELS)
+          .map(
+            ([key, label]) => `<div class="sheet-attribute"><span>${label}</span><strong>${numberOr(character.atributos[key], 1)}</strong></div>`,
+          )
+          .join("")}
+      </div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="section-heading"><h2>Formação</h2><span class="muted small">Seleções da ficha</span></div>
+      <div class="formation-grid">
+        ${statCard("Origem", character.origem || "—")}
+        ${statCard("Classe", character.classe || "—")}
+        ${statCard("Trilha", character.trilha || "Ainda não escolhida")}
+      </div>
+      <div class="patent-row">
+        <label for="sheet-patent">Patente</label>
+        ${
+          isMundane
+            ? `<div class="locked-value">Sem patente <small>Mundano</small></div>`
+            : `<select id="sheet-patent" data-patent-select>${PATENTS.map((patent) => `<option value="${escapeAttribute(patent)}" ${patent === character.patente ? "selected" : ""}>${escapeHtml(patent)}</option>`).join("")}</select>`
+        }
+      </div>
+    </div>
+
+    ${renderAutomaticBenefits(character)}
+
+    <div class="sheet-section">
+      <div class="section-heading"><h2>Combate</h2></div>
+      <div class="stat-grid">
+        ${statCard("Defesa", character.defesa)}
+        ${statCard("Deslocamento", `${character.deslocamento} m`)}
+        ${statCard("Proteção", character.protecao || "Nenhuma")}
+      </div>
+    </div>
+  `;
+}
+
+function renderSkillsTab(character) {
+  return `
+    <section class="sheet-section skills-section">
+      <div class="section-heading stacked-mobile">
+        <div><h2>Perícias</h2><p class="muted small">O bônus soma treino e outros modificadores. As perícias escolhidas na criação começam em +5.</p></div>
+        <span class="badge">Automático</span>
+      </div>
+      <div class="skills-table-wrap">
+        <table class="skills-table">
+          <thead><tr><th>Perícia</th><th>Dados</th><th>Bônus</th><th>Treino</th><th>Outros</th></tr></thead>
+          <tbody>
+            ${SKILLS.map((skill) => renderSkillRow(character, skill)).join("")}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    ${notesSection("Observações de perícias", "pericias", character.pericias, "Especializações, condições e bônus temporários.")}
+  `;
+}
+
+function renderSkillRow(character, skill) {
+  const attribute = SKILL_ATTRIBUTES[skill] ?? "INT";
+  const dice = skillAttributeValue(character, attribute);
+  const grade = numberOr(character.grausPericia?.[skill], 0);
+  const other = numberOr(character.outrosBonusPericia?.[skill], 0);
+  const total = grade + other;
+  return `
+    <tr class="skill-rank-${grade}">
+      <th scope="row"><span class="skill-die" aria-hidden="true">◇</span>${escapeHtml(skill)}</th>
+      <td><span class="skill-attribute">${attribute}</span><small>${dice === 0 ? "2d20 ↓" : `${dice}d20`}</small></td>
+      <td class="skill-total" data-skill-total="${escapeAttribute(skill)}">${formatSigned(total)}</td>
+      <td>
+        <select class="skill-grade" data-skill-grade="${escapeAttribute(skill)}" aria-label="Treino de ${escapeAttribute(skill)}">
+          ${[
+            [0, "0 · Destreinado"],
+            [5, "5 · Treinado"],
+            [10, "10 · Veterano"],
+            [15, "15 · Expert"],
+          ].map(([value, label]) => `<option value="${value}" ${grade === value ? "selected" : ""}>${label}</option>`).join("")}
+        </select>
+      </td>
+      <td><input class="skill-other" type="number" min="-99" max="99" value="${other}" data-skill-other="${escapeAttribute(skill)}" aria-label="Outros bônus de ${escapeAttribute(skill)}" /></td>
+    </tr>
+  `;
+}
+
+function skillAttributeValue(character, label) {
+  const key = Object.entries(ATTRIBUTE_LABELS).find(([, abbreviation]) => abbreviation === label)?.[0];
+  return key ? numberOr(character.atributos?.[key], 0) : 0;
+}
+
+function formatSigned(value) {
+  const number = numberOr(value, 0);
+  return number > 0 ? `+${number}` : String(number);
+}
+
+function automaticAbilitiesFor(character) {
+  const progressNex = usesSeparateLevel(character)
+    ? characterLevel(character) * 5
+    : numberOr(character.nex, 0);
+  const originAbility = ALL_ABILITIES.find(
+    (entry) => entry.category === "Origens" && entry.group === character.origem,
+  );
+  const classAbilities = CORE_CLASS_ABILITIES.filter(
+    (entry) => entry.category === character.classe && entry.unlockNex <= progressNex,
+  );
+  const trailAbilities = TRAIL_ABILITIES.filter(
+    (entry) =>
+      entry.category === character.classe &&
+      entry.group === character.trilha &&
+      entry.unlockNex <= progressNex,
+  );
+  return uniqueById([originAbility, ...classAbilities, ...trailAbilities].filter(Boolean));
+}
+
+function renderAbilitiesTab(character) {
+  const automatic = automaticAbilitiesFor(character);
+  const automaticIds = new Set(automatic.map((entry) => entry.id));
+  const selected = (character.habilidadesSelecionadas ?? [])
+    .map((id) => ABILITY_BY_ID.get(id))
+    .filter((entry) => entry && !automaticIds.has(entry.id));
+  return `
+    <section class="sheet-section">
+      <div class="section-heading stacked-mobile">
+        <div><h2>Habilidades</h2><p class="muted small">Poderes de origem e habilidades liberadas da trilha entram sozinhos.</p></div>
+        <button class="button primary compact" id="open-ability-picker" type="button">+ Adicionar habilidade</button>
+      </div>
+      <div class="collection-block">
+        <h3>Automáticas <span class="badge">${automatic.length}</span></h3>
+        <div class="entry-list">${automatic.length ? automatic.map((entry) => renderAbilityCard(entry, { automatic: true })).join("") : emptyCollection("Nenhuma habilidade automática neste nível.")}</div>
+      </div>
+      <div class="collection-block">
+        <h3>Adicionadas <span class="badge">${selected.length}</span></h3>
+        <div class="entry-list">${selected.length ? selected.map((entry) => renderAbilityCard(entry, { removable: true })).join("") : emptyCollection("Use “Adicionar habilidade” para escolher poderes e habilidades de trilha.")}</div>
+      </div>
+    </section>
+    ${notesSection("Notas de habilidades", "habilidadesNotas", character.habilidadesNotas, "Escolhas, alvos, afinidades e lembretes de uso.")}
+  `;
+}
+
+function renderAbilityCard(entry, { automatic = false, removable = false, picker = false } = {}) {
+  const action = picker
+    ? renderAbilityPickerAction(entry)
+    : removable
+      ? `<button class="entry-remove" type="button" data-ability-toggle="${entry.id}">Remover</button>`
+      : "";
+  return `
+    <details class="entry-card">
+      <summary>
+        <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)}</small></span>
+        <span class="entry-summary-side">${automatic ? `<span class="badge red">Automática</span>` : entry.unlockNex ? `<span class="badge">NEX ${entry.unlockNex}%</span>` : ""}<span class="chevron" aria-hidden="true">⌄</span></span>
+      </summary>
+      <div class="entry-body">
+        <p>${escapeHtml(entry.summary)}</p>
+        <dl class="entry-meta">
+          <div><dt>Custo</dt><dd>${escapeHtml(entry.cost)}</dd></div>
+          <div><dt>Requisito</dt><dd>${escapeHtml(entry.requirement)}</dd></div>
+          <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}</dd></div>
+        </dl>
+        ${action}
+      </div>
+    </details>
+  `;
+}
+
+function renderAbilityDialog(character) {
+  const categoryEntries = ALL_ABILITIES.filter(
+    (entry) => entry.category === activeAbilityCategory,
+  );
+  const groups = [...new Set(categoryEntries.map((entry) => entry.group))];
+  if (!groups.includes(activeAbilityGroup)) activeAbilityGroup = groups[0] ?? "";
+  return `
+    <dialog class="picker-dialog" id="ability-dialog" aria-labelledby="ability-dialog-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Catálogo</p><h2 id="ability-dialog-title">Adicionar habilidade</h2></div>
+        <button class="dialog-close" id="close-ability-dialog" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="picker-body">
+        <div class="picker-tabs" role="tablist" aria-label="Categorias de habilidades">
+          ${ABILITY_CATEGORIES.map((category) => `<button type="button" data-ability-category="${escapeAttribute(category)}" class="${category === activeAbilityCategory ? "active" : ""}">${escapeHtml(category)}</button>`).join("")}
+        </div>
+        <div class="picker-groups">
+          ${groups.map((group) => `<button type="button" data-ability-group="${escapeAttribute(group)}" class="${group === activeAbilityGroup ? "active" : ""}">${escapeHtml(group)}</button>`).join("")}
+        </div>
+        <label class="picker-search"><span aria-hidden="true">⌕</span><input id="ability-search" value="${escapeAttribute(abilitySearch)}" placeholder="Buscar habilidade" autocomplete="off" /></label>
+        <div class="picker-results" id="ability-picker-results">${renderAbilityPickerResults(character)}</div>
+      </div>
+    </dialog>
+  `;
+}
+
+function renderAbilityPickerResults(character) {
+  const query = normalizeSearch(abilitySearch);
+  const entries = ALL_ABILITIES.filter(
+    (entry) =>
+      entry.category === activeAbilityCategory &&
+      (!activeAbilityGroup || entry.group === activeAbilityGroup) &&
+      (!query || normalizeSearch(`${entry.name} ${entry.summary} ${entry.group}`).includes(query)),
+  );
+  return entries.length
+    ? entries.map((entry) => renderAbilityCard(entry, { picker: true })).join("")
+    : emptyCollection("Nenhuma habilidade encontrada neste filtro.");
+}
+
+function renderAbilityPickerAction(entry) {
+  const route = currentRoute();
+  const character = route.page === "ficha" ? getCharacter(route.id) : null;
+  if (!character) return "";
+  const automatic = new Set(automaticAbilitiesFor(character).map((item) => item.id));
+  if (automatic.has(entry.id)) return `<button class="button compact" type="button" disabled>Já automática</button>`;
+  const selected = character.habilidadesSelecionadas.includes(entry.id);
+  return `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ability-toggle="${entry.id}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`;
+}
+
+function renderRitualsTab(character) {
+  const selected = (character.rituaisSelecionados ?? [])
+    .map((id) => RITUAL_BY_ID.get(id))
+    .filter(Boolean)
+    .sort((a, b) => a.circle - b.circle || a.element.localeCompare(b.element) || a.name.localeCompare(b.name));
+  return `
+    <section class="sheet-section">
+      <div class="section-heading stacked-mobile">
+        <div><h2>Rituais</h2><p class="muted small">Catálogo oficial do 1º ao 4º círculo, separado por elemento.</p></div>
+        <button class="button primary compact" id="open-ritual-picker" type="button">+ Adicionar ritual</button>
+      </div>
+      <div class="entry-list ritual-selected-list">
+        ${selected.length ? selected.map((entry) => renderRitualCard(entry, { removable: true })).join("") : emptyCollection("Nenhum ritual adicionado à ficha.")}
+      </div>
+    </section>
+    ${notesSection("Notas de rituais", "rituaisNotas", character.rituaisNotas, "DT, aprimoramentos, componentes e lembretes.")}
+  `;
+}
+
+function renderRitualCard(entry, { removable = false, picker = false } = {}) {
+  const selectedCharacter = currentRoute().page === "ficha" ? getCharacter(currentRoute().id) : null;
+  const selected = Boolean(selectedCharacter?.rituaisSelecionados?.includes(entry.id));
+  const action = picker
+    ? `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ritual-toggle="${entry.id}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`
+    : removable
+      ? `<button class="entry-remove" type="button" data-ritual-toggle="${entry.id}">Remover</button>`
+      : "";
+  return `
+    <details class="entry-card ritual-card element-${normalizeSearch(entry.element)}">
+      <summary>
+        <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.element)} · ${entry.circle}º círculo</small></span>
+        <span class="entry-summary-side"><span class="badge">${escapeHtml(entry.cost)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
+      </summary>
+      <div class="entry-body">
+        <p>${escapeHtml(entry.summary)}</p>
+        <dl class="entry-meta">
+          <div><dt>Círculo</dt><dd>${entry.circle}º</dd></div>
+          <div><dt>Custo-base</dt><dd>${escapeHtml(entry.cost)}</dd></div>
+          <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}</dd></div>
+        </dl>
+        ${action}
+      </div>
+    </details>
+  `;
+}
+
+function renderRitualDialog(character) {
+  return `
+    <dialog class="picker-dialog" id="ritual-dialog" aria-labelledby="ritual-dialog-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Catálogo</p><h2 id="ritual-dialog-title">Adicionar ritual</h2></div>
+        <button class="dialog-close" id="close-ritual-dialog" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="picker-body">
+        <div class="picker-tabs compact-tabs" role="tablist" aria-label="Círculos de ritual">
+          ${RITUAL_CIRCLES.map((circle) => `<button type="button" data-ritual-circle="${circle}" class="${circle === activeRitualCircle ? "active" : ""}">${circle}º círculo</button>`).join("")}
+        </div>
+        <div class="picker-groups element-groups">
+          ${RITUAL_ELEMENTS.map((element) => `<button type="button" data-ritual-element="${escapeAttribute(element)}" class="${element === activeRitualElement ? "active" : ""}">${escapeHtml(element)}</button>`).join("")}
+        </div>
+        <label class="picker-search"><span aria-hidden="true">⌕</span><input id="ritual-search" value="${escapeAttribute(ritualSearch)}" placeholder="Buscar ritual" autocomplete="off" /></label>
+        <p class="catalog-note">Custo-base do ${activeRitualCircle}º círculo. Versões Discente e Verdadeiro podem alterar custo e efeito.</p>
+        <div class="picker-results" id="ritual-picker-results">${renderRitualPickerResults(character)}</div>
+      </div>
+    </dialog>
+  `;
+}
+
+function renderRitualPickerResults() {
+  const query = normalizeSearch(ritualSearch);
+  const entries = RITUALS.filter(
+    (entry) =>
+      entry.circle === activeRitualCircle &&
+      entry.element === activeRitualElement &&
+      (!query || normalizeSearch(`${entry.name} ${entry.summary}`).includes(query)),
+  );
+  return entries.length
+    ? entries.map((entry) => renderRitualCard(entry, { picker: true })).join("")
+    : emptyCollection("Nenhum ritual encontrado neste círculo e elemento.");
+}
+
+function bindSheetInteractions(character) {
+  document.querySelector("#back-home")?.addEventListener("click", () => navigate("home"));
+  document.querySelector("#edit-core")?.addEventListener("click", () => editCharacterCore(character));
+
+  document.querySelectorAll("[data-sheet-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeSheetTab = button.dataset.sheetTab;
+      renderSheet(character.id);
+    });
+  });
 
   document.querySelectorAll("[data-resource-action]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -727,7 +1134,164 @@ function renderSheet(id) {
     });
   });
 
+  document.querySelector("[data-patent-select]")?.addEventListener("change", (event) => {
+    character.patente = PATENTS.includes(event.target.value) ? event.target.value : "Recruta";
+    upsertCharacter(character);
+    showToast("Patente atualizada.");
+  });
+
+  document.querySelectorAll("[data-skill-grade]").forEach((select) => {
+    select.addEventListener("change", () => {
+      const skill = select.dataset.skillGrade;
+      const grade = numberOr(select.value, 0);
+      character.grausPericia[skill] = [0, 5, 10, 15].includes(grade) ? grade : 0;
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast("Grau de treinamento salvo.");
+    });
+  });
+
+  document.querySelectorAll("[data-skill-other]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const skill = input.dataset.skillOther;
+      character.outrosBonusPericia[skill] = clamp(numberOr(input.value, 0), -99, 99);
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast("Bônus atualizado.");
+    });
+  });
+
+  bindAbilityDialog(character);
+  bindRitualDialog(character);
   bindOptionalRulesDialog(character);
+}
+
+function bindAbilityDialog(character) {
+  const dialog = document.querySelector("#ability-dialog");
+  document.querySelector("#open-ability-picker")?.addEventListener("click", () => {
+    if (ABILITY_CATEGORIES.includes(character.classe)) activeAbilityCategory = character.classe;
+    activeAbilityGroup = "";
+    renderSheet(character.id);
+    document.querySelector("#ability-dialog")?.showModal();
+  });
+  document.querySelector("#close-ability-dialog")?.addEventListener("click", () => dialog?.close());
+  closeDialogOnBackdrop(dialog);
+
+  document.querySelectorAll("[data-ability-category]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeAbilityCategory = button.dataset.abilityCategory;
+      activeAbilityGroup = "";
+      abilitySearch = "";
+      renderSheet(character.id);
+      document.querySelector("#ability-dialog")?.showModal();
+    });
+  });
+  document.querySelectorAll("[data-ability-group]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeAbilityGroup = button.dataset.abilityGroup;
+      renderSheet(character.id);
+      document.querySelector("#ability-dialog")?.showModal();
+    });
+  });
+  document.querySelector("#ability-search")?.addEventListener("input", (event) => {
+    abilitySearch = event.target.value;
+    const results = document.querySelector("#ability-picker-results");
+    if (results) results.innerHTML = renderAbilityPickerResults(character);
+    bindAbilityToggleButtons(character, true);
+  });
+  bindAbilityToggleButtons(character, false);
+}
+
+function bindAbilityToggleButtons(character, resultsOnly) {
+  const selector = resultsOnly
+    ? "#ability-picker-results [data-ability-toggle]"
+    : "[data-ability-toggle]";
+  document.querySelectorAll(selector).forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.abilityToggle;
+      if (!ABILITY_BY_ID.has(id)) return;
+      const wasOpen = Boolean(document.querySelector("#ability-dialog")?.open);
+      const selected = new Set(character.habilidadesSelecionadas);
+      if (selected.has(id)) selected.delete(id);
+      else selected.add(id);
+      character.habilidadesSelecionadas = [...selected];
+      upsertCharacter(character);
+      renderSheet(character.id);
+      if (wasOpen) document.querySelector("#ability-dialog")?.showModal();
+      showToast(selected.has(id) ? "Habilidade adicionada." : "Habilidade removida.");
+    });
+  });
+}
+
+function bindRitualDialog(character) {
+  const dialog = document.querySelector("#ritual-dialog");
+  document.querySelector("#open-ritual-picker")?.addEventListener("click", () => dialog?.showModal());
+  document.querySelector("#close-ritual-dialog")?.addEventListener("click", () => dialog?.close());
+  closeDialogOnBackdrop(dialog);
+  document.querySelectorAll("[data-ritual-circle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeRitualCircle = Number(button.dataset.ritualCircle);
+      ritualSearch = "";
+      renderSheet(character.id);
+      document.querySelector("#ritual-dialog")?.showModal();
+    });
+  });
+  document.querySelectorAll("[data-ritual-element]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeRitualElement = button.dataset.ritualElement;
+      renderSheet(character.id);
+      document.querySelector("#ritual-dialog")?.showModal();
+    });
+  });
+  document.querySelector("#ritual-search")?.addEventListener("input", (event) => {
+    ritualSearch = event.target.value;
+    const results = document.querySelector("#ritual-picker-results");
+    if (results) results.innerHTML = renderRitualPickerResults();
+    bindRitualToggleButtons(character, true);
+  });
+  bindRitualToggleButtons(character, false);
+}
+
+function bindRitualToggleButtons(character, resultsOnly) {
+  const selector = resultsOnly
+    ? "#ritual-picker-results [data-ritual-toggle]"
+    : "[data-ritual-toggle]";
+  document.querySelectorAll(selector).forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.ritualToggle;
+      if (!RITUAL_BY_ID.has(id)) return;
+      const wasOpen = Boolean(document.querySelector("#ritual-dialog")?.open);
+      const selected = new Set(character.rituaisSelecionados);
+      if (selected.has(id)) selected.delete(id);
+      else selected.add(id);
+      character.rituaisSelecionados = [...selected];
+      upsertCharacter(character);
+      renderSheet(character.id);
+      if (wasOpen) document.querySelector("#ritual-dialog")?.showModal();
+      showToast(selected.has(id) ? "Ritual adicionado." : "Ritual removido.");
+    });
+  });
+}
+
+function closeDialogOnBackdrop(dialog) {
+  dialog?.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+}
+
+function emptyCollection(message) {
+  return `<div class="collection-empty"><span aria-hidden="true">＋</span><p>${escapeHtml(message)}</p></div>`;
+}
+
+function uniqueById(entries) {
+  return [...new Map(entries.map((entry) => [entry.id, entry])).values()];
+}
+
+function normalizeSearch(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function editCharacterCore(character) {
@@ -748,6 +1312,18 @@ function field(label, id, value, placeholder = "", required = false) {
     <div class="field">
       <label for="${id}">${label}${required ? " *" : ""}</label>
       <input id="${id}" name="${id}" value="${escapeAttribute(value)}" placeholder="${escapeAttribute(placeholder)}" ${required ? "required" : ""} />
+    </div>
+  `;
+}
+
+function renderPatentField(selected) {
+  const safeSelected = PATENTS.includes(selected) ? selected : "Recruta";
+  return `
+    <div class="field">
+      <label for="patente">Patente</label>
+      <select id="patente" name="patente">
+        ${PATENTS.map((patent) => `<option value="${escapeAttribute(patent)}" ${patent === safeSelected ? "selected" : ""}>${escapeHtml(patent)}</option>`).join("")}
+      </select>
     </div>
   `;
 }
