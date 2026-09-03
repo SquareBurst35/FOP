@@ -676,34 +676,55 @@ h3 {
   margin-top: 20px;
 }
 
-.supplement-settings {
+.sheet-supplement-button {
+  appearance: none;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto;
+  grid-template-columns: 42px minmax(0, 1fr);
   width: 100%;
   align-items: center;
-  gap: 13px;
-  margin-top: 20px;
-  padding: 12px 14px;
+  gap: 11px;
+  margin-top: 16px;
+  padding: 11px 12px;
   border: 1px solid rgba(226, 46, 58, 0.32);
   border-radius: 11px;
   background:
     linear-gradient(100deg, rgba(226, 46, 58, 0.13), transparent 48%),
     #0c0e11;
+  color: var(--text);
   text-align: left;
   cursor: pointer;
+  transition: 140ms ease;
 }
 
-.supplement-settings:hover {
+.sheet-supplement-button:hover {
   border-color: rgba(226, 46, 58, 0.62);
+  background:
+    linear-gradient(100deg, rgba(226, 46, 58, 0.2), transparent 55%),
+    #111317;
+  transform: translateY(-1px);
 }
 
-.supplement-settings > span:nth-child(2) {
+.sheet-supplement-button > span:nth-child(2) {
   display: grid;
   gap: 2px;
+  min-width: 0;
 }
 
-.supplement-settings small {
+.sheet-supplement-button strong,
+.sheet-supplement-button small {
+  display: block;
+}
+
+.sheet-supplement-button strong {
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet-supplement-button small {
   color: var(--muted);
+  font-size: 0.76rem;
 }
 
 .supplement-sigil {
@@ -718,14 +739,13 @@ h3 {
   box-shadow: inset 0 0 15px rgba(226, 46, 58, 0.22);
 }
 
-.supplement-arrow {
-  color: var(--red);
-  font-size: 1.8rem;
-}
-
 .optional-rules-dialog {
+  position: fixed;
+  inset: 0;
   width: min(680px, calc(100vw - 28px));
+  height: auto;
   max-height: min(720px, calc(100vh - 28px));
+  margin: auto;
   padding: 0;
   overflow: auto;
   border: 1px solid var(--border-strong);
@@ -756,14 +776,20 @@ h3 {
 }
 
 .dialog-close {
+  appearance: none;
+  display: grid;
   width: 38px;
   height: 38px;
   flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--surface-soft);
+  color: var(--text);
   cursor: pointer;
   font-size: 1.4rem;
+  line-height: 1;
 }
 
 .optional-rule-list {
@@ -792,37 +818,36 @@ h3 {
   font-size: 0.86rem;
 }
 
-.optional-rule.disabled {
-  opacity: 0.55;
-}
-
 .binary-toggle {
   display: grid;
-  grid-template-columns: repeat(2, 108px);
+  grid-template-columns: repeat(2, minmax(88px, 108px));
   overflow: hidden;
   border: 1px solid var(--red);
   border-radius: 8px;
+  background: #0c0e11;
 }
 
 .binary-toggle button {
+  appearance: none;
   min-height: 40px;
+  padding: 8px 10px;
   border: 0;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 850;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
+.binary-toggle button + button {
+  border-left: 1px solid rgba(226, 46, 58, 0.45);
+}
+
 .binary-toggle button.active {
   background: var(--red);
   color: #fff;
-}
-
-.binary-toggle button:disabled {
-  cursor: not-allowed;
 }
 
 .attribute-budget {
