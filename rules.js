@@ -96,6 +96,7 @@ export const CLASSES = {
   Combatente: {
     initial: { pv: 20, pe: 2, san: 12 },
     gain: { pv: 4, pe: 2, san: 3 },
+    determination: { initial: 6, gain: 3 },
     fixedSkills: [],
     skillChoiceGroups: [
       ["Luta", "Pontaria"],
@@ -116,6 +117,7 @@ export const CLASSES = {
   Especialista: {
     initial: { pv: 16, pe: 3, san: 16 },
     gain: { pv: 3, pe: 3, san: 4 },
+    determination: { initial: 8, gain: 4 },
     fixedSkills: [],
     skillChoiceGroups: [],
     choiceSkills: (intellect) => Math.max(1, 7 + intellect),
@@ -133,6 +135,7 @@ export const CLASSES = {
   Ocultista: {
     initial: { pv: 12, pe: 4, san: 20 },
     gain: { pv: 2, pe: 4, san: 5 },
+    determination: { initial: 10, gain: 5 },
     fixedSkills: ["Ocultismo", "Vontade"],
     skillChoiceGroups: [],
     choiceSkills: (intellect) => Math.max(1, 3 + intellect),
@@ -154,14 +157,36 @@ export function findOrigin(name) {
   return ORIGINS.find((origin) => origin.name === name) ?? null;
 }
 
-export function attributeTarget(nex) {
-  return Number(nex) === 0 ? MUNDANE_ATTRIBUTE_TARGET : ATTRIBUTE_TARGET;
+export function levelFromNex(nex) {
+  const normalized = Math.min(100, Math.max(0, Number(nex) || 0));
+  return normalized === 0 ? 0 : Math.ceil(normalized / 5);
 }
 
-export function attributeBudget(attributes, nex = 5) {
+export function usesSeparateLevel(character) {
+  return Boolean(character?.optionalRules?.separateLevelNex);
+}
+
+export function isMundaneCharacter(character) {
+  return !usesSeparateLevel(character) && Number(character?.nex) === 0;
+}
+
+export function characterLevel(character) {
+  if (usesSeparateLevel(character)) {
+    return Math.min(20, Math.max(1, Number(character?.nivel) || 1));
+  }
+  return levelFromNex(character?.nex);
+}
+
+export function attributeTarget(nex, separateLevelNex = false) {
+  return Number(nex) === 0 && !separateLevelNex
+    ? MUNDANE_ATTRIBUTE_TARGET
+    : ATTRIBUTE_TARGET;
+}
+
+export function attributeBudget(attributes, nex = 5, separateLevelNex = false) {
   const values = Object.values(attributes).map((value) => Number(value) || 0);
   const total = values.reduce((sum, value) => sum + value, 0);
-  const target = attributeTarget(nex);
+  const target = attributeTarget(nex, separateLevelNex);
   return {
     total,
     target,
@@ -181,7 +206,11 @@ export function calculateDerived(character) {
   const agilidade = Number(character.atributos?.agilidade) || 0;
   const rawNex = Number(character.nex);
   const nex = Number.isFinite(rawNex) ? Math.min(100, Math.max(0, rawNex)) : 0;
-  const advances = character.classe === "Mundano" ? 0 : Math.max(0, Math.floor((nex - 5) / 5));
+  const level = characterLevel(character);
+  const advances = character.classe === "Mundano" ? 0 : Math.max(0, level - 1);
+  const usesDetermination = Boolean(
+    character.optionalRules?.determination && classData?.determination,
+  );
 
   if (!classData) {
     return {
@@ -194,6 +223,9 @@ export function calculateDerived(character) {
       skillChoices: 0,
       fixedSkills: [],
       skillChoiceGroups: [],
+      level,
+      usesDetermination: false,
+      pdMax: 0,
     };
   }
 
@@ -207,6 +239,11 @@ export function calculateDerived(character) {
     skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
     fixedSkills: classData.fixedSkills,
     skillChoiceGroups: classData.skillChoiceGroups,
+    level,
+    usesDetermination,
+    pdMax: usesDetermination
+      ? classData.determination.initial + presenca + advances * (classData.determination.gain + presenca)
+      : 0,
   };
 }
 
@@ -296,6 +333,7 @@ export function applyDerived(character, resetCurrent = false) {
   const derived = calculateDerived(character);
   const skillConfig = getSkillConfiguration(character);
   character.recursos ??= {};
+  character.nivel = derived.level;
 
   for (const resource of ["pv", "pe", "san"]) {
     const maxKey = `${resource}Max`;
@@ -311,6 +349,21 @@ export function applyDerived(character, resetCurrent = false) {
         derived[maxKey],
       );
     }
+  }
+
+  const oldPdMax = Number(character.recursos.pdMax) || 0;
+  character.recursos.pdMax = derived.pdMax;
+  if (
+    resetCurrent ||
+    character.recursos.pdAtual == null ||
+    character.recursos.pdAtual === oldPdMax
+  ) {
+    character.recursos.pdAtual = derived.pdMax;
+  } else {
+    character.recursos.pdAtual = Math.min(
+      Number(character.recursos.pdAtual) || 0,
+      derived.pdMax,
+    );
   }
 
   character.defesa = derived.defesa;
