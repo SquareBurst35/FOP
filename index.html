@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="FOP — fichas interativas para mesas de Ordem Paranormal RPG."
+    />
+    <meta name="theme-color" content="#0a0b0d" />
+    <title>FOP — Fichas Ordem Paranormal</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button class="brand" id="home-button" type="button" aria-label="Ir para o início">
+        <span class="brand-mark" aria-hidden="true">FOP</span>
+        <span class="brand-copy">
+          <strong>Fichas Ordem Paranormal</strong>
+          <small>Arquivo de agentes</small>
+        </span>
+      </button>
+      <div id="header-actions" class="header-actions"></div>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <footer class="site-footer">
+      Projeto de fã não oficial. Nenhum texto integral dos livros é distribuído.
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
