@@ -2,10 +2,13 @@ import {
   ATTRIBUTE_MAX_AT_CREATION,
   CLASSES,
   ORIGINS,
+  SKILLS,
   applyDerived,
   attributeBudget,
+  attributeTarget,
   calculateDerived,
   findOrigin,
+  skillSelectionStatus,
 } from "./rules.js";
 
 const STORAGE_KEY = "fop_personagens_v1";
@@ -18,7 +21,7 @@ const ATTRIBUTE_LABELS = {
   vigor: "VIG",
 };
 
-const STEPS = ["Identidade", "Formação", "Atributos", "Recursos", "Revisão"];
+const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Recursos", "Revisão"];
 
 const app = document.querySelector("#app");
 const headerActions = document.querySelector("#header-actions");
@@ -33,15 +36,15 @@ homeButton.addEventListener("click", () => navigate("home"));
 window.addEventListener("hashchange", renderRoute);
 
 function createBlankCharacter() {
-  return {
+  const character = {
     id: crypto.randomUUID(),
     nome: "",
     jogador: "",
     origem: "",
-    classe: "",
+    classe: "Mundano",
     trilha: "",
-    nex: 5,
-    patente: "Recruta",
+    nex: 0,
+    patente: "Sem patente",
     atributos: {
       agilidade: 1,
       forca: 1,
@@ -60,6 +63,10 @@ function createBlankCharacter() {
     defesa: 10,
     deslocamento: 9,
     protecao: "Nenhuma",
+    periciasOrigemEscolhidas: [],
+    periciasClasseObrigatorias: [],
+    periciasEscolhidas: [],
+    periciasTreinadas: [],
     pericias: "",
     inventario: "",
     habilidades: "",
@@ -67,6 +74,7 @@ function createBlankCharacter() {
     criadoEm: new Date().toISOString(),
     atualizadoEm: new Date().toISOString(),
   };
+  return applyDerived(character, true);
 }
 
 function readCharacters() {
@@ -95,7 +103,8 @@ function upsertCharacter(character) {
 }
 
 function getCharacter(id) {
-  return readCharacters().find((character) => character.id === id);
+  const character = readCharacters().find((item) => item.id === id);
+  return character ? applyDerived(character) : undefined;
 }
 
 function removeCharacter(id) {
@@ -219,7 +228,7 @@ function renderCharacterGrid(characters) {
                 </div>
               </div>
               <div class="character-meta">
-                <span class="badge red">NEX ${numberOr(character.nex, 5)}%</span>
+                <span class="badge red">NEX ${numberOr(character.nex, 0)}%</span>
                 <span class="badge">${escapeHtml(character.classe || "Classe pendente")}</span>
                 <span class="badge">${escapeHtml(character.origem || "Origem pendente")}</span>
                 ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
@@ -289,7 +298,7 @@ function renderCreator() {
 function renderCreatorStep() {
   if (currentStep === 0) {
     return `
-      <p class="eyebrow">Etapa 1 de 5</p>
+      <p class="eyebrow">Etapa 1 de ${STEPS.length}</p>
       <h1>Quem é o agente?</h1>
       <p class="muted">Comece com as informações usadas para identificar a ficha na mesa.</p>
       <div class="form-grid">
@@ -300,10 +309,11 @@ function renderCreatorStep() {
   }
 
   if (currentStep === 1) {
+    const isMundane = Number(creatorState.nex) === 0;
     return `
-      <p class="eyebrow">Etapa 2 de 5</p>
+      <p class="eyebrow">Etapa 2 de ${STEPS.length}</p>
       <h1>Formação</h1>
-      <p class="muted">A origem concede as perícias e o poder indicados. A trilha aparece automaticamente quando o NEX permite.</p>
+      <p class="muted">Escolha o NEX em intervalos de 5. Em NEX 0%, o personagem é Mundano; a partir de 5%, você escolhe uma classe.</p>
       <div class="form-grid">
         <div class="field">
           <label for="origem">Origem</label>
@@ -311,14 +321,13 @@ function renderCreatorStep() {
             ${renderOriginOptions(creatorState.origem)}
           </select>
         </div>
-        <div class="field">
-          <label for="classe">Classe</label>
-          <select id="classe" name="classe">
-            ${selectOptions(["", "Combatente", "Especialista", "Ocultista"], creatorState.classe, "Selecione")}
-          </select>
-        </div>
-        ${numberField("NEX (%)", "nex", creatorState.nex, 5, 100)}
-        ${field("Patente", "patente", creatorState.patente, "Ex.: Recruta")}
+        ${renderNexPicker()}
+        ${
+          isMundane
+            ? `<div class="field"><span class="field-label">Classe</span><div class="locked-value">Mundano <small>NEX 0%</small></div></div>`
+            : `<div class="field"><label for="classe">Classe</label><select id="classe" name="classe">${selectOptions(["", "Combatente", "Especialista", "Ocultista"], creatorState.classe, "Selecione")}</select></div>`
+        }
+        ${isMundane ? "" : field("Patente", "patente", creatorState.patente, "Ex.: Recruta")}
         ${renderTrailField()}
       </div>
       ${renderOriginPreview(creatorState.origem)}
@@ -326,10 +335,11 @@ function renderCreatorStep() {
   }
 
   if (currentStep === 2) {
+    const pointsToDistribute = attributeTarget(creatorState.nex) - 5;
     return `
-      <p class="eyebrow">Etapa 3 de 5</p>
+      <p class="eyebrow">Etapa 3 de ${STEPS.length}</p>
       <h1>Atributos</h1>
-      <p class="muted">Todos começam com 1 em cada atributo e você distribui 4 pontos. É possível reduzir um atributo para 0 e aproveitar esse ponto em outro.</p>
+      <p class="muted">Todos começam com 1 em cada atributo. Neste NEX, você distribui ${pointsToDistribute} pontos. É possível reduzir um atributo para 0 e aproveitar esse ponto em outro.</p>
       ${renderAttributeBudget()}
       <div class="attribute-grid">
         ${Object.entries(ATTRIBUTE_LABELS)
@@ -351,8 +361,12 @@ function renderCreatorStep() {
   }
 
   if (currentStep === 3) {
+    return renderSkillStep();
+  }
+
+  if (currentStep === 4) {
     return `
-      <p class="eyebrow">Etapa 4 de 5</p>
+      <p class="eyebrow">Etapa 5 de ${STEPS.length}</p>
       <h1>Recursos principais</h1>
       <p class="muted">Estes valores foram calculados usando classe, NEX e atributos. Na ficha, apenas os valores atuais mudam durante a sessão.</p>
       <div class="resource-grid">
@@ -367,14 +381,15 @@ function renderCreatorStep() {
   }
 
   return `
-    <p class="eyebrow">Etapa 5 de 5</p>
+    <p class="eyebrow">Etapa 6 de ${STEPS.length}</p>
     <h1>Revisar arquivo</h1>
     <p class="muted">Confira as informações principais. Depois de salvar, todos os campos de sessão continuarão editáveis.</p>
     <div class="review-list">
       ${reviewRow("Agente", creatorState.nome || "Sem nome")}
       ${reviewRow("Jogador", creatorState.jogador || "Não informado")}
       ${reviewRow("Formação", `${creatorState.origem || "Origem pendente"} · ${creatorState.classe || "Classe pendente"}${creatorState.trilha ? ` · ${creatorState.trilha}` : ""}`)}
-      ${reviewRow("Progressão", `NEX ${numberOr(creatorState.nex, 5)}% · ${creatorState.patente || "Sem patente"}`)}
+      ${reviewRow("Progressão", `NEX ${numberOr(creatorState.nex, 0)}% · ${creatorState.patente || "Sem patente"}`)}
+      ${reviewRow("Perícias treinadas", creatorState.periciasTreinadas?.join(", ") || "Nenhuma")}
       ${reviewRow("Recursos", `PV ${creatorState.recursos.pvMax} · PE ${creatorState.recursos.peMax} · SAN ${creatorState.recursos.sanMax}`)}
     </div>
   `;
@@ -386,7 +401,7 @@ function bindCreatorStep() {
       const input = document.querySelector(`#attr-${button.dataset.attribute}`);
       const key = button.dataset.attribute;
       const delta = Number(button.dataset.delta);
-      const budget = attributeBudget(readAttributeInputs());
+      const budget = attributeBudget(readAttributeInputs(), creatorState.nex);
       const current = numberOr(input.value, 0);
       const next = clamp(current + delta, 0, ATTRIBUTE_MAX_AT_CREATION);
       if (delta > 0 && budget.remaining <= 0) {
@@ -418,12 +433,65 @@ function bindCreatorStep() {
       creatorState.trilha = "";
       renderCreator();
     });
-    document.querySelector("#nex")?.addEventListener("change", () => {
-      saveCreatorFields();
-      if (creatorState.nex < 10) creatorState.trilha = "";
-      renderCreator();
+    document.querySelectorAll("[data-nex-delta]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const delta = Number(button.dataset.nexDelta);
+        saveCreatorFields();
+        setCreatorNex(clamp(numberOr(creatorState.nex, 0) + delta, 0, 100));
+        renderCreator();
+      });
     });
   }
+
+  if (currentStep === 3) {
+    document.querySelectorAll("[data-origin-skill]").forEach((input) => {
+      input.addEventListener("change", () => {
+        updateSkillArray("periciasOrigemEscolhidas", input.value, input.checked);
+        renderCreator();
+      });
+    });
+    document.querySelectorAll("[data-class-skill]").forEach((input) => {
+      input.addEventListener("change", () => {
+        updateSkillArray("periciasEscolhidas", input.value, input.checked);
+        renderCreator();
+      });
+    });
+    document.querySelectorAll("[data-skill-group]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const index = Number(input.dataset.skillGroup);
+        creatorState.periciasClasseObrigatorias[index] = input.value;
+        skillSelectionStatus(creatorState);
+        renderCreator();
+      });
+    });
+  }
+}
+
+function setCreatorNex(nex) {
+  creatorState.nex = Math.round(nex / 5) * 5;
+  if (creatorState.nex === 0) {
+    creatorState.classe = "Mundano";
+    creatorState.trilha = "";
+    creatorState.patente = "Sem patente";
+  } else {
+    if (creatorState.classe === "Mundano") creatorState.classe = "";
+    if (!creatorState.patente || creatorState.patente === "Sem patente") {
+      creatorState.patente = "Recruta";
+    }
+    if (creatorState.nex < 10) creatorState.trilha = "";
+  }
+  creatorState.periciasOrigemEscolhidas = [];
+  creatorState.periciasClasseObrigatorias = [];
+  creatorState.periciasEscolhidas = [];
+  skillSelectionStatus(creatorState);
+}
+
+function updateSkillArray(key, skill, checked) {
+  const current = new Set(creatorState[key] ?? []);
+  if (checked) current.add(skill);
+  else current.delete(skill);
+  creatorState[key] = [...current];
+  skillSelectionStatus(creatorState);
 }
 
 function advanceCreator() {
@@ -439,8 +507,13 @@ function advanceCreator() {
     return;
   }
 
-  if (currentStep === 2 && !attributeBudget(creatorState.atributos).valid) {
+  if (currentStep === 2 && !attributeBudget(creatorState.atributos, creatorState.nex).valid) {
     showToast("Distribua todos os pontos antes de continuar.");
+    return;
+  }
+
+  if (currentStep === 3 && !skillSelectionStatus(creatorState).complete) {
+    showToast("Complete todas as escolhas de perícias para continuar.");
     return;
   }
 
@@ -470,10 +543,16 @@ function saveCreatorFields() {
 
   if (currentStep === 1) {
     creatorState.origem = value("origem")?.trim() || "";
-    creatorState.classe = value("classe") || "";
-    creatorState.trilha = value("trilha") || "";
-    creatorState.nex = clamp(numberOr(value("nex"), 5), 5, 100);
-    creatorState.patente = value("patente")?.trim() || "";
+    creatorState.nex = clamp(numberOr(value("nex"), creatorState.nex), 0, 100);
+    if (creatorState.nex === 0) {
+      creatorState.classe = "Mundano";
+      creatorState.trilha = "";
+      creatorState.patente = "Sem patente";
+    } else {
+      creatorState.classe = value("classe") || "";
+      creatorState.trilha = value("trilha") || "";
+      creatorState.patente = value("patente")?.trim() || "Recruta";
+    }
   }
 
   if (currentStep === 2) {
@@ -487,7 +566,7 @@ function saveCreatorFields() {
     applyDerived(creatorState, true);
   }
 
-  if (currentStep === 3) {
+  if (currentStep === 4) {
     applyDerived(creatorState, true);
   }
 }
@@ -513,7 +592,7 @@ function renderSheet(id) {
           <h1>${escapeHtml(character.nome || "Agente sem nome")}</h1>
           <p class="muted">${escapeHtml(character.jogador || "Jogador não informado")}</p>
           <div class="badge-row">
-            <span class="badge red">NEX ${numberOr(character.nex, 5)}%</span>
+            <span class="badge red">NEX ${numberOr(character.nex, 0)}%</span>
             <span class="badge">${escapeHtml(character.classe || "Sem classe")}</span>
             <span class="badge">${escapeHtml(character.origem || "Sem origem")}</span>
             ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
@@ -560,7 +639,8 @@ function renderSheet(id) {
           </div>
         </div>
 
-        ${notesSection("Perícias", "pericias", character.pericias, "Anote treinamentos, bônus e observações de perícias.")}
+        ${renderTrainedSkills(character)}
+        ${notesSection("Observações de perícias", "pericias", character.pericias, "Anote bônus, especializações e observações.")}
         ${notesSection("Inventário", "inventario", character.inventario, "Equipamentos, armas, proteções e itens de investigação.")}
         ${notesSection("Habilidades e rituais", "habilidades", character.habilidades, "Poderes, habilidades, rituais e custos.")}
         ${notesSection("Anotações", "anotacoes", character.anotacoes, "Pistas, contatos e lembretes da sessão.")}
@@ -627,6 +707,125 @@ function numberField(label, id, value, min, max) {
   `;
 }
 
+function renderNexPicker() {
+  const nex = numberOr(creatorState.nex, 0);
+  return `
+    <div class="field nex-field">
+      <label for="nex">NEX</label>
+      <input id="nex" name="nex" type="hidden" value="${nex}" />
+      <div class="nex-picker">
+        <button type="button" data-nex-delta="-5" aria-label="Diminuir NEX em 5" ${nex === 0 ? "disabled" : ""}>−</button>
+        <output for="nex"><strong>${nex}%</strong><small>${nex === 0 ? "Mundano" : "Exposição paranormal"}</small></output>
+        <button type="button" data-nex-delta="5" aria-label="Aumentar NEX em 5" ${nex === 100 ? "disabled" : ""}>+</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderSkillStep() {
+  const status = skillSelectionStatus(creatorState);
+  const config = status.config;
+  const automatic = [...new Set([...config.originAutomatic, ...config.classAutomatic])];
+  const originBlocked = new Set(automatic);
+  const groupSelections = creatorState.periciasClasseObrigatorias ?? [];
+  const classBlocked = new Set([
+    ...automatic,
+    ...(creatorState.periciasOrigemEscolhidas ?? []),
+    ...groupSelections,
+  ]);
+
+  return `
+    <p class="eyebrow">Etapa 4 de ${STEPS.length}</p>
+    <h1>Perícias treinadas</h1>
+    <p class="muted">As perícias da origem e as fixas da classe já entram sozinhas. Escolha apenas as que faltam.</p>
+
+    <div class="skill-progress ${status.complete ? "complete" : ""}">
+      <span>${status.complete ? "Seleção completa" : "Complete as escolhas abaixo"}</span>
+      <strong>${creatorState.periciasTreinadas.length} treinadas</strong>
+    </div>
+
+    <section class="skill-choice-block">
+      <div class="section-heading"><h2>Já concedidas</h2><span class="badge">Automático</span></div>
+      <div class="skill-chip-row">
+        ${automatic.length ? automatic.map(skillChip).join("") : `<span class="muted small">Nenhuma perícia automática.</span>`}
+      </div>
+    </section>
+
+    ${
+      config.originChoiceCount
+        ? renderSkillChecklist({
+            title: config.originChoiceLabel,
+            source: "origin",
+            selected: creatorState.periciasOrigemEscolhidas,
+            required: config.originChoiceCount,
+            blocked: originBlocked,
+          })
+        : ""
+    }
+
+    ${config.classChoiceGroups.map((group, index) => renderSkillGroup(group, index, groupSelections[index], originBlocked)).join("")}
+
+    ${renderSkillChecklist({
+      title: `Perícias livres de ${creatorState.classe}`,
+      source: "class",
+      selected: creatorState.periciasEscolhidas,
+      required: config.classChoiceCount,
+      blocked: classBlocked,
+    })}
+  `;
+}
+
+function renderSkillChecklist({ title, source, selected = [], required, blocked }) {
+  if (required === 0) return "";
+  const selectedSet = new Set(selected);
+  const limitReached = selectedSet.size >= required;
+  return `
+    <fieldset class="skill-choice-block">
+      <legend>${escapeHtml(title)}</legend>
+      <div class="skill-choice-head">
+        <span class="muted small">Escolha ${required}</span>
+        <strong class="skill-counter ${selectedSet.size === required ? "complete" : ""}">${selectedSet.size}/${required}</strong>
+      </div>
+      <div class="skill-grid">
+        ${SKILLS.map((skill) => {
+          const checked = selectedSet.has(skill);
+          const disabled = blocked.has(skill) || (!checked && limitReached);
+          return `
+            <label class="skill-option ${checked ? "selected" : ""} ${disabled && !checked ? "disabled" : ""}">
+              <input type="checkbox" value="${escapeAttribute(skill)}" data-${source}-skill ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} />
+              <span>${escapeHtml(skill)}</span>
+            </label>
+          `;
+        }).join("")}
+      </div>
+    </fieldset>
+  `;
+}
+
+function renderSkillGroup(group, index, selected, blocked) {
+  return `
+    <fieldset class="skill-choice-block compact-choice">
+      <legend>Escolha obrigatória da classe</legend>
+      <div class="skill-choice-head"><span class="muted small">Escolha 1 entre ${escapeHtml(group.join(" ou "))}</span><strong class="skill-counter ${selected ? "complete" : ""}">${selected ? "1/1" : "0/1"}</strong></div>
+      <div class="skill-grid short">
+        ${group.map((skill) => {
+          const disabled = blocked.has(skill) && selected !== skill;
+          return `
+            <label class="skill-option ${selected === skill ? "selected" : ""} ${disabled ? "disabled" : ""}">
+              <input type="radio" name="skill-group-${index}" value="${escapeAttribute(skill)}" data-skill-group="${index}" ${selected === skill ? "checked" : ""} ${disabled ? "disabled" : ""} />
+              <span>${escapeHtml(skill)}</span>
+            </label>
+          `;
+        }).join("")}
+      </div>
+    </fieldset>
+  `;
+}
+
+function skillChip(skill) {
+  return `<span class="skill-chip">${escapeHtml(skill)}</span>`;
+}
+
 function resourceFields(label, key, current, max) {
   return `
     <div class="resource-card">
@@ -672,13 +871,22 @@ function renderOriginOptions(selected) {
 function renderOriginPreview(originName) {
   const origin = findOrigin(originName);
   if (!origin) return "";
+  const skillSummary = originSkillSummary(origin);
   return `
     <div class="calculation-box origin-preview">
       <span class="badge red">${escapeHtml(origin.source)}</span>
-      <div><strong>Perícias concedidas:</strong> ${escapeHtml(origin.skills.join(" e "))}</div>
+      <div><strong>Perícias concedidas:</strong> ${escapeHtml(skillSummary)}</div>
       <div><strong>Poder de origem:</strong> ${escapeHtml(origin.power)}</div>
     </div>
   `;
+}
+
+function originSkillSummary(origin) {
+  const skills = [...(origin.skills ?? [])];
+  if (origin.skillChoices) {
+    skills.push(`${origin.skillChoices} ${origin.skillChoices === 1 ? "perícia" : "perícias"} à escolha`);
+  }
+  return skills.join(" e ") || "Nenhuma";
 }
 
 function renderTrailField() {
@@ -704,7 +912,7 @@ function readAttributeInputs() {
 }
 
 function renderAttributeBudget() {
-  const budget = attributeBudget(creatorState.atributos);
+  const budget = attributeBudget(creatorState.atributos, creatorState.nex);
   return `
     <div class="attribute-budget ${budget.remaining === 0 ? "complete" : ""}" id="attribute-budget">
       <span>Pontos restantes</span>
@@ -714,7 +922,7 @@ function renderAttributeBudget() {
 }
 
 function updateAttributeBudget() {
-  const budget = attributeBudget(readAttributeInputs());
+  const budget = attributeBudget(readAttributeInputs(), creatorState.nex);
   const element = document.querySelector("#attribute-budget");
   if (!element) return;
   element.classList.toggle("complete", budget.remaining === 0);
@@ -723,13 +931,17 @@ function updateAttributeBudget() {
 
 function renderCalculationBreakdown() {
   const derived = calculateDerived(creatorState);
+  const fixedSkills = [
+    ...derived.fixedSkills,
+    ...(creatorState.periciasClasseObrigatorias ?? []),
+  ].filter(Boolean);
   return `
     <strong>Como o FOP calculou</strong>
     <div class="calculation-grid">
       <span>Defesa</span><b>10 + AGI = ${derived.defesa}</b>
       <span>Avanços após NEX 5%</span><b>${derived.advances}</b>
-      <span>Perícias fixas da classe</span><b>${escapeHtml(derived.fixedSkills.join(", ") || "Nenhuma")}</b>
-      <span>Perícias à escolha</span><b>${derived.skillChoices}</b>
+      <span>Perícias fixas da classe</span><b>${escapeHtml(fixedSkills.join(", ") || "Nenhuma")}</b>
+      <span>Perícias escolhidas</span><b>${escapeHtml(creatorState.periciasEscolhidas?.join(", ") || "Nenhuma")}</b>
       <span>Deslocamento</span><b>${derived.deslocamento} m</b>
     </div>
   `;
@@ -739,10 +951,14 @@ function renderAutomaticBenefits(character) {
   const origin = character.beneficiosOrigem ?? findOrigin(character.origem);
   const classSkills = character.periciasClasse ?? calculateDerived(character);
   if (!origin && !character.classe) return "";
-  const skills = origin?.skills ?? [];
+  const skills = [
+    ...(origin?.skills ?? []),
+    ...(character.periciasOrigemEscolhidas ?? []),
+  ];
   const power = origin?.power ?? "Pendente";
   const fixed = classSkills.fixed ?? classSkills.fixedSkills ?? [];
   const choices = classSkills.choices ?? classSkills.skillChoices ?? 0;
+  const selected = classSkills.selected ?? character.periciasEscolhidas ?? [];
 
   return `
     <div class="sheet-section">
@@ -751,7 +967,19 @@ function renderAutomaticBenefits(character) {
         <div><span>Perícias da origem</span><strong>${escapeHtml(skills.join(", ") || "—")}</strong></div>
         <div><span>Poder da origem</span><strong>${escapeHtml(power)}</strong></div>
         <div><span>Perícias fixas da classe</span><strong>${escapeHtml(fixed.join(", ") || "Nenhuma")}</strong></div>
-        <div><span>Perícias adicionais</span><strong>${numberOr(choices, 0)} à escolha</strong></div>
+        <div><span>Perícias escolhidas</span><strong>${escapeHtml(selected.join(", ") || `${numberOr(choices, 0)} escolhas pendentes`)}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTrainedSkills(character) {
+  const skills = character.periciasTreinadas ?? [];
+  return `
+    <div class="sheet-section">
+      <div class="section-heading"><h2>Perícias treinadas</h2><span class="muted small">${skills.length} no total</span></div>
+      <div class="skill-chip-row">
+        ${skills.length ? skills.map(skillChip).join("") : `<span class="muted">Nenhuma perícia selecionada.</span>`}
       </div>
     </div>
   `;
