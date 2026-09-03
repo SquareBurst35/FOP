@@ -1,3 +1,13 @@
+import {
+  ATTRIBUTE_MAX_AT_CREATION,
+  CLASSES,
+  ORIGINS,
+  applyDerived,
+  attributeBudget,
+  calculateDerived,
+  findOrigin,
+} from "./rules.js";
+
 const STORAGE_KEY = "fop_personagens_v1";
 
 const ATTRIBUTE_LABELS = {
@@ -29,6 +39,7 @@ function createBlankCharacter() {
     jogador: "",
     origem: "",
     classe: "",
+    trilha: "",
     nex: 5,
     patente: "Recruta",
     atributos: {
@@ -74,7 +85,7 @@ function writeCharacters(characters) {
 function upsertCharacter(character) {
   const characters = readCharacters();
   const index = characters.findIndex((item) => item.id === character.id);
-  const updated = { ...character, atualizadoEm: new Date().toISOString() };
+  const updated = { ...applyDerived(character), atualizadoEm: new Date().toISOString() };
 
   if (index >= 0) characters[index] = updated;
   else characters.push(updated);
@@ -211,6 +222,7 @@ function renderCharacterGrid(characters) {
                 <span class="badge red">NEX ${numberOr(character.nex, 5)}%</span>
                 <span class="badge">${escapeHtml(character.classe || "Classe pendente")}</span>
                 <span class="badge">${escapeHtml(character.origem || "Origem pendente")}</span>
+                ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
               </div>
               <div class="card-actions">
                 <button class="button compact" type="button" data-open-character="${character.id}">Abrir ficha</button>
@@ -242,7 +254,7 @@ function renderCreator() {
       <aside class="wizard-sidebar panel">
         <p class="eyebrow">Novo arquivo</p>
         <h2>Criação de agente</h2>
-        <p class="muted small">A base está pronta. As validações completas entrarão com os livros de referência.</p>
+        <p class="muted small">Escolha as opções. O FOP valida e calcula o restante automaticamente.</p>
         <div class="wizard-steps">
           ${STEPS.map(
             (step, index) => `
@@ -291,11 +303,13 @@ function renderCreatorStep() {
     return `
       <p class="eyebrow">Etapa 2 de 5</p>
       <h1>Formação</h1>
-      <p class="muted">O catálogo completo será adicionado a partir dos seus materiais. Por enquanto, a seleção básica já funciona.</p>
+      <p class="muted">A origem concede as perícias e o poder indicados. A trilha aparece automaticamente quando o NEX permite.</p>
       <div class="form-grid">
         <div class="field">
           <label for="origem">Origem</label>
-          <input id="origem" name="origem" value="${escapeAttribute(creatorState.origem)}" placeholder="Digite a origem" />
+          <select id="origem" name="origem">
+            ${renderOriginOptions(creatorState.origem)}
+          </select>
         </div>
         <div class="field">
           <label for="classe">Classe</label>
@@ -303,9 +317,11 @@ function renderCreatorStep() {
             ${selectOptions(["", "Combatente", "Especialista", "Ocultista"], creatorState.classe, "Selecione")}
           </select>
         </div>
-        ${numberField("NEX (%)", "nex", creatorState.nex, 0, 100)}
+        ${numberField("NEX (%)", "nex", creatorState.nex, 5, 100)}
         ${field("Patente", "patente", creatorState.patente, "Ex.: Recruta")}
+        ${renderTrailField()}
       </div>
+      ${renderOriginPreview(creatorState.origem)}
     `;
   }
 
@@ -313,14 +329,15 @@ function renderCreatorStep() {
     return `
       <p class="eyebrow">Etapa 3 de 5</p>
       <h1>Atributos</h1>
-      <p class="muted">Use os controles para registrar os valores. A distribuição automática será ligada após mapearmos todas as regras.</p>
+      <p class="muted">Todos começam com 1 em cada atributo e você distribui 4 pontos. É possível reduzir um atributo para 0 e aproveitar esse ponto em outro.</p>
+      ${renderAttributeBudget()}
       <div class="attribute-grid">
         ${Object.entries(ATTRIBUTE_LABELS)
           .map(
             ([key, label]) => `
               <div class="attribute-control">
                 <strong>${label}</strong>
-                <input class="attribute-number" id="attr-${key}" inputmode="numeric" type="number" min="0" max="9" value="${numberOr(creatorState.atributos[key], 1)}" aria-label="${label}" />
+                <input class="attribute-number" id="attr-${key}" inputmode="numeric" type="number" min="0" max="${ATTRIBUTE_MAX_AT_CREATION}" value="${numberOr(creatorState.atributos[key], 1)}" aria-label="${label}" readonly />
                 <div class="stepper">
                   <button type="button" data-attribute="${key}" data-delta="-1" aria-label="Diminuir ${label}">−</button>
                   <button type="button" data-attribute="${key}" data-delta="1" aria-label="Aumentar ${label}">+</button>
@@ -337,16 +354,14 @@ function renderCreatorStep() {
     return `
       <p class="eyebrow">Etapa 4 de 5</p>
       <h1>Recursos principais</h1>
-      <p class="muted">Defina os valores iniciais. Eles poderão ser alterados durante a sessão pela ficha.</p>
+      <p class="muted">Estes valores foram calculados usando classe, NEX e atributos. Na ficha, apenas os valores atuais mudam durante a sessão.</p>
       <div class="resource-grid">
-        ${resourceFields("PV", "pv", creatorState.recursos.pvAtual, creatorState.recursos.pvMax)}
-        ${resourceFields("PE", "pe", creatorState.recursos.peAtual, creatorState.recursos.peMax)}
-        ${resourceFields("SAN", "san", creatorState.recursos.sanAtual, creatorState.recursos.sanMax)}
+        ${calculatedResource("PV", creatorState.recursos.pvMax)}
+        ${calculatedResource("PE", creatorState.recursos.peMax)}
+        ${calculatedResource("SAN", creatorState.recursos.sanMax)}
       </div>
-      <div class="form-grid">
-        ${numberField("Defesa", "defesa", creatorState.defesa, 0, 99)}
-        ${numberField("Deslocamento (m)", "deslocamento", creatorState.deslocamento, 0, 99)}
-        ${field("Proteção", "protecao", creatorState.protecao, "Ex.: Leve")}
+      <div class="calculation-box">
+        ${renderCalculationBreakdown()}
       </div>
     `;
   }
@@ -358,7 +373,7 @@ function renderCreatorStep() {
     <div class="review-list">
       ${reviewRow("Agente", creatorState.nome || "Sem nome")}
       ${reviewRow("Jogador", creatorState.jogador || "Não informado")}
-      ${reviewRow("Formação", `${creatorState.origem || "Origem pendente"} · ${creatorState.classe || "Classe pendente"}`)}
+      ${reviewRow("Formação", `${creatorState.origem || "Origem pendente"} · ${creatorState.classe || "Classe pendente"}${creatorState.trilha ? ` · ${creatorState.trilha}` : ""}`)}
       ${reviewRow("Progressão", `NEX ${numberOr(creatorState.nex, 5)}% · ${creatorState.patente || "Sem patente"}`)}
       ${reviewRow("Recursos", `PV ${creatorState.recursos.pvMax} · PE ${creatorState.recursos.peMax} · SAN ${creatorState.recursos.sanMax}`)}
     </div>
@@ -369,10 +384,46 @@ function bindCreatorStep() {
   document.querySelectorAll("[data-attribute]").forEach((button) => {
     button.addEventListener("click", () => {
       const input = document.querySelector(`#attr-${button.dataset.attribute}`);
-      const next = clamp(numberOr(input.value, 0) + Number(button.dataset.delta), 0, 9);
+      const key = button.dataset.attribute;
+      const delta = Number(button.dataset.delta);
+      const budget = attributeBudget(readAttributeInputs());
+      const current = numberOr(input.value, 0);
+      const next = clamp(current + delta, 0, ATTRIBUTE_MAX_AT_CREATION);
+      if (delta > 0 && budget.remaining <= 0) {
+        showToast("Você já distribuiu todos os pontos.");
+        return;
+      }
+      if (next === 0) {
+        const anotherZero = Object.entries(readAttributeInputs()).some(
+          ([attribute, value]) => attribute !== key && value === 0,
+        );
+        if (anotherZero) {
+          showToast("Apenas um atributo pode ser reduzido para 0.");
+          return;
+        }
+      }
       input.value = String(next);
+      creatorState.atributos[key] = next;
+      updateAttributeBudget();
     });
   });
+
+  if (currentStep === 1) {
+    document.querySelector("#origem")?.addEventListener("change", () => {
+      saveCreatorFields();
+      renderCreator();
+    });
+    document.querySelector("#classe")?.addEventListener("change", () => {
+      saveCreatorFields();
+      creatorState.trilha = "";
+      renderCreator();
+    });
+    document.querySelector("#nex")?.addEventListener("change", () => {
+      saveCreatorFields();
+      if (creatorState.nex < 10) creatorState.trilha = "";
+      renderCreator();
+    });
+  }
 }
 
 function advanceCreator() {
@@ -380,6 +431,16 @@ function advanceCreator() {
   if (currentStep === 0 && !creatorState.nome.trim()) {
     showToast("Informe o nome do agente para continuar.");
     document.querySelector("#nome")?.focus();
+    return;
+  }
+
+  if (currentStep === 1 && (!creatorState.origem || !creatorState.classe)) {
+    showToast("Escolha a origem e a classe para continuar.");
+    return;
+  }
+
+  if (currentStep === 2 && !attributeBudget(creatorState.atributos).valid) {
+    showToast("Distribua todos os pontos antes de continuar.");
     return;
   }
 
@@ -410,26 +471,24 @@ function saveCreatorFields() {
   if (currentStep === 1) {
     creatorState.origem = value("origem")?.trim() || "";
     creatorState.classe = value("classe") || "";
-    creatorState.nex = clamp(numberOr(value("nex"), 5), 0, 100);
+    creatorState.trilha = value("trilha") || "";
+    creatorState.nex = clamp(numberOr(value("nex"), 5), 5, 100);
     creatorState.patente = value("patente")?.trim() || "";
   }
 
   if (currentStep === 2) {
     Object.keys(ATTRIBUTE_LABELS).forEach((key) => {
-      creatorState.atributos[key] = clamp(numberOr(value(`attr-${key}`), 1), 0, 9);
+      creatorState.atributos[key] = clamp(
+        numberOr(value(`attr-${key}`), 1),
+        0,
+        ATTRIBUTE_MAX_AT_CREATION,
+      );
     });
+    applyDerived(creatorState, true);
   }
 
   if (currentStep === 3) {
-    ["pv", "pe", "san"].forEach((resource) => {
-      const max = Math.max(0, numberOr(value(`${resource}-max`), 0));
-      const current = clamp(numberOr(value(`${resource}-atual`), max), 0, max);
-      creatorState.recursos[`${resource}Max`] = max;
-      creatorState.recursos[`${resource}Atual`] = current;
-    });
-    creatorState.defesa = Math.max(0, numberOr(value("defesa"), 10));
-    creatorState.deslocamento = Math.max(0, numberOr(value("deslocamento"), 9));
-    creatorState.protecao = value("protecao")?.trim() || "Nenhuma";
+    applyDerived(creatorState, true);
   }
 }
 
@@ -457,6 +516,7 @@ function renderSheet(id) {
             <span class="badge red">NEX ${numberOr(character.nex, 5)}%</span>
             <span class="badge">${escapeHtml(character.classe || "Sem classe")}</span>
             <span class="badge">${escapeHtml(character.origem || "Sem origem")}</span>
+            ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
           </div>
         </div>
 
@@ -488,6 +548,8 @@ function renderSheet(id) {
               .join("")}
           </div>
         </div>
+
+        ${renderAutomaticBenefits(character)}
 
         <div class="sheet-section">
           <div class="section-heading"><h2>Combate</h2></div>
@@ -573,6 +635,123 @@ function resourceFields(label, key, current, max) {
         <input id="${key}-atual" type="number" min="0" value="${numberOr(current, 0)}" aria-label="${label} atual" />
         <span>/</span>
         <input id="${key}-max" type="number" min="0" value="${numberOr(max, 0)}" aria-label="${label} máximo" />
+      </div>
+    </div>
+  `;
+}
+
+function calculatedResource(label, value) {
+  return `
+    <div class="resource-card calculated">
+      <header><strong>${label}</strong><span class="badge">Automático</span></header>
+      <div class="calculated-value">${numberOr(value, 0)}</div>
+    </div>
+  `;
+}
+
+function renderOriginOptions(selected) {
+  const sources = [...new Set(ORIGINS.map((origin) => origin.source))];
+  return `
+    <option value="">Selecione</option>
+    ${sources
+      .map(
+        (source) => `
+          <optgroup label="${escapeAttribute(source)}">
+            ${ORIGINS.filter((origin) => origin.source === source)
+              .map(
+                (origin) => `<option value="${escapeAttribute(origin.name)}" ${origin.name === selected ? "selected" : ""}>${escapeHtml(origin.name)}</option>`,
+              )
+              .join("")}
+          </optgroup>
+        `,
+      )
+      .join("")}
+  `;
+}
+
+function renderOriginPreview(originName) {
+  const origin = findOrigin(originName);
+  if (!origin) return "";
+  return `
+    <div class="calculation-box origin-preview">
+      <span class="badge red">${escapeHtml(origin.source)}</span>
+      <div><strong>Perícias concedidas:</strong> ${escapeHtml(origin.skills.join(" e "))}</div>
+      <div><strong>Poder de origem:</strong> ${escapeHtml(origin.power)}</div>
+    </div>
+  `;
+}
+
+function renderTrailField() {
+  if (!creatorState.classe || numberOr(creatorState.nex, 5) < 10) return "";
+  const trails = CLASSES[creatorState.classe]?.trails ?? [];
+  return `
+    <div class="field full">
+      <label for="trilha">Trilha disponível no NEX atual</label>
+      <select id="trilha" name="trilha">
+        ${selectOptions(["", ...trails], creatorState.trilha, "Escolha uma trilha")}
+      </select>
+    </div>
+  `;
+}
+
+function readAttributeInputs() {
+  return Object.fromEntries(
+    Object.keys(ATTRIBUTE_LABELS).map((key) => [
+      key,
+      numberOr(document.querySelector(`#attr-${key}`)?.value, creatorState.atributos[key]),
+    ]),
+  );
+}
+
+function renderAttributeBudget() {
+  const budget = attributeBudget(creatorState.atributos);
+  return `
+    <div class="attribute-budget ${budget.remaining === 0 ? "complete" : ""}" id="attribute-budget">
+      <span>Pontos restantes</span>
+      <strong>${budget.remaining}</strong>
+    </div>
+  `;
+}
+
+function updateAttributeBudget() {
+  const budget = attributeBudget(readAttributeInputs());
+  const element = document.querySelector("#attribute-budget");
+  if (!element) return;
+  element.classList.toggle("complete", budget.remaining === 0);
+  element.querySelector("strong").textContent = String(budget.remaining);
+}
+
+function renderCalculationBreakdown() {
+  const derived = calculateDerived(creatorState);
+  return `
+    <strong>Como o FOP calculou</strong>
+    <div class="calculation-grid">
+      <span>Defesa</span><b>10 + AGI = ${derived.defesa}</b>
+      <span>Avanços após NEX 5%</span><b>${derived.advances}</b>
+      <span>Perícias fixas da classe</span><b>${escapeHtml(derived.fixedSkills.join(", ") || "Nenhuma")}</b>
+      <span>Perícias à escolha</span><b>${derived.skillChoices}</b>
+      <span>Deslocamento</span><b>${derived.deslocamento} m</b>
+    </div>
+  `;
+}
+
+function renderAutomaticBenefits(character) {
+  const origin = character.beneficiosOrigem ?? findOrigin(character.origem);
+  const classSkills = character.periciasClasse ?? calculateDerived(character);
+  if (!origin && !character.classe) return "";
+  const skills = origin?.skills ?? [];
+  const power = origin?.power ?? "Pendente";
+  const fixed = classSkills.fixed ?? classSkills.fixedSkills ?? [];
+  const choices = classSkills.choices ?? classSkills.skillChoices ?? 0;
+
+  return `
+    <div class="sheet-section">
+      <div class="section-heading"><h2>Benefícios automáticos</h2><span class="muted small">Aplicados pela criação</span></div>
+      <div class="benefit-list">
+        <div><span>Perícias da origem</span><strong>${escapeHtml(skills.join(", ") || "—")}</strong></div>
+        <div><span>Poder da origem</span><strong>${escapeHtml(power)}</strong></div>
+        <div><span>Perícias fixas da classe</span><strong>${escapeHtml(fixed.join(", ") || "Nenhuma")}</strong></div>
+        <div><span>Perícias adicionais</span><strong>${numberOr(choices, 0)} à escolha</strong></div>
       </div>
     </div>
   `;
