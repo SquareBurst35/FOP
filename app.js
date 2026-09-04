@@ -15,12 +15,14 @@ import {
   sanitizeSkillSelections,
   skillSelectionStatus,
   usesSeparateLevel,
-} from "./rules.js?v=6";
+} from "./rules.js?v=7";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
   CORE_CLASS_ABILITIES,
   GENERAL_POWERS,
+  ORIGIN_BACKGROUNDS,
+  ORIGIN_POWER_DETAILS,
   PARANORMAL_POWERS,
   PATENTS,
   RITUAL_CIRCLES,
@@ -29,8 +31,15 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=6";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=6";
+} from "./content.js?v=7";
+import {
+  INVENTORY_GROUPS,
+  ITEMS,
+  ITEM_BY_ID,
+  PATENT_ITEM_LIMITS,
+  inventoryUsage,
+} from "./items.js?v=7";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=7";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -59,6 +68,9 @@ let abilitySearch = "";
 let activeRitualCircle = 1;
 let activeRitualElement = "Conhecimento";
 let ritualSearch = "";
+let activeItemGroup = "Armas";
+let activeItemSource = "Todos";
+let itemSearch = "";
 let levelUpState = null;
 
 const ALL_ABILITIES = allSelectableAbilities(ORIGINS);
@@ -115,6 +127,7 @@ function createBlankCharacter() {
     skillRanksVersion: 1,
     pericias: "",
     inventario: "",
+    inventarioItens: [],
     habilidades: "",
     habilidadesNotas: "",
     habilidadesSelecionadas: [],
@@ -173,6 +186,15 @@ function normalizeCharacter(character) {
   character.levelUpHistory = Array.isArray(character.levelUpHistory)
     ? character.levelUpHistory
     : [];
+  const inventoryQuantities = new Map();
+  for (const selected of Array.isArray(character.inventarioItens) ? character.inventarioItens : []) {
+    if (!ITEM_BY_ID.has(selected?.itemId)) continue;
+    inventoryQuantities.set(
+      selected.itemId,
+      clamp((inventoryQuantities.get(selected.itemId) ?? 0) + numberOr(selected.quantity, 1), 1, 99),
+    );
+  }
+  character.inventarioItens = [...inventoryQuantities].map(([itemId, quantity]) => ({ itemId, quantity }));
   character.inventario ??= "";
   character.anotacoes ??= "";
   character.pericias ??= "";
@@ -795,6 +817,7 @@ function renderSheet(id) {
     ${renderOptionalRulesDialog(character)}
     ${renderAbilityDialog(character)}
     ${renderRitualDialog(character)}
+    ${renderItemDialog(character)}
     ${renderLevelUpDialog(character)}
   `;
 
@@ -805,14 +828,7 @@ function renderSheetTab(character) {
   if (activeSheetTab === "pericias") return renderSkillsTab(character);
   if (activeSheetTab === "habilidades") return renderAbilitiesTab(character);
   if (activeSheetTab === "rituais") return renderRitualsTab(character);
-  if (activeSheetTab === "inventario") {
-    return notesSection(
-      "Inventário",
-      "inventario",
-      character.inventario,
-      "Equipamentos, armas, proteções e itens de investigação.",
-    );
-  }
+  if (activeSheetTab === "inventario") return renderInventoryTab(character);
   if (activeSheetTab === "anotacoes") {
     return notesSection(
       "Anotações",
@@ -845,6 +861,7 @@ function renderSummaryTab(character) {
         ${statCard("Classe", character.classe || "—")}
         ${statCard("Trilha", character.trilha || "Ainda não escolhida")}
       </div>
+      ${renderOriginDetail(character.origem)}
       <div class="patent-row">
         <label for="sheet-patent">Patente</label>
         ${
@@ -1133,6 +1150,128 @@ function renderRitualPickerResults() {
     : emptyCollection("Nenhum ritual encontrado neste círculo e elemento.");
 }
 
+function inventorySelections(character) {
+  return (character.inventarioItens ?? [])
+    .map((selected) => ({ ...selected, item: ITEM_BY_ID.get(selected.itemId) }))
+    .filter((selected) => selected.item)
+    .sort((a, b) =>
+      a.item.group.localeCompare(b.item.group) || a.item.name.localeCompare(b.item.name),
+    );
+}
+
+function formatInventoryNumber(value) {
+  return Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+}
+
+function renderInventoryTab(character) {
+  const usage = inventoryUsage(character);
+  const selected = inventorySelections(character);
+  const limits = PATENT_ITEM_LIMITS[character.patente];
+  const capacityState = usage.spaces > usage.capacity * 2
+    ? "blocked"
+    : usage.overloaded
+      ? "warning"
+      : "complete";
+  return `
+    <section class="sheet-section inventory-section">
+      <div class="section-heading stacked-mobile">
+        <div><h2>Inventário</h2><p class="muted small">Escolha o equipamento; espaços e categorias são somados automaticamente.</p></div>
+        <button class="button primary compact" id="open-item-picker" type="button">+ Adicionar item</button>
+      </div>
+      <div class="inventory-overview">
+        <div class="inventory-capacity ${capacityState}"><span>Espaços ocupados</span><strong>${formatInventoryNumber(usage.spaces)} / ${formatInventoryNumber(usage.capacity)}</strong><small>${usage.spaces > usage.capacity * 2 ? "Acima do limite máximo" : usage.overloaded ? "Sobrecarregado" : `${usage.quantity} item(ns)`}</small></div>
+        <div class="inventory-category-summary">
+          <span>Itens por categoria · ${escapeHtml(character.patente || "Sem patente")}</span>
+          ${limits
+            ? `<div>${["I", "II", "III", "IV"].map((category) => { const used = usage.categoryCounts[category]; const limit = limits[category]; return `<span class="category-usage ${used > limit ? "over" : ""}"><b>${category}</b> ${used}/${limit}</span>`; }).join("")}</div>`
+            : `<small>Personagens Mundanos combinam o equipamento disponível com o mestre.</small>`}
+        </div>
+      </div>
+      <div class="entry-list inventory-list">
+        ${selected.length
+          ? selected.map((selectedItem) => renderItemCard(selectedItem.item, { quantity: selectedItem.quantity })).join("")
+          : emptyCollection("Nenhum item adicionado. Use “Adicionar item” para abrir o catálogo.")}
+      </div>
+    </section>
+    ${notesSection("Notas do inventário", "inventario", character.inventario, "Modificações, munição restante, itens de missão e observações.")}
+  `;
+}
+
+function renderItemCard(item, { picker = false, quantity = 0 } = {}) {
+  const totalSpaces = item.spaces * Math.max(1, quantity || 1);
+  const action = picker
+    ? renderItemPickerAction(item)
+    : `<div class="inventory-item-actions">
+        <div class="quantity-stepper" aria-label="Quantidade de ${escapeAttribute(item.name)}">
+          <button type="button" data-item-quantity="${item.id}" data-item-delta="-1" ${quantity <= 1 ? "disabled" : ""} aria-label="Diminuir quantidade">−</button>
+          <output>${quantity}</output>
+          <button type="button" data-item-quantity="${item.id}" data-item-delta="1" ${quantity >= 99 ? "disabled" : ""} aria-label="Aumentar quantidade">+</button>
+        </div>
+        <button class="entry-remove" type="button" data-item-remove="${item.id}">Remover</button>
+      </div>`;
+  return `
+    <details class="entry-card item-card">
+      <summary>
+        <span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.group)} · ${escapeHtml(item.source)}</small></span>
+        <span class="entry-summary-side"><span class="badge">Cat. ${escapeHtml(item.category)}</span><span class="badge">${formatInventoryNumber(item.spaces)} espaço(s)</span><span class="chevron" aria-hidden="true">⌄</span></span>
+      </summary>
+      <div class="entry-body">
+        <p>${escapeHtml(item.summary)}</p>
+        ${item.details?.length ? `<dl class="item-stat-grid">${item.details.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>` : ""}
+        <dl class="entry-meta">
+          <div><dt>Categoria</dt><dd>${escapeHtml(item.category)}</dd></div>
+          <div><dt>Espaços</dt><dd>${formatInventoryNumber(item.spaces)}${quantity > 1 ? ` cada · ${formatInventoryNumber(totalSpaces)} no total` : ""}</dd></div>
+          <div><dt>Fonte</dt><dd>${escapeHtml(item.source)}${item.page ? ` · p. ${escapeHtml(item.page)}` : ""}</dd></div>
+        </dl>
+        ${action}
+      </div>
+    </details>
+  `;
+}
+
+function renderItemPickerAction(item) {
+  const route = currentRoute();
+  const character = route.page === "ficha" ? getCharacter(route.id) : null;
+  const quantity = character?.inventarioItens?.find((selected) => selected.itemId === item.id)?.quantity ?? 0;
+  return `<button class="button primary compact" type="button" data-item-add="${item.id}">${quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
+}
+
+function renderItemDialog(character) {
+  const sources = ["Todos", ...new Set(ITEMS.map((item) => item.source))];
+  return `
+    <dialog class="picker-dialog" id="item-dialog" aria-labelledby="item-dialog-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Equipamentos</p><h2 id="item-dialog-title">Adicionar item</h2></div>
+        <button class="dialog-close" id="close-item-dialog" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="picker-body">
+        <div class="picker-tabs item-group-tabs" role="tablist" aria-label="Categorias de itens">
+          ${INVENTORY_GROUPS.map((group) => `<button type="button" data-item-group="${escapeAttribute(group)}" class="${group === activeItemGroup ? "active" : ""}">${escapeHtml(group)}</button>`).join("")}
+        </div>
+        <div class="item-filter-row">
+          <label class="picker-search"><span aria-hidden="true">⌕</span><input id="item-search" value="${escapeAttribute(itemSearch)}" placeholder="Buscar item" autocomplete="off" /></label>
+          <label class="item-source-filter"><span>Fonte</span><select id="item-source">${sources.map((source) => `<option value="${escapeAttribute(source)}" ${source === activeItemSource ? "selected" : ""}>${escapeHtml(source)}</option>`).join("")}</select></label>
+        </div>
+        <p class="catalog-note">Resumos mecânicos em redação própria. Abra a seta para ver estatísticas, efeito e referência.</p>
+        <div class="picker-results" id="item-picker-results">${renderItemPickerResults(character)}</div>
+      </div>
+    </dialog>
+  `;
+}
+
+function renderItemPickerResults() {
+  const query = normalizeSearch(itemSearch);
+  const entries = ITEMS.filter(
+    (item) =>
+      item.group === activeItemGroup &&
+      (activeItemSource === "Todos" || item.source === activeItemSource) &&
+      (!query || normalizeSearch(`${item.name} ${item.summary} ${item.source} ${item.details.flat().join(" ")}`).includes(query)),
+  );
+  return entries.length
+    ? entries.map((item) => renderItemCard(item, { picker: true })).join("")
+    : emptyCollection("Nenhum item encontrado neste filtro.");
+}
+
 const LEVEL_UP_STEPS = ["Progressão", "Ganhos", "Escolhas", "Revisão"];
 
 function startLevelUp(character) {
@@ -1169,6 +1308,11 @@ function renderLevelUpDialog(character) {
   const plan = currentLevelUpPlan(character);
   if (!plan) return `<dialog class="picker-dialog level-up-dialog" id="level-up-dialog"></dialog>`;
   const finalStep = levelUpState.step === LEVEL_UP_STEPS.length - 1;
+  const nextLabel = finalStep
+    ? "Confirmar evolução"
+    : levelUpState.step === 2
+      ? "Revisar e confirmar"
+      : "Continuar";
   return `
     <dialog class="picker-dialog level-up-dialog" id="level-up-dialog" aria-labelledby="level-up-title">
       <div class="dialog-heading level-up-heading">
@@ -1182,7 +1326,7 @@ function renderLevelUpDialog(character) {
       <div class="level-up-footer">
         <button class="button ghost" id="cancel-level-up" type="button">Cancelar</button><span></span>
         <button class="button ghost" id="previous-level-up" type="button" ${levelUpState.step === 0 ? "disabled" : ""}>Voltar</button>
-        <button class="button primary" id="next-level-up" type="button">${finalStep ? "Confirmar evolução" : "Continuar"}</button>
+        <button class="button primary" id="next-level-up" type="button">${nextLabel}</button>
       </div>
     </dialog>`;
 }
@@ -1596,6 +1740,7 @@ function bindSheetInteractions(character) {
 
   bindAbilityDialog(character);
   bindRitualDialog(character);
+  bindItemDialog(character);
   bindOptionalRulesDialog(character);
   bindLevelUpDialog(character);
 }
@@ -1705,6 +1850,81 @@ function bindRitualToggleButtons(character, resultsOnly) {
       showToast(selected.has(id) ? "Ritual adicionado." : "Ritual removido.");
     });
   });
+}
+
+function bindItemDialog(character) {
+  const dialog = document.querySelector("#item-dialog");
+  document.querySelector("#open-item-picker")?.addEventListener("click", () => dialog?.showModal());
+  document.querySelector("#close-item-dialog")?.addEventListener("click", () => dialog?.close());
+  closeDialogOnBackdrop(dialog);
+
+  document.querySelectorAll("[data-item-group]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeItemGroup = button.dataset.itemGroup;
+      itemSearch = "";
+      renderSheet(character.id);
+      document.querySelector("#item-dialog")?.showModal();
+    });
+  });
+  document.querySelector("#item-source")?.addEventListener("change", (event) => {
+    activeItemSource = event.target.value;
+    renderSheet(character.id);
+    document.querySelector("#item-dialog")?.showModal();
+  });
+  document.querySelector("#item-search")?.addEventListener("input", (event) => {
+    itemSearch = event.target.value;
+    const results = document.querySelector("#item-picker-results");
+    if (results) results.innerHTML = renderItemPickerResults();
+    bindItemAddButtons(character, true);
+  });
+  bindItemAddButtons(character, false);
+
+  document.querySelectorAll("[data-item-quantity]").forEach((button) => {
+    button.addEventListener("click", () => {
+      changeInventoryQuantity(character, button.dataset.itemQuantity, Number(button.dataset.itemDelta));
+    });
+  });
+  document.querySelectorAll("[data-item-remove]").forEach((button) => {
+    button.addEventListener("click", () => {
+      character.inventarioItens = (character.inventarioItens ?? []).filter(
+        (selected) => selected.itemId !== button.dataset.itemRemove,
+      );
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast("Item removido do inventário.");
+    });
+  });
+}
+
+function bindItemAddButtons(character, resultsOnly) {
+  const selector = resultsOnly
+    ? "#item-picker-results [data-item-add]"
+    : "[data-item-add]";
+  document.querySelectorAll(selector).forEach((button) => {
+    button.addEventListener("click", () => {
+      const wasOpen = Boolean(document.querySelector("#item-dialog")?.open);
+      changeInventoryQuantity(character, button.dataset.itemAdd, 1, false);
+      if (wasOpen) document.querySelector("#item-dialog")?.showModal();
+      showToast("Item adicionado ao inventário.");
+    });
+  });
+}
+
+function changeInventoryQuantity(character, itemId, delta, notify = true) {
+  if (!ITEM_BY_ID.has(itemId) || !Number.isFinite(delta) || delta === 0) return;
+  const entries = [...(character.inventarioItens ?? [])];
+  const index = entries.findIndex((selected) => selected.itemId === itemId);
+  if (index < 0 && delta > 0) entries.push({ itemId, quantity: Math.min(99, delta) });
+  if (index >= 0) {
+    entries[index] = {
+      ...entries[index],
+      quantity: clamp(numberOr(entries[index].quantity, 1) + delta, 1, 99),
+    };
+  }
+  character.inventarioItens = entries;
+  upsertCharacter(character);
+  renderSheet(character.id);
+  if (notify) showToast("Quantidade atualizada.");
 }
 
 function closeDialogOnBackdrop(dialog) {
@@ -2016,15 +2236,37 @@ function renderOriginOptions(selected) {
 }
 
 function renderOriginPreview(originName) {
+  return renderOriginDetail(originName, true);
+}
+
+function originPowerInfo(origin) {
+  const [summary = "Habilidade concedida automaticamente por esta origem.", cost = "Passivo"] =
+    ORIGIN_POWER_DETAILS[origin?.power] ?? [];
+  return { summary, cost };
+}
+
+function renderOriginDetail(originName, expanded = false) {
   const origin = findOrigin(originName);
   if (!origin) return "";
   const skillSummary = originSkillSummary(origin);
+  const power = originPowerInfo(origin);
   return `
-    <div class="calculation-box origin-preview">
-      <span class="badge red">${escapeHtml(origin.source)}</span>
-      <div><strong>Perícias concedidas:</strong> ${escapeHtml(skillSummary)}</div>
-      <div><strong>Poder de origem:</strong> ${escapeHtml(origin.power)}</div>
-    </div>
+    <details class="origin-detail-card" ${expanded ? "open" : ""}>
+      <summary>
+        <span><strong>${escapeHtml(origin.name)}</strong><small>Ver história, perícias e poder</small></span>
+        <span class="entry-summary-side"><span class="badge red">${escapeHtml(origin.source)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
+      </summary>
+      <div class="origin-detail-body">
+        <p>${escapeHtml(ORIGIN_BACKGROUNDS[origin.name] ?? "Esta origem representa a vida do personagem antes de conhecer a Ordem.")}</p>
+        <dl class="entry-meta origin-meta">
+          <div><dt>Perícias</dt><dd>${escapeHtml(skillSummary)}</dd></div>
+          <div><dt>Poder</dt><dd>${escapeHtml(origin.power)}</dd></div>
+          <div><dt>Custo</dt><dd>${escapeHtml(power.cost)}</dd></div>
+          <div><dt>Fonte</dt><dd>${escapeHtml(origin.source)}</dd></div>
+        </dl>
+        <div class="origin-power-description"><strong>${escapeHtml(origin.power)}</strong><p>${escapeHtml(power.summary)}</p></div>
+      </div>
+    </details>
   `;
 }
 
@@ -2112,6 +2354,7 @@ function renderAutomaticBenefits(character) {
     ...(character.periciasOrigemEscolhidas ?? []),
   ];
   const power = origin?.power ?? "Pendente";
+  const powerInfo = originPowerInfo(origin);
   const fixed = classSkills.fixed ?? classSkills.fixedSkills ?? [];
   const choices = classSkills.choices ?? classSkills.skillChoices ?? 0;
   const selected = classSkills.selected ?? character.periciasEscolhidas ?? [];
@@ -2121,7 +2364,7 @@ function renderAutomaticBenefits(character) {
       <div class="section-heading"><h2>Benefícios automáticos</h2><span class="muted small">Aplicados pela criação</span></div>
       <div class="benefit-list">
         <div><span>Perícias da origem</span><strong>${escapeHtml(skills.join(", ") || "—")}</strong></div>
-        <div><span>Poder da origem</span><strong>${escapeHtml(power)}</strong></div>
+        <div><span>Poder da origem</span><strong>${escapeHtml(power)}</strong><small>${escapeHtml(powerInfo.summary)}</small></div>
         <div><span>Perícias fixas da classe</span><strong>${escapeHtml(fixed.join(", ") || "Nenhuma")}</strong></div>
         <div><span>Perícias escolhidas</span><strong>${escapeHtml(selected.join(", ") || `${numberOr(choices, 0)} escolhas pendentes`)}</strong></div>
       </div>
