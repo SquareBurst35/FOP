@@ -45,7 +45,7 @@ const slug = (value) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-const ability = ({ name, category, group, summary, cost = "Passivo", requirement = "Nenhum", unlockNex = 0, source = "Livro base" }) => ({
+const ability = ({ name, category, group, summary, cost = "Passivo", requirement = "Nenhum", unlockNex = 0, source = "Livro base", page = "", details = [] }) => ({
   id: slug(`${category}-${group}-${name}`),
   name,
   category,
@@ -55,6 +55,8 @@ const ability = ({ name, category, group, summary, cost = "Passivo", requirement
   requirement,
   unlockNex,
   source,
+  page,
+  details,
 });
 
 export const CORE_CLASS_ABILITIES = [
@@ -157,6 +159,18 @@ export const CLASS_POWERS = [
     ["Sincronia Paranormal", "Cria uma ligação sustentada que distribui dados de bônus entre aliados ligados."],
     ["Traçado Conjuratório", "Prepara um símbolo no chão que fortalece conjuração e resistência dentro da área."],
   ].map(([name, summary]) => ability({ name, category: "Ocultista", group: "Poderes de Ocultista", summary, cost: "Conforme o uso", unlockNex: 15, source: "Sobrevivendo ao Horror" })),
+  ability({ name: "Acostumado à Maldição de <Elemento>", category: "Ocultista", group: "Poderes de Ocultista", summary: "Escolha Sangue, Morte, Conhecimento ou Energia. Falhar no preço da maldição de um item desse elemento não causa a perda de SAN; os outros efeitos ainda se aplicam.", requirement: "INT 2 e ritual de 2º círculo do elemento", unlockNex: 15, source: "Arquivos Secretos #1", page: "44", details: ["O elemento é definido quando o poder é adquirido.", "A proteção vale apenas para a perda de SAN do preço da maldição."] }),
+  ability({ name: "Reter Ritual de Combate", category: "Ocultista", group: "Poderes de Ocultista", summary: "Permite mudar para cena a duração de um ritual retido que afeta negativamente um alvo quando ele sai da linha de efeito, ou preservar rituais quando uma condição encerraria a retenção.", cost: "Reação e 1 PE por ritual", requirement: "INT 2, ritual de 1º círculo e regra Reter Ritual", unlockNex: 15, source: "Arquivos Secretos #1", page: "44", details: ["Cada ritual preservado exige seu próprio custo."] }),
+  ability({ name: "Ritual Intenso", category: "Ocultista", group: "Poderes de Ocultista", summary: "Soma sua Presença às rolagens de dano e às rolagens de cura de seus rituais.", requirement: "PRE 2", unlockNex: 15, source: "Arquivos Secretos #1", page: "44" }),
+  ability({ name: "Saúde Sobrenatural", category: "Ocultista", group: "Poderes de Ocultista", summary: "Uma vez por cena, recebe PV temporários iguais a dez vezes sua Presença. Eles terminam no fim da cena e não acumulam com outro uso.", cost: "Ação de movimento e 3 PE", requirement: "INT 2, PRE 2 e ritual de 1º círculo", unlockNex: 15, source: "Arquivos Secretos #1", page: "44" }),
+];
+
+export const GENERAL_POWERS = [
+  ability({ name: "Cicatrizes Expostas", category: "Gerais", group: "Poderes Gerais", summary: "Ao expor uma cicatriz, seus danos recebem +1d8 do mesmo tipo até o fim da cena, mas você sofre uma penalidade de um dado em Vontade e em ações que exijam calma.", cost: "Ação de movimento", requirement: "Ter cicatrizes", unlockNex: 15, source: "Arquivos Secretos #1", page: "46", details: ["O efeito também começa se outra criatura expuser a cicatriz."] }),
+  ability({ name: "Curiosidade Oculta", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Ocultismo ou +2 se você já for treinado. Em um teste de Vontade, permite usar Ocultismo no lugar dela.", cost: "2 PE para substituir o teste", requirement: "INT 2", unlockNex: 15, source: "Arquivos Secretos #1", page: "46" }),
+  ability({ name: "Especialista Esotérico", category: "Gerais", group: "Poderes Gerais", summary: "Ao conjurar um ritual, permite combinar os efeitos de até três catalisadores ritualísticos diferentes.", requirement: "INT 3, ritual de 2º círculo e Domínio Esotérico", unlockNex: 30, source: "Arquivos Secretos #1", page: "46" }),
+  ability({ name: "<Habilidade> Aprimorada", category: "Gerais", group: "Poderes Gerais", summary: "Escolha uma habilidade ou ritual com DT. A DT aumenta em +2; o poder pode ser repetido para escolhas diferentes ou duas vezes para a mesma escolha, chegando a +5.", requirement: "Habilidade ou ritual com DT", unlockNex: 15, source: "Arquivos Secretos #1", page: "46" }),
+  ability({ name: "Instintos Urbanos", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Crime ou +2 se já for treinado. Em local fechado, um teste de Crime DT 20 pode identificar uma rota de fuga e conceder uma ação de movimento extra no primeiro turno da fuga e +2 na Defesa até escapar.", requirement: "AGI 2", unlockNex: 15, source: "Arquivos Secretos #1", page: "46", details: ["Se não houver rota identificável, o bônus de +2 na Defesa vale enquanto você permanecer no local."] }),
 ];
 
 const trail = (category, group, source, entries) =>
@@ -337,6 +351,10 @@ export const PARANORMAL_POWERS = [
   ability({ name: "Sangue de Ferro", category: "Poderes Paranormais", group: "Sangue", summary: "Aumenta os PV máximos conforme o NEX.", requirement: "Afinidade aumenta novamente", unlockNex: 15 }),
   ability({ name: "Sangue Vivo", category: "Poderes Paranormais", group: "Sangue", summary: "Em condição crítica, pode recuperar PV no começo do turno.", cost: "2 PE", requirement: "Sangue 2; afinidade melhora a recuperação", unlockNex: 30 }),
   ability({ name: "Resistir a Elemento", category: "Poderes Paranormais", group: "Geral", summary: "Escolha um elemento e receba resistência ao dano ligado a ele.", requirement: "Afinidade aumenta a resistência", unlockNex: 15 }),
+  ability({ name: "Ferro Maculado", category: "Poderes Paranormais", group: "Sangue", summary: "Ao atacar com arma de disparo, amaldiçoa a munição até o fim do turno e acrescenta +1d6 de dano de Sangue, que também é multiplicado no crítico.", cost: "2 PV", requirement: "Afinidade aumenta o adicional para +1d8", unlockNex: 15, source: "Arquivos Secretos #1", page: "47" }),
+  ability({ name: "Placas Sanguinolentas", category: "Poderes Paranormais", group: "Sangue", summary: "Depois de conjurar um ritual de Sangue, recebe Defesa igual ao círculo do ritual até o começo do próximo turno.", requirement: "Ritual de Sangue; com afinidade, bônus igual a círculo +2", unlockNex: 15, source: "Arquivos Secretos #1", page: "47" }),
+  ability({ name: "Sangue Corrosivo", category: "Poderes Paranormais", group: "Sangue", summary: "Até o fim da cena, uma criatura adjacente que causar dano a você sofre 1d10 de dano de Sangue.", cost: "Ação de movimento e 1 PE", requirement: "Afinidade aumenta para 2d10", unlockNex: 15, source: "Arquivos Secretos #1", page: "47" }),
+  ability({ name: "Sangue Prazeroso", category: "Poderes Paranormais", group: "Sangue", summary: "Enquanto estiver machucado, concede resistência a dano 5.", requirement: "Sangue 1; afinidade concede 20 PV temporários uma vez por cena", unlockNex: 15, source: "Arquivos Secretos #1", page: "47" }),
 ];
 
 export const ORIGIN_POWER_DETAILS = {
@@ -389,14 +407,16 @@ export const ORIGIN_POWER_DETAILS = {
 };
 
 const RITUAL_COSTS = { 1: 1, 2: 3, 3: 6, 4: 10 };
-const ritual = (name, element, circle, summary, source = "Livro base") => ({
-  id: slug(`ritual-${source}-${element}-${circle}-${name}`),
+const ritual = (name, element, circle, summary, source = "Livro base", mechanics = {}) => ({
+  id: slug(`ritual-${source}-${Array.isArray(element) ? element.join("-") : element}-${circle}-${name}`),
   name,
-  element,
+  element: Array.isArray(element) ? element[0] : element,
+  elements: Array.isArray(element) ? element : [element],
   circle,
   cost: `${RITUAL_COSTS[circle]} PE/PD`,
   summary,
   source,
+  ...mechanics,
 });
 
 export const RITUALS = [
@@ -504,9 +524,11 @@ export const RITUALS = [
   ritual("Tremeluzir", "Energia", 2, "Torna a posição de um alvo instável e difícil de acompanhar.", "Sobrevivendo ao Horror"),
   ritual("Mutar", "Energia", 3, "Altera ou suprime sons dentro da área escolhida.", "Sobrevivendo ao Horror"),
   ritual("Milagre Ionizante", "Energia", 3, "Manipula carga elétrica para energizar, interromper ou restaurar tecnologia.", "Sobrevivendo ao Horror"),
+  ritual("Passagem de Conhecimento", ["Sangue", "Conhecimento"], 2, "Transfere a consciência do conjurador para outra pessoa ou troca as consciências entre os dois corpos. Cada participante mantém sua ficha, mas usa os atributos físicos do corpo ocupado.", "Arquivos Secretos #1", { page: "48", execution: "Completa", range: "Toque", target: "1 pessoa", duration: "Cena", resistance: "Vontade evita", details: ["Na sobreposição, o corpo do conjurador fica inconsciente e o alvo pode repetir a resistência para recuperar o controle.", "Na troca completa, cada consciência permanece no outro corpo até o efeito terminar ou o ritual desfazer a troca."], enhancements: ["Discente (+3 PE): alcance curto, duração de 1 dia e menos tentativas de recuperar o controle.", "Verdadeiro (+7 PE): alcance médio e duração permanente; exige 4º círculo e afinidade."] }),
+  ritual("Passagem de Conhecimento Expandido", ["Sangue", "Conhecimento"], 4, "Realiza uma troca permanente de consciências entre dois grupos, sempre com quantidade par de participantes. Os envolvidos passam a usar atributos e habilidades dos novos corpos.", "Arquivos Secretos #1", { page: "50", execution: "1 dia", range: "Curto", target: "2 a 10 pessoas, em número par", duration: "Permanente", resistance: "Não indicada", requirement: "Conhecer Passagem de Conhecimento", details: ["Os participantes são divididos em dois grupos e cada integrante do grupo principal é ligado a alguém do outro.", "Para recuperar os corpos originais, o ritual deve ser realizado novamente com os envolvidos presentes."] }),
 ];
 
-export const ABILITY_CATEGORIES = ["Combatente", "Especialista", "Ocultista", "Origens", "Poderes Paranormais"];
+export const ABILITY_CATEGORIES = ["Combatente", "Especialista", "Ocultista", "Gerais", "Origens", "Poderes Paranormais"];
 export const RITUAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue", "Medo"];
 export const RITUAL_CIRCLES = [1, 2, 3, 4];
 
@@ -523,5 +545,5 @@ export function allSelectableAbilities(origins = []) {
       source: origin.source,
     });
   });
-  return [...CLASS_POWERS, ...TRAIL_ABILITIES, ...PARANORMAL_POWERS, ...originAbilities];
+  return [...CLASS_POWERS, ...TRAIL_ABILITIES, ...GENERAL_POWERS, ...PARANORMAL_POWERS, ...originAbilities];
 }
