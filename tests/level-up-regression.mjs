@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
-import { CLASS_POWERS, PARANORMAL_POWERS, RITUALS } from "../content.js";
+import { CLASS_POWERS, GENERAL_POWERS, PARANORMAL_POWERS, RITUALS } from "../content.js";
 import { calculateDerived, SKILLS } from "../rules.js";
 
 let scenarioNumber = 0;
 
 class MockElement {
-  constructor(dataset = {}) {
+  constructor(dataset = {}, tagName = "DIV") {
     this.dataset = dataset;
+    this.tagName = tagName;
+    this.type = "";
     this.listeners = new Map();
     this.classes = new Set();
     this.classList = {
@@ -136,13 +138,14 @@ async function boot(character) {
         collections.set(key, []);
         return [];
       }
-      const matches = [...markup().matchAll(new RegExp(`<input[^>]*${attribute}(?:=[^ >]+)?[^>]*>`, "g"))];
-      const elements = matches.map(([tag]) => {
+      const matches = [...markup().matchAll(new RegExp(`<(input|button)[^>]*${attribute}(?:=[^ >]+)?[^>]*>`, "g"))];
+      const elements = matches.map(([tag, tagName]) => {
         const datasets = {};
         for (const match of tag.matchAll(/(data-[a-z0-9-]+)(?:="([^"]*)")?/g)) {
           datasets[dataKey(match[1])] = match[2] ?? "";
         }
-        const element = new MockElement(datasets);
+        const element = new MockElement(datasets, tagName.toUpperCase());
+        element.type = tag.match(/type="([^"]*)"/)?.[1] ?? (tagName === "input" ? "text" : "button");
         element.value = tag.match(/value="([^"]*)"/)?.[1] ?? "";
         element.checked = /\schecked(?:\s|\/|>)/.test(tag);
         element.disabled = /\sdisabled(?:\s|\/|>)/.test(tag);
@@ -189,13 +192,19 @@ async function boot(character) {
     options(selector) {
       return documentMock.querySelectorAll(selector).map((element) => element.value);
     },
+    clickData(selector, key, value) {
+      const element = documentMock.querySelectorAll(selector).find((candidate) => candidate.dataset[key] === value);
+      assert.ok(element, `Controle ${selector} com ${key}=${value} não encontrado`);
+      assert.equal(element.disabled, false, `Controle ${selector} com ${key}=${value} está desabilitado`);
+      element.dispatch("click");
+    },
     body() { return documentMock.querySelector(".level-up-body"); },
     target(selector) { return documentMock.querySelector(selector); },
   };
 }
 
 function powerId(name, category) {
-  return CLASS_POWERS.find((entry) => entry.name === name && (!category || entry.category === category))?.id;
+  return [...CLASS_POWERS, ...GENERAL_POWERS].find((entry) => entry.name === name && (!category || entry.category === category))?.id;
 }
 
 function paranormalId(name) {
@@ -366,4 +375,36 @@ function finish(ui) {
   assert.equal(ui.saved().grausPericia[SKILLS[1]], 5);
 }
 
-console.log("11 cenários de regressão do level up passaram.");
+// Poderes com escolha própria, como Habilidade Aprimorada, são configurados dentro do level up.
+{
+  const ui = await boot(characterAtLevel({ id: "habilidade-aprimorada", level: 2 }));
+  enterChoices(ui);
+  ui.choose("[data-level-up-class-power]", powerId("<Habilidade> Aprimorada", "Gerais"));
+  assert.match(ui.html(), /Habilidade&gt; Aprimorada — Escolha a habilidade ou ritual com DT/);
+  const [target] = ui.options("[data-level-up-structured-choice]");
+  assert.ok(target, "Nenhum alvo predefinido apareceu para Habilidade Aprimorada");
+  ui.choose("[data-level-up-structured-choice]", target);
+  finish(ui);
+  const saved = ui.saved();
+  assert.equal(saved.nivel, 3);
+  assert.ok(saved.habilidadeEscolhas.some((entry) => entry.type === "alvo" && entry.valueId === target));
+}
+
+// O botão de uma habilidade ativa desconta PE, registra o uso e o novo turno renova o limite.
+{
+  const palpite = GENERAL_POWERS.find((entry) => entry.name === "Palpite Confiante");
+  const character = characterAtLevel({ id: "uso-habilidade", level: 5, abilities: [palpite.id] });
+  const ui = await boot(character);
+  ui.clickData("[data-sheet-tab]", "sheetTab", "habilidades");
+  ui.clickData("[data-use-ability]", "useAbility", palpite.id);
+  let saved = ui.saved();
+  assert.equal(saved.recursos.peAtual, character.recursos.peAtual - 1);
+  assert.equal(saved.controleSessao.gastoTurno, 1);
+  assert.equal(saved.controleSessao.historico.at(-1).name, "Palpite Confiante");
+  ui.clickData("[data-session-action]", "sessionAction", "turn");
+  saved = ui.saved();
+  assert.equal(saved.controleSessao.turno, 2);
+  assert.equal(saved.controleSessao.gastoTurno, 0);
+}
+
+console.log("13 cenários de regressão do level up e da sessão passaram.");

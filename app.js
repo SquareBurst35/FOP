@@ -15,7 +15,7 @@ import {
   sanitizeSkillSelections,
   skillSelectionStatus,
   usesSeparateLevel,
-} from "./rules.js?v=8";
+} from "./rules.js?v=9";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -31,15 +31,32 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=8";
+} from "./content.js?v=9";
 import {
   INVENTORY_GROUPS,
   ITEMS,
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=8";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=8";
+} from "./items.js?v=9";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=9";
+import {
+  CHOICE_TYPE_LABELS,
+  abilityCanRepeatChoice,
+  choiceSpecsForAbility,
+  choicesComplete,
+} from "./choices.js?v=9";
+import {
+  effortResource,
+  normalizeSession,
+  parseUseCost,
+  rollUseCost,
+  startNextScene,
+  startNextTurn,
+  turnSpendLimit,
+  undoLastUse,
+  useAbility,
+} from "./session.js?v=9";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -52,6 +69,30 @@ const ATTRIBUTE_LABELS = {
 };
 
 const PARANORMAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
+
+const NON_USABLE_ABILITY_NAMES = new Set([
+  "<Habilidade> Aprimorada",
+  "A Favorita",
+  "Acostumado à Maldição de <Elemento>",
+  "Aprender Ritual",
+  "Dominar Habilidade Ritualística",
+  "Escolhido pelo Outro Lado",
+  "Especialista em Elemento",
+  "Expansão de Conhecimento",
+  "Ferramentas Favoritas",
+  "Ferramentas da Profissão",
+  "Invenção Paranormal",
+  "Mácula Ritualística",
+  "Mestre em Elemento",
+  "Mochila de Utilidades",
+  "Mutação",
+  "Perito",
+  "Resistir a Elemento",
+  "Ritual Predileto",
+  "Ser Amaldiçoado",
+  "Transcender",
+  "Treinamento em Perícia",
+]);
 
 const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Recursos", "Revisão"];
 
@@ -74,6 +115,8 @@ let activeItemGroup = "Armas";
 let activeItemSource = "Todos";
 let itemSearch = "";
 let levelUpState = null;
+let abilityChoiceState = null;
+let spendState = null;
 
 const ALL_ABILITIES = allSelectableAbilities(ORIGINS);
 const ABILITY_BY_ID = new Map(
@@ -140,6 +183,13 @@ function createBlankCharacter() {
     rituaisNotas: "",
     peritoPericias: [],
     levelUpHistory: [],
+    controleSessao: {
+      turno: 1,
+      cena: 1,
+      gastoTurno: 0,
+      usosCena: {},
+      historico: [],
+    },
     anotacoes: "",
     criadoEm: new Date().toISOString(),
     atualizadoEm: new Date().toISOString(),
@@ -206,7 +256,7 @@ function normalizeCharacter(character) {
     : "";
   character.habilidadeEscolhas = Array.isArray(character.habilidadeEscolhas)
     ? character.habilidadeEscolhas
-        .filter((entry) => entry && ABILITY_BY_ID.has(entry.abilityId) && ["elemento", "ritual", "poder"].includes(entry.type))
+        .filter((entry) => entry && ABILITY_BY_ID.has(entry.abilityId) && Object.hasOwn(CHOICE_TYPE_LABELS, entry.type))
         .map((entry) => ({
           abilityId: entry.abilityId,
           type: entry.type,
@@ -215,6 +265,7 @@ function normalizeCharacter(character) {
           level: clamp(numberOr(entry.level, characterLevel(character)), 0, LEVEL_CAP),
         }))
     : [];
+  normalizeSession(character);
   const inventoryQuantities = new Map();
   for (const selected of Array.isArray(character.inventarioItens) ? character.inventarioItens : []) {
     if (!ITEM_BY_ID.has(selected?.itemId)) continue;
@@ -319,6 +370,8 @@ function renderRoute() {
   } else {
     creatorState = null;
     levelUpState = null;
+    abilityChoiceState = null;
+    spendState = null;
     currentStep = 0;
     renderHome();
   }
@@ -827,6 +880,8 @@ function renderSheet(id) {
           }
         </div>
 
+        ${renderSessionControl(character)}
+
         <div class="status-line"><span class="status-dot"></span> Salvo neste dispositivo</div>
         <button class="sheet-supplement-button" id="optional-rules-button" type="button">
           <span class="supplement-sigil" aria-hidden="true">S</span>
@@ -848,6 +903,8 @@ function renderSheet(id) {
     ${renderRitualDialog(character)}
     ${renderItemDialog(character)}
     ${renderLevelUpDialog(character)}
+    ${renderAbilityChoiceDialog(character)}
+    ${renderSpendDialog(character)}
   `;
 
   bindSheetInteractions(character);
@@ -989,6 +1046,84 @@ function automaticAbilitiesFor(character) {
   return uniqueById([originAbility, ...classAbilities, ...trailAbilities].filter(Boolean));
 }
 
+function choiceContext(character) {
+  return {
+    abilityById: ABILITY_BY_ID,
+    automaticAbilities: automaticAbilitiesFor(character),
+  };
+}
+
+function ownedAbilityNames(character) {
+  return new Set([
+    ...automaticAbilitiesFor(character),
+    ...(character.habilidadesSelecionadas ?? []).map((id) => ABILITY_BY_ID.get(id)).filter(Boolean),
+  ].map((entry) => entry.name));
+}
+
+function sessionSpendLimit(character, ritual = false) {
+  const names = ownedAbilityNames(character);
+  return turnSpendLimit(character, {
+    hasFacingDeath: names.has("Encarar a Morte"),
+    ritual,
+    hasPowerfulPresence: names.has("Presença Poderosa"),
+  });
+}
+
+function renderSessionControl(character) {
+  const session = normalizeSession(character);
+  const resource = effortResource(character);
+  const limit = sessionSpendLimit(character);
+  const ritualLimit = sessionSpendLimit(character, true);
+  const percent = Math.min(100, Math.round((session.gastoTurno / Math.max(1, limit)) * 100));
+  const last = session.historico.at(-1);
+  return `
+    <section class="session-control" aria-label="Controle da sessão">
+      <div class="session-control-heading">
+        <div><span>Cena ${session.cena}</span><strong>Turno ${session.turno}</strong></div>
+        <span class="session-limit-label">${session.gastoTurno}/${limit} ${resource.label}</span>
+      </div>
+      <div class="session-spend-track" role="progressbar" aria-label="${resource.label} gasto neste turno" aria-valuemin="0" aria-valuemax="${limit}" aria-valuenow="${session.gastoTurno}"><span style="width:${percent}%"></span></div>
+      <p>${ritualLimit > limit ? `Limite: ${limit} normalmente · ${ritualLimit} em rituais` : `Limite por turno: ${limit} ${resource.label}`}</p>
+      <div class="session-control-actions">
+        <button type="button" data-session-action="turn">Novo turno</button>
+        <button type="button" data-session-action="scene">Nova cena</button>
+      </div>
+      ${last ? `<div class="session-last-use"><span>Último uso</span><strong>${escapeHtml(last.name)}</strong><small>${last.cost ? `−${last.cost} ${escapeHtml(last.resource)}` : "Sem custo de recurso"}</small><button type="button" data-session-action="undo">Desfazer</button></div>` : `<div class="session-last-use empty"><span>Os usos aparecerão aqui.</span></div>`}
+    </section>
+  `;
+}
+
+function abilityUseModel(entry) {
+  if (!entry || NON_USABLE_ABILITY_NAMES.has(entry.name)) return { kind: "none", min: 0, max: 0, resource: "effort" };
+  if (["Narrativo", "Missão", "Automático"].includes(entry.cost)) return { kind: "none", min: 0, max: 0, resource: "effort" };
+  return parseUseCost(entry.cost);
+}
+
+function abilityUseButton(entry, character) {
+  const model = abilityUseModel(entry);
+  if (model.kind === "none") return "";
+  const resource = model.resource === "pv" ? "PV" : model.resource === "san" ? "SAN" : effortResource(character).label;
+  const sceneKey = `habilidade:${entry.id}`;
+  const used = numberOr(character.controleSessao?.usosCena?.[sceneKey], 0);
+  const disabled = model.sceneLimit && used >= model.sceneLimit;
+  const label = model.kind === "fixed"
+    ? `Usar · ${model.min} ${resource}`
+    : model.kind === "random"
+      ? `Usar · rolar ${model.diceCount}d${model.diceSides} ${resource}`
+    : model.kind === "scene"
+      ? disabled ? "Usada nesta cena" : "Usar · 1/cena"
+      : model.kind === "action"
+        ? "Registrar uso"
+        : "Usar · escolher custo";
+  return `<button class="entry-use-button" type="button" data-use-ability="${entry.id}" ${disabled ? "disabled" : ""}>${escapeHtml(label)}</button>`;
+}
+
+function ritualUseButton(entry, character) {
+  const resource = effortResource(character).label;
+  const baseCost = numberOr(String(entry.cost).match(/\d+/)?.[0], 0);
+  return `<button class="entry-use-button ritual" type="button" data-use-ritual="${entry.id}">Conjurar · ${baseCost} ${resource}</button>`;
+}
+
 function renderAbilitiesTab(character) {
   const automatic = automaticAbilitiesFor(character);
   const automaticIds = new Set(automatic.map((entry) => entry.id));
@@ -1004,51 +1139,64 @@ function renderAbilitiesTab(character) {
       ${character.afinidadeElemental ? `<div class="affinity-banner"><span>Afinidade elemental</span><strong>${escapeHtml(character.afinidadeElemental)}</strong></div>` : ""}
       <div class="collection-block">
         <h3>Automáticas <span class="badge">${automatic.length}</span></h3>
-        <div class="entry-list">${automatic.length ? automatic.map((entry) => renderAbilityCard(entry, { automatic: true })).join("") : emptyCollection("Nenhuma habilidade automática neste nível.")}</div>
+        <div class="entry-list">${automatic.length ? automatic.map((entry) => renderAbilityCard(entry, { automatic: true, character })).join("") : emptyCollection("Nenhuma habilidade automática neste nível.")}</div>
       </div>
       <div class="collection-block">
         <h3>Adicionadas <span class="badge">${selected.length}</span></h3>
-        <div class="entry-list">${selected.length ? selected.map((entry) => renderAbilityCard(entry, { removable: true })).join("") : emptyCollection("Use “Adicionar habilidade” para escolher poderes e habilidades de trilha.")}</div>
+        <div class="entry-list">${selected.length ? selected.map((entry) => renderAbilityCard(entry, { removable: true, character })).join("") : emptyCollection("Use “Adicionar habilidade” para escolher poderes e habilidades de trilha.")}</div>
       </div>
     </section>
     ${notesSection("Notas de habilidades", "habilidadesNotas", character.habilidadesNotas, "Escolhas, alvos, afinidades e lembretes de uso.")}
   `;
 }
 
-function renderAbilityCard(entry, { automatic = false, removable = false, picker = false } = {}) {
+function renderAbilityCard(entry, { automatic = false, removable = false, picker = false, character = null } = {}) {
+  const selectedCharacter = character ?? (currentRoute().page === "ficha" ? getCharacter(currentRoute().id) : null);
+  const specs = selectedCharacter ? choiceSpecsForAbility(entry, selectedCharacter, [], choiceContext(selectedCharacter)) : [];
+  const resolved = selectedCharacter ? abilityChoiceResolved(entry, selectedCharacter) : true;
+  const choiceAction = !picker && specs.length
+    ? `<button class="entry-choice-button ${resolved ? "" : "required"}" type="button" data-ability-choice="${entry.id}">${!resolved ? "Definir escolha" : abilityCanRepeatChoice(entry) ? "+ Nova escolha" : "Alterar escolha"}</button>`
+    : "";
   const action = picker
     ? renderAbilityPickerAction(entry)
     : removable
       ? `<button class="entry-remove" type="button" data-ability-toggle="${entry.id}">Remover</button>`
       : "";
   return `
-    <details class="entry-card">
-      <summary>
-        <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)}</small></span>
-        <span class="entry-summary-side">${automatic ? `<span class="badge red">Automática</span>` : entry.unlockNex ? `<span class="badge">NEX ${entry.unlockNex}%</span>` : ""}<span class="chevron" aria-hidden="true">⌄</span></span>
-      </summary>
-      <div class="entry-body">
-        <p>${escapeHtml(entry.summary)}</p>
-        ${renderSavedAbilityChoices(entry)}
-        ${entry.details?.length ? `<ul class="entry-details">${entry.details.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul>` : ""}
-        <dl class="entry-meta">
-          <div><dt>Custo</dt><dd>${escapeHtml(entry.cost)}</dd></div>
-          <div><dt>Requisito</dt><dd>${escapeHtml(entry.requirement)}</dd></div>
-          <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</dd></div>
-        </dl>
-        ${action}
-      </div>
-    </details>
+    <div class="entry-card-shell">
+      <details class="entry-card">
+        <summary>
+          <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)}</small></span>
+          <span class="entry-summary-side">${!resolved ? `<span class="badge warning">Escolha pendente</span>` : automatic ? `<span class="badge red">Automática</span>` : entry.unlockNex ? `<span class="badge">NEX ${entry.unlockNex}%</span>` : ""}<span class="chevron" aria-hidden="true">⌄</span></span>
+        </summary>
+        <div class="entry-body">
+          <p>${escapeHtml(entry.summary)}</p>
+          ${renderSavedAbilityChoices(entry, selectedCharacter)}
+          ${entry.details?.length ? `<ul class="entry-details">${entry.details.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul>` : ""}
+          <dl class="entry-meta">
+            <div><dt>Custo</dt><dd>${escapeHtml(entry.cost)}</dd></div>
+            <div><dt>Requisito</dt><dd>${escapeHtml(entry.requirement)}</dd></div>
+            <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</dd></div>
+          </dl>
+          ${choiceAction || action ? `<div class="entry-card-actions">${choiceAction}${action}</div>` : ""}
+        </div>
+      </details>
+      ${!picker && selectedCharacter ? abilityUseButton(entry, selectedCharacter) : ""}
+    </div>
   `;
 }
 
-function renderSavedAbilityChoices(entry) {
-  const route = currentRoute();
-  const character = route.page === "ficha" ? getCharacter(route.id) : null;
+function abilityChoiceResolved(entry, character) {
+  if (entry.name === "Perito") return (character.peritoPericias ?? []).length >= 2;
+  return choicesComplete(entry, character, character.habilidadeEscolhas ?? [], choiceContext(character));
+}
+
+function renderSavedAbilityChoices(entry, character = null) {
   const choices = (character?.habilidadeEscolhas ?? []).filter((choice) => choice.abilityId === entry.id);
-  if (!choices.length) return "";
-  const labels = { elemento: "Elemento", ritual: "Ritual aprendido", poder: "Poder recebido" };
-  return `<div class="ability-saved-choices">${choices.map((choice) => `<span><small>${escapeHtml(labels[choice.type] ?? "Escolha")}</small><strong>${escapeHtml(choice.value)}</strong></span>`).join("")}</div>`;
+  const peritoChoices = entry.name === "Perito" ? (character?.peritoPericias ?? []).map((value) => ({ type: "pericia", value })) : [];
+  const all = [...choices, ...peritoChoices];
+  if (!all.length) return "";
+  return `<div class="ability-saved-choices">${all.map((choice) => `<span><small>${escapeHtml(CHOICE_TYPE_LABELS[choice.type] ?? "Escolha")}</small><strong>${escapeHtml(choice.value)}</strong></span>`).join("")}</div>`;
 }
 
 function renderAbilityDialog(character) {
@@ -1087,7 +1235,7 @@ function renderAbilityPickerResults(character) {
       (!query || normalizeSearch(`${entry.name} ${entry.summary} ${entry.group}`).includes(query)),
   );
   return entries.length
-    ? entries.map((entry) => renderAbilityCard(entry, { picker: true })).join("")
+    ? entries.map((entry) => renderAbilityCard(entry, { picker: true, character })).join("")
     : emptyCollection("Nenhuma habilidade encontrada neste filtro.");
 }
 
@@ -1098,6 +1246,7 @@ function renderAbilityPickerAction(entry) {
   const automatic = new Set(automaticAbilitiesFor(character).map((item) => item.id));
   if (automatic.has(entry.id)) return `<button class="button compact" type="button" disabled>Já automática</button>`;
   const selected = character.habilidadesSelecionadas.includes(entry.id);
+  if (selected && abilityCanRepeatChoice(entry)) return `<button class="button primary compact" type="button" data-ability-choice="${entry.id}" data-choice-return="picker">+ Nova escolha</button>`;
   return `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ability-toggle="${entry.id}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`;
 }
 
@@ -1113,15 +1262,15 @@ function renderRitualsTab(character) {
         <button class="button primary compact" id="open-ritual-picker" type="button">+ Adicionar ritual</button>
       </div>
       <div class="entry-list ritual-selected-list">
-        ${selected.length ? selected.map((entry) => renderRitualCard(entry, { removable: true })).join("") : emptyCollection("Nenhum ritual adicionado à ficha.")}
+        ${selected.length ? selected.map((entry) => renderRitualCard(entry, { removable: true, character })).join("") : emptyCollection("Nenhum ritual adicionado à ficha.")}
       </div>
     </section>
     ${notesSection("Notas de rituais", "rituaisNotas", character.rituaisNotas, "DT, aprimoramentos, componentes e lembretes.")}
   `;
 }
 
-function renderRitualCard(entry, { removable = false, picker = false } = {}) {
-  const selectedCharacter = currentRoute().page === "ficha" ? getCharacter(currentRoute().id) : null;
+function renderRitualCard(entry, { removable = false, picker = false, character = null } = {}) {
+  const selectedCharacter = character ?? (currentRoute().page === "ficha" ? getCharacter(currentRoute().id) : null);
   const selected = Boolean(selectedCharacter?.rituaisSelecionados?.includes(entry.id));
   const action = picker
     ? `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ritual-toggle="${entry.id}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`
@@ -1129,29 +1278,32 @@ function renderRitualCard(entry, { removable = false, picker = false } = {}) {
       ? `<button class="entry-remove" type="button" data-ritual-toggle="${entry.id}">Remover</button>`
       : "";
   return `
-    <details class="entry-card ritual-card element-${normalizeSearch(entry.element)}">
-      <summary>
-        <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small></span>
-        <span class="entry-summary-side"><span class="badge">${escapeHtml(entry.cost)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
-      </summary>
-      <div class="entry-body">
-        <p>${escapeHtml(entry.summary)}</p>
-        ${entry.details?.length ? `<ul class="entry-details">${entry.details.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul>` : ""}
-        <dl class="entry-meta">
-          <div><dt>Círculo</dt><dd>${entry.circle}º</dd></div>
-          <div><dt>Custo-base</dt><dd>${escapeHtml(entry.cost)}</dd></div>
-          ${entry.execution ? `<div><dt>Execução</dt><dd>${escapeHtml(entry.execution)}</dd></div>` : ""}
-          ${entry.range ? `<div><dt>Alcance</dt><dd>${escapeHtml(entry.range)}</dd></div>` : ""}
-          ${entry.target ? `<div><dt>Alvo/área</dt><dd>${escapeHtml(entry.target)}</dd></div>` : ""}
-          ${entry.duration ? `<div><dt>Duração</dt><dd>${escapeHtml(entry.duration)}</dd></div>` : ""}
-          ${entry.resistance ? `<div><dt>Resistência</dt><dd>${escapeHtml(entry.resistance)}</dd></div>` : ""}
-          ${entry.requirement ? `<div><dt>Requisito</dt><dd>${escapeHtml(entry.requirement)}</dd></div>` : ""}
-          <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</dd></div>
-        </dl>
-        ${entry.enhancements?.length ? `<div class="ritual-enhancements"><strong>Aprimoramentos</strong><ul>${entry.enhancements.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul></div>` : ""}
-        ${action}
-      </div>
-    </details>
+    <div class="entry-card-shell">
+      <details class="entry-card ritual-card element-${normalizeSearch(entry.element)}">
+        <summary>
+          <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small></span>
+          <span class="entry-summary-side"><span class="badge">${escapeHtml(entry.cost)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
+        </summary>
+        <div class="entry-body">
+          <p>${escapeHtml(entry.summary)}</p>
+          ${entry.details?.length ? `<ul class="entry-details">${entry.details.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul>` : ""}
+          <dl class="entry-meta">
+            <div><dt>Círculo</dt><dd>${entry.circle}º</dd></div>
+            <div><dt>Custo-base</dt><dd>${escapeHtml(entry.cost)}</dd></div>
+            ${entry.execution ? `<div><dt>Execução</dt><dd>${escapeHtml(entry.execution)}</dd></div>` : ""}
+            ${entry.range ? `<div><dt>Alcance</dt><dd>${escapeHtml(entry.range)}</dd></div>` : ""}
+            ${entry.target ? `<div><dt>Alvo/área</dt><dd>${escapeHtml(entry.target)}</dd></div>` : ""}
+            ${entry.duration ? `<div><dt>Duração</dt><dd>${escapeHtml(entry.duration)}</dd></div>` : ""}
+            ${entry.resistance ? `<div><dt>Resistência</dt><dd>${escapeHtml(entry.resistance)}</dd></div>` : ""}
+            ${entry.requirement ? `<div><dt>Requisito</dt><dd>${escapeHtml(entry.requirement)}</dd></div>` : ""}
+            <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</dd></div>
+          </dl>
+          ${entry.enhancements?.length ? `<div class="ritual-enhancements"><strong>Aprimoramentos</strong><ul>${entry.enhancements.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul></div>` : ""}
+          ${action}
+        </div>
+      </details>
+      ${!picker && selectedCharacter ? ritualUseButton(entry, selectedCharacter) : ""}
+    </div>
   `;
 }
 
@@ -1188,6 +1340,366 @@ function renderRitualPickerResults() {
   return entries.length
     ? entries.map((entry) => renderRitualCard(entry, { picker: true })).join("")
     : emptyCollection("Nenhum ritual encontrado neste círculo e elemento.");
+}
+
+function startAbilityChoice(character, entry, { pendingAdd = false, returnPicker = false } = {}) {
+  const repeatable = abilityCanRepeatChoice(entry);
+  let staged = [];
+  if (!repeatable) {
+    staged = (character.habilidadeEscolhas ?? [])
+      .filter((choice) => choice.abilityId === entry.id)
+      .map((choice) => ({ ...choice }));
+    if (entry.name === "Perito") {
+      staged = (character.peritoPericias ?? []).map((skill) => ({
+        abilityId: entry.id,
+        type: "pericia",
+        valueId: skill,
+        value: skill,
+      }));
+    }
+  }
+  abilityChoiceState = {
+    characterId: character.id,
+    abilityId: entry.id,
+    pendingAdd,
+    replace: !repeatable,
+    returnPicker,
+    step: 0,
+    staged,
+  };
+  reopenAbilityChoice(character);
+}
+
+function renderAbilityChoiceDialog(character) {
+  if (!abilityChoiceState || abilityChoiceState.characterId !== character.id) {
+    return `<dialog class="picker-dialog choice-dialog" id="ability-choice-dialog"></dialog>`;
+  }
+  const entry = ABILITY_BY_ID.get(abilityChoiceState.abilityId);
+  if (!entry) return `<dialog class="picker-dialog choice-dialog" id="ability-choice-dialog"></dialog>`;
+  const specs = choiceSpecsForAbility(entry, character, abilityChoiceState.staged, choiceContext(character));
+  abilityChoiceState.step = clamp(abilityChoiceState.step, 0, Math.max(0, specs.length - 1));
+  const current = specs[abilityChoiceState.step];
+  const selected = current
+    ? abilityChoiceState.staged.filter((choice) => choice.abilityId === current.ownerAbilityId && choice.type === current.type)
+    : [];
+  return `
+    <dialog class="picker-dialog choice-dialog" id="ability-choice-dialog" aria-labelledby="ability-choice-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Escolha obrigatória</p><h2 id="ability-choice-title">${escapeHtml(entry.name)}</h2><p>${specs.length ? `Etapa ${abilityChoiceState.step + 1} de ${specs.length}` : "Sem escolha disponível"}</p></div>
+        <button class="dialog-close" id="close-ability-choice" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="choice-dialog-body">
+        ${current ? `
+          <div class="choice-dialog-intro"><h3>${escapeHtml(current.label)}</h3>${current.help ? `<p>${escapeHtml(current.help)}</p>` : ""}<span class="skill-counter ${selected.length === current.count ? "complete" : ""}">${selected.length}/${current.count}</span></div>
+          ${renderChoiceOptions(current, selected)}
+        ` : `<div class="collection-empty"><p>Nenhuma opção válida está disponível agora. Confira os requisitos e as escolhas já feitas.</p></div>`}
+      </div>
+      <div class="choice-dialog-footer">
+        <button class="button ghost" id="cancel-ability-choice" type="button">Cancelar</button>
+        <span></span>
+        <button class="button ghost" id="previous-ability-choice" type="button" ${abilityChoiceState.step === 0 ? "disabled" : ""}>Voltar</button>
+        <button class="button primary" id="confirm-ability-choice" type="button" ${!current || selected.length !== current.count ? "disabled" : ""}>${abilityChoiceState.step < specs.length - 1 ? "Continuar" : "Confirmar escolha"}</button>
+      </div>
+    </dialog>
+  `;
+}
+
+function renderChoiceOptions(specification, selected) {
+  const selectedIds = new Set(selected.map((choice) => choice.valueId));
+  if (specification.count === 1 && specification.options.length > 14) {
+    const selectedOption = specification.options.find((item) => selectedIds.has(item.id));
+    return `<div class="choice-select-wrap"><label for="ability-choice-select">Opções disponíveis</label><select id="ability-choice-select" data-ability-choice-select><option value="">Selecione</option>${specification.options.map((item) => `<option value="${escapeAttribute(item.id)}" ${selectedIds.has(item.id) ? "selected" : ""}>${escapeHtml(item.label)}${item.description ? ` — ${escapeHtml(item.description)}` : ""}</option>`).join("")}</select>${selectedOption ? `<p><strong>${escapeHtml(selectedOption.label)}</strong>${selectedOption.description ? `<small>${escapeHtml(selectedOption.description)}</small>` : ""}</p>` : ""}</div>`;
+  }
+  return `<div class="choice-option-grid">${specification.options.map((item) => {
+    const checked = selectedIds.has(item.id);
+    const disabled = !checked && selected.length >= specification.count;
+    return `<label class="choice-option ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="${specification.count === 1 ? "radio" : "checkbox"}" name="ability-choice-option" value="${escapeAttribute(item.id)}" data-ability-choice-option ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span><strong>${escapeHtml(item.label)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ""}</span></label>`;
+  }).join("") || `<p class="muted">Nenhuma opção atende aos requisitos neste momento.</p>`}</div>`;
+}
+
+function currentAbilityChoiceSpec(character) {
+  const entry = ABILITY_BY_ID.get(abilityChoiceState?.abilityId);
+  const specs = entry ? choiceSpecsForAbility(entry, character, abilityChoiceState.staged, choiceContext(character)) : [];
+  return { entry, specs, current: specs[abilityChoiceState?.step ?? 0] };
+}
+
+function setStagedAbilityChoice(character, valueId, checked = true) {
+  const { current } = currentAbilityChoiceSpec(character);
+  if (!current) return;
+  const selectedOption = current.options.find((item) => item.id === valueId);
+  if (!selectedOption) return;
+  let staged = abilityChoiceState.staged.filter((choice) => !(choice.abilityId === current.ownerAbilityId && choice.type === current.type));
+  const currentSelected = abilityChoiceState.staged.filter((choice) => choice.abilityId === current.ownerAbilityId && choice.type === current.type);
+  if (current.count > 1) {
+    const values = new Map(currentSelected.map((choice) => [choice.valueId, choice]));
+    if (checked) values.set(valueId, makeChoiceRecord(current, selectedOption, character));
+    else values.delete(valueId);
+    staged.push(...[...values.values()].slice(0, current.count));
+  } else if (checked) {
+    staged.push(makeChoiceRecord(current, selectedOption, character));
+  }
+  abilityChoiceState.staged = staged;
+  reopenAbilityChoice(character);
+}
+
+function makeChoiceRecord(specification, selectedOption, character) {
+  return {
+    abilityId: specification.ownerAbilityId,
+    type: specification.type,
+    valueId: selectedOption.id,
+    value: selectedOption.label,
+    level: characterLevel(character),
+  };
+}
+
+function bindAbilityChoiceDialog(character, root = document) {
+  root.querySelectorAll("[data-ability-choice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const entry = ABILITY_BY_ID.get(button.dataset.abilityChoice);
+      if (!entry) return;
+      startAbilityChoice(character, entry, {
+        pendingAdd: !automaticAbilitiesFor(character).some((item) => item.id === entry.id) && !character.habilidadesSelecionadas.includes(entry.id),
+        returnPicker: button.dataset.choiceReturn === "picker" || Boolean(document.querySelector("#ability-dialog")?.open),
+      });
+    });
+  });
+  if (root !== document) return;
+  if (!abilityChoiceState || abilityChoiceState.characterId !== character.id) return;
+  const close = () => {
+    const returnPicker = abilityChoiceState?.returnPicker;
+    abilityChoiceState = null;
+    renderSheet(character.id);
+    if (returnPicker) document.querySelector("#ability-dialog")?.showModal();
+  };
+  document.querySelector("#close-ability-choice")?.addEventListener("click", close);
+  document.querySelector("#cancel-ability-choice")?.addEventListener("click", close);
+  closeDialogOnBackdrop(document.querySelector("#ability-choice-dialog"));
+  document.querySelector("[data-ability-choice-select]")?.addEventListener("change", (event) => setStagedAbilityChoice(character, event.target.value, Boolean(event.target.value)));
+  document.querySelectorAll("[data-ability-choice-option]").forEach((input) => input.addEventListener("change", () => setStagedAbilityChoice(character, input.value, input.checked)));
+  document.querySelector("#previous-ability-choice")?.addEventListener("click", () => {
+    abilityChoiceState.step = Math.max(0, abilityChoiceState.step - 1);
+    reopenAbilityChoice(character);
+  });
+  document.querySelector("#confirm-ability-choice")?.addEventListener("click", () => {
+    const { specs, current } = currentAbilityChoiceSpec(character);
+    const count = current ? abilityChoiceState.staged.filter((choice) => choice.abilityId === current.ownerAbilityId && choice.type === current.type).length : 0;
+    if (!current || count !== current.count) return showToast("Complete esta escolha antes de continuar.");
+    if (abilityChoiceState.step < specs.length - 1) {
+      abilityChoiceState.step += 1;
+      reopenAbilityChoice(character);
+      return;
+    }
+    applyAbilityChoice(character);
+  });
+}
+
+function applyAbilityChoice(character) {
+  const entry = ABILITY_BY_ID.get(abilityChoiceState?.abilityId);
+  if (!entry) return;
+  const state = abilityChoiceState;
+  if (state.replace) {
+    character.habilidadeEscolhas = (character.habilidadeEscolhas ?? []).filter((choice) => choice.abilityId !== entry.id);
+  }
+  if (entry.name === "Perito") {
+    character.peritoPericias = state.staged.filter((choice) => choice.type === "pericia").map((choice) => choice.valueId);
+  } else {
+    for (const choice of state.staged) {
+      const duplicate = character.habilidadeEscolhas.some((saved) => saved.abilityId === choice.abilityId && saved.type === choice.type && saved.valueId === choice.valueId);
+      if (!duplicate || entry.name === "<Habilidade> Aprimorada") character.habilidadeEscolhas.push({ ...choice, level: characterLevel(character) });
+    }
+  }
+  if (state.pendingAdd) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), entry.id])];
+  applyGrantedChoiceEffects(character, entry, state.staged);
+  const returnPicker = state.returnPicker;
+  abilityChoiceState = null;
+  upsertCharacter(character);
+  renderSheet(character.id);
+  if (returnPicker) document.querySelector("#ability-dialog")?.showModal();
+  showToast(state.pendingAdd ? "Habilidade configurada e adicionada." : "Escolha salva na ficha.");
+}
+
+function applyGrantedChoiceEffects(character, entry, staged) {
+  const chosen = (type, ownerId = entry.id) => staged.filter((choice) => choice.abilityId === ownerId && choice.type === type);
+  if (entry.name === "Treinamento em Perícia") {
+    const progress = usesSeparateLevel(character) ? characterLevel(character) * 5 : numberOr(character.nex, 0);
+    const max = progress >= 70 ? 15 : progress >= 35 ? 10 : 5;
+    for (const choice of chosen("pericia")) {
+      character.grausPericia[choice.valueId] = Math.min(max, numberOr(character.grausPericia[choice.valueId], 0) + 5);
+      character.periciasAdicionais = [...new Set([...(character.periciasAdicionais ?? []), choice.valueId])];
+    }
+  }
+  if (entry.name === "Transcender") {
+    const powerId = chosen("poder")[0]?.valueId;
+    const power = ABILITY_BY_ID.get(powerId);
+    if (power) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), power.id])];
+    if (power) {
+      for (const ritualChoice of chosen("ritual", power.id)) character.rituaisSelecionados = [...new Set([...(character.rituaisSelecionados ?? []), ritualChoice.valueId])];
+      for (const powerChoice of chosen("poder", power.id)) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), powerChoice.valueId])];
+    }
+    character.transcenderNiveis = [...new Set([...(character.transcenderNiveis ?? []), characterLevel(character)])].sort((a, b) => a - b);
+  }
+  if (["Expansão de Conhecimento", "Dominar Habilidade Ritualística"].includes(entry.name)) {
+    for (const choice of [...chosen("poder"), ...chosen("habilidade")]) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), choice.valueId])];
+  }
+  if (entry.name === "Aprender Ritual" || entry.name === "Mácula Ritualística") {
+    for (const choice of chosen("ritual")) character.rituaisSelecionados = [...new Set([...(character.rituaisSelecionados ?? []), choice.valueId])];
+  }
+}
+
+function reopenAbilityChoice(character) {
+  renderSheet(character.id);
+  document.querySelector("#ability-choice-dialog")?.showModal();
+}
+
+function adjustedRitualBaseCost(character, ritual) {
+  let cost = numberOr(String(ritual.cost).match(/\d+/)?.[0], 0);
+  const reductions = [];
+  const choices = character.habilidadeEscolhas ?? [];
+  const prediletoIds = [...ABILITY_BY_ID.values()].filter((entry) => entry.name === "Ritual Predileto").map((entry) => entry.id);
+  if (choices.some((choice) => prediletoIds.includes(choice.abilityId) && choice.type === "ritual" && choice.valueId === ritual.id)) {
+    cost = Math.max(1, cost - 1);
+    reductions.push("Ritual Predileto −1");
+  }
+  const masterIds = [...ABILITY_BY_ID.values()].filter((entry) => entry.name === "Mestre em Elemento").map((entry) => entry.id);
+  if (choices.some((choice) => masterIds.includes(choice.abilityId) && choice.type === "elemento" && ritual.elements.includes(choice.valueId))) {
+    cost = Math.max(1, cost - 1);
+    reductions.push("Mestre em Elemento −1");
+  }
+  return { cost, reductions };
+}
+
+function startEntryUse(character, type, id) {
+  const entry = type === "ritual" ? RITUAL_BY_ID.get(id) : ABILITY_BY_ID.get(id);
+  if (!entry) return;
+  if (type === "ritual") {
+    const adjusted = adjustedRitualBaseCost(character, entry);
+    const extras = (entry.enhancements ?? []).map((label) => ({ label, extra: numberOr(label.match(/\+(\d+)\s*PE/i)?.[1], 0) })).filter((item) => item.extra > 0);
+    spendState = {
+      characterId: character.id,
+      type,
+      entryId: id,
+      min: adjusted.cost,
+      max: 20,
+      value: adjusted.cost,
+      resource: "effort",
+      extras,
+      reductions: adjusted.reductions,
+    };
+    reopenSpendDialog(character);
+    return;
+  }
+  const model = abilityUseModel(entry);
+  if (model.kind === "none") return showToast("Esta habilidade não possui uso ativo para registrar.");
+  const sceneLimit = model.sceneLimit || (/uma vez por cena/i.test(entry.summary) ? 1 : 0);
+  if (model.kind === "random") {
+    commitEntryUse(character, entry, type, rollUseCost(model), model.resource, sceneLimit);
+    return;
+  }
+  if (["variable"].includes(model.kind)) {
+    spendState = {
+      characterId: character.id,
+      type,
+      entryId: id,
+      min: model.min,
+      max: model.max,
+      value: model.min,
+      resource: model.resource,
+      sceneLimit,
+      extras: [],
+      reductions: [],
+    };
+    reopenSpendDialog(character);
+    return;
+  }
+  commitEntryUse(character, entry, type, model.min, model.resource, sceneLimit);
+}
+
+function renderSpendDialog(character) {
+  if (!spendState || spendState.characterId !== character.id) return `<dialog class="picker-dialog spend-dialog" id="spend-dialog"></dialog>`;
+  const entry = spendState.type === "ritual" ? RITUAL_BY_ID.get(spendState.entryId) : ABILITY_BY_ID.get(spendState.entryId);
+  if (!entry) return `<dialog class="picker-dialog spend-dialog" id="spend-dialog"></dialog>`;
+  const resource = spendState.resource === "pv"
+    ? { label: "PV", currentKey: "pvAtual" }
+    : spendState.resource === "san"
+      ? { label: "SAN", currentKey: "sanAtual" }
+      : effortResource(character);
+  const limit = sessionSpendLimit(character, spendState.type === "ritual");
+  const spent = numberOr(character.controleSessao?.gastoTurno, 0);
+  const available = numberOr(character.recursos?.[resource.currentKey], 0);
+  const maximum = ["pv", "san"].includes(spendState.resource)
+    ? available
+    : Math.min(available, Math.max(0, limit - spent), spendState.max);
+  return `
+    <dialog class="picker-dialog spend-dialog" id="spend-dialog" aria-labelledby="spend-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">${spendState.type === "ritual" ? "Conjurar ritual" : "Usar habilidade"}</p><h2 id="spend-title">${escapeHtml(entry.name)}</h2><p>${available} ${resource.label} disponível · limite restante ${Math.max(0, limit - spent)}</p></div>
+        <button class="dialog-close" id="close-spend-dialog" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="spend-dialog-body">
+        ${spendState.reductions?.length ? `<div class="cost-reduction-note"><strong>Redução automática</strong><span>${escapeHtml(spendState.reductions.join(" · "))}</span></div>` : ""}
+        ${spendState.extras?.length ? `<div class="spend-presets"><button type="button" data-spend-preset="${spendState.min}" class="${spendState.value === spendState.min ? "active" : ""}">Básico · ${spendState.min} ${resource.label}</button>${spendState.extras.map((item) => { const total = spendState.min + item.extra; return `<button type="button" data-spend-preset="${total}" class="${spendState.value === total ? "active" : ""}">${escapeHtml(item.label.replace(/\s*\([^)]*\)\s*:/, ""))} · ${total} ${resource.label}</button>`; }).join("")}</div>` : ""}
+        <label class="spend-amount" for="spend-amount"><span>Custo total</span><div><input id="spend-amount" type="number" min="${spendState.min}" max="${Math.max(spendState.min, maximum)}" value="${spendState.value}" /><strong>${resource.label}</strong></div><small>${spendState.type === "ritual" ? "Use o custo total da forma básica, Discente ou Verdadeiro." : "Informe o valor escolhido para este uso."}</small></label>
+        <p class="spend-warning" ${spendState.value <= maximum ? "hidden" : ""}>Este valor ultrapassa o recurso disponível ou o limite do turno.</p>
+      </div>
+      <div class="choice-dialog-footer"><button class="button ghost" id="cancel-spend-dialog" type="button">Cancelar</button><span></span><button class="button primary" id="confirm-spend-dialog" type="button" ${spendState.value > maximum ? "disabled" : ""}>Confirmar uso</button></div>
+    </dialog>`;
+}
+
+function bindSpendDialog(character) {
+  document.querySelectorAll("[data-use-ability]").forEach((button) => button.addEventListener("click", () => startEntryUse(character, "habilidade", button.dataset.useAbility)));
+  document.querySelectorAll("[data-use-ritual]").forEach((button) => button.addEventListener("click", () => startEntryUse(character, "ritual", button.dataset.useRitual)));
+  if (!spendState || spendState.characterId !== character.id) return;
+  const close = () => { spendState = null; renderSheet(character.id); };
+  document.querySelector("#close-spend-dialog")?.addEventListener("click", close);
+  document.querySelector("#cancel-spend-dialog")?.addEventListener("click", close);
+  closeDialogOnBackdrop(document.querySelector("#spend-dialog"));
+  document.querySelectorAll("[data-spend-preset]").forEach((button) => button.addEventListener("click", () => {
+    spendState.value = numberOr(button.dataset.spendPreset, spendState.min);
+    reopenSpendDialog(character);
+  }));
+  document.querySelector("#spend-amount")?.addEventListener("input", (event) => {
+    spendState.value = clamp(numberOr(event.target.value, spendState.min), spendState.min, spendState.max);
+    const confirm = document.querySelector("#confirm-spend-dialog");
+    const warning = document.querySelector(".spend-warning");
+    const resource = spendState.resource === "pv"
+      ? { currentKey: "pvAtual" }
+      : spendState.resource === "san"
+        ? { currentKey: "sanAtual" }
+        : effortResource(character);
+    const available = numberOr(character.recursos?.[resource.currentKey], 0);
+    const remaining = ["pv", "san"].includes(spendState.resource) ? available : Math.min(available, Math.max(0, sessionSpendLimit(character, spendState.type === "ritual") - numberOr(character.controleSessao?.gastoTurno, 0)));
+    if (confirm) confirm.disabled = spendState.value > remaining;
+    if (warning) warning.hidden = spendState.value <= remaining;
+  });
+  document.querySelector("#confirm-spend-dialog")?.addEventListener("click", () => {
+    const entry = spendState.type === "ritual" ? RITUAL_BY_ID.get(spendState.entryId) : ABILITY_BY_ID.get(spendState.entryId);
+    if (!entry) return;
+    commitEntryUse(character, entry, spendState.type, spendState.value, spendState.resource, spendState.sceneLimit);
+  });
+}
+
+function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0) {
+  const result = useAbility(character, {
+    id: entry.id,
+    name: entry.name,
+    type,
+    cost,
+    resource,
+    turnLimit: sessionSpendLimit(character, type === "ritual"),
+    sceneKey: type === "habilidade" ? `habilidade:${entry.id}` : "",
+    sceneLimit,
+  });
+  if (!result.ok) return showToast(result.message);
+  spendState = null;
+  upsertCharacter(character);
+  renderSheet(character.id);
+  const resourceLabel = result.record.resource ? ` e gastou ${result.record.cost} ${result.record.resource}` : "";
+  showToast(`${entry.name} usado${resourceLabel}.`);
+}
+
+function reopenSpendDialog(character) {
+  renderSheet(character.id);
+  document.querySelector("#spend-dialog")?.showModal();
 }
 
 function inventorySelections(character) {
@@ -1334,6 +1846,7 @@ function startLevelUp(character) {
     powerTrainingSkills: [],
     versatilityId: "",
     ritualIds: [],
+    structuredChoices: [],
     classGroupSkills: [],
     classFreeSkills: plan.firstAgentLevel ? [...(character.periciasEscolhidas ?? [])] : [],
     peritoSkills: [...(character.peritoPericias ?? [])],
@@ -1462,6 +1975,8 @@ function renderLevelUpChoices(character, plan) {
   if (paranormalPower?.name === "Expansão de Conhecimento") sections.push(renderExpansionPowerChoice(character, plan));
   if (needsAffinityChoice(character, plan)) sections.push(renderAffinityChoice(character));
   if (selectedPowerNamed("Treinamento em Perícia")) sections.push(renderPowerTrainingChoices(preview, plan));
+  const structuredChoices = renderStructuredLevelUpChoices(character, plan);
+  if (structuredChoices) sections.push(structuredChoices);
   if (plan.ritualPicks) sections.push(renderLevelUpRitualChoices(character, plan));
   return `<section class="level-up-section"><p class="eyebrow">Etapa 3 de 4</p><h3>Escolhas do nível</h3><p class="muted">Complete tudo que o sistema liberar neste avanço.</p><div class="level-up-choice-stack">${sections.length ? sections.join("") : `<div class="level-up-complete-box">✓ Este nível não exige escolhas adicionais.</div>`}</div></section>`;
 }
@@ -1549,7 +2064,7 @@ function availableClassPowers(character, plan) {
       (entry.category === plan.className || entry.category === "Gerais") &&
       entry.unlockNex <= plan.targetProgressNex &&
       !(usesSeparateLevel(character) && entry.name === "Transcender") &&
-      (!selected.has(entry.id) || ["Transcender", "Treinamento em Perícia"].includes(entry.name)),
+      (!selected.has(entry.id) || abilityCanRepeatChoice(entry)),
     )
     .filter((entry) => {
       if (entry.name === "Transcender") return availableParanormalPowers(character, plan).length > 0;
@@ -1721,10 +2236,53 @@ function renderPowerTrainingChoices(_preview, plan) {
   return renderSkillCheckboxBlock({ title: "Treinamento em Perícia — escolha duas", description: "Cada escolha avança um grau permitido pelo seu NEX.", skills, selected: levelUpState.powerTrainingSkills, dataAttribute: "data-level-up-power-training", required: Math.min(2, skills.length), blockId: "level-up-power-training-choice" });
 }
 
+function structuredLevelUpChoiceAbilities(character, plan) {
+  const preview = buildLevelUpPreview(character);
+  const previousAutomatic = new Set(automaticAbilitiesFor(character).map((entry) => entry.id));
+  const newAutomatic = automaticAbilitiesFor(preview).filter((entry) => !previousAutomatic.has(entry.id));
+  const candidates = uniqueById([
+    ...selectedGrantedPowers(),
+    selectedExpandedClassPower(),
+    ...newAutomatic,
+  ].filter(Boolean));
+  const handledElsewhere = new Set(["Transcender", "Treinamento em Perícia", "Aprender Ritual", "Resistir a Elemento", "Expansão de Conhecimento"]);
+  return candidates.filter((entry) => !handledElsewhere.has(entry.name) && choiceSpecsForAbility(entry, preview, levelUpState.structuredChoices, choiceContext(preview)).length);
+}
+
+function structuredLevelUpSpecs(character, plan) {
+  const preview = buildLevelUpPreview(character);
+  return structuredLevelUpChoiceAbilities(character, plan).flatMap((entry) =>
+    choiceSpecsForAbility(entry, preview, levelUpState.structuredChoices, choiceContext(preview)).map((specification) => ({ entry, specification })),
+  );
+}
+
+function renderStructuredLevelUpChoices(character, plan) {
+  const groups = structuredLevelUpSpecs(character, plan);
+  if (!groups.length) return "";
+  return groups.map(({ entry, specification }) => {
+    const selected = levelUpState.structuredChoices.filter((choice) => choice.abilityId === specification.ownerAbilityId && choice.type === specification.type);
+    const selectedIds = new Set(selected.map((choice) => choice.valueId));
+    if (!specification.options.length) return renderUnavailableChoice(`${entry.name} — ${specification.label}`, "Nenhuma opção válida está disponível. Confira os requisitos; a evolução não ficará travada.");
+    const choices = specification.count === 1 && specification.options.length > 14
+      ? `<select data-level-up-structured-choice data-choice-owner="${escapeAttribute(specification.ownerAbilityId)}" data-choice-type="${escapeAttribute(specification.type)}"><option value="">Selecione</option>${specification.options.map((item) => `<option value="${escapeAttribute(item.id)}" data-choice-label="${escapeAttribute(item.label)}" ${selectedIds.has(item.id) ? "selected" : ""}>${escapeHtml(item.label)}${item.description ? ` — ${escapeHtml(item.description)}` : ""}</option>`).join("")}</select>`
+      : `<div class="choice-option-grid level-up-structured-grid">${specification.options.map((item) => { const checked = selectedIds.has(item.id); const disabled = !checked && selected.length >= specification.count; return `<label class="choice-option ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="${specification.count === 1 ? "radio" : "checkbox"}" name="level-choice-${escapeAttribute(specification.ownerAbilityId)}-${escapeAttribute(specification.type)}" value="${escapeAttribute(item.id)}" data-choice-label="${escapeAttribute(item.label)}" data-level-up-structured-choice data-choice-owner="${escapeAttribute(specification.ownerAbilityId)}" data-choice-type="${escapeAttribute(specification.type)}" ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span><strong>${escapeHtml(item.label)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ""}</span></label>`; }).join("")}</div>`;
+    return `<fieldset class="level-up-choice-block" id="level-up-structured-${escapeAttribute(entry.id)}-${escapeAttribute(specification.type)}"><legend>${escapeHtml(entry.name)} — ${escapeHtml(specification.label)}</legend><div class="skill-choice-head"><p class="muted small">${escapeHtml(specification.help || "Esta escolha será salva junto com a habilidade.")}</p><strong class="skill-counter ${selected.length === specification.count ? "complete" : ""}">${selected.length}/${specification.count}</strong></div>${choices}</fieldset>`;
+  }).join("");
+}
+
+function validateStructuredLevelUpChoices(character, plan) {
+  for (const { entry, specification } of structuredLevelUpSpecs(character, plan)) {
+    if (!specification.options.length) continue;
+    const selected = levelUpState.structuredChoices.filter((choice) => choice.abilityId === specification.ownerAbilityId && choice.type === specification.type && specification.options.some((item) => item.id === choice.valueId));
+    if (selected.length !== specification.count) return `Complete a escolha de ${entry.name}.`;
+  }
+  return "";
+}
+
 function availableVersatilityAbilities(character, plan) {
   const selected = new Set(character.habilidadesSelecionadas ?? []);
   const otherTrails = TRAIL_ABILITIES.filter((entry) => entry.category === plan.className && entry.unlockNex === 10 && entry.group !== (levelUpState.targetTrail || character.trilha) && !selected.has(entry.id));
-  const powers = availableClassPowers(character, plan).filter((entry) => !selected.has(entry.id) || ["Transcender", "Treinamento em Perícia"].includes(entry.name));
+  const powers = availableClassPowers(character, plan).filter((entry) => !selected.has(entry.id) || abilityCanRepeatChoice(entry));
   return [...powers, ...otherTrails];
 }
 
@@ -1774,6 +2332,10 @@ function renderLevelUpReview(character, plan) {
   if (levelUpState.expandedClassPowerId) choices.push(["Poder de Expansão", ABILITY_BY_ID.get(levelUpState.expandedClassPowerId)?.name ?? "—"]);
   if (levelUpState.affinityElement) choices.push(["Afinidade elemental", levelUpState.affinityElement]);
   if (levelUpState.versatilityId) choices.push(["Versatilidade", ABILITY_BY_ID.get(levelUpState.versatilityId)?.name ?? "—"]);
+  for (const choice of levelUpState.structuredChoices ?? []) {
+    const owner = ABILITY_BY_ID.get(choice.abilityId);
+    choices.push([`${owner?.name ?? "Habilidade"} · ${CHOICE_TYPE_LABELS[choice.type] ?? "Escolha"}`, choice.value]);
+  }
   if (levelUpState.ritualIds.length) choices.push(["Rituais", levelUpState.ritualIds.map((id) => RITUAL_BY_ID.get(id)?.name).filter(Boolean).join(", ")]);
   const oldAutomatic = new Set(automaticAbilitiesFor(character).map((entry) => entry.id));
   const newAutomatic = automaticAbilitiesFor(preview).filter((entry) => !oldAutomatic.has(entry.id)).map((entry) => entry.name);
@@ -1822,6 +2384,14 @@ function buildLevelUpPreview(character, { includePowerTraining = true } = {}) {
   }
   if (levelUpState.expandedClassPowerId && levelUpState.paranormalPowerId) {
     appendAbilityChoice(preview, levelUpState.paranormalPowerId, "poder", levelUpState.expandedClassPowerId, ABILITY_BY_ID.get(levelUpState.expandedClassPowerId)?.name ?? "Poder", plan.toLevel);
+  }
+  for (const choice of levelUpState.structuredChoices ?? []) {
+    const owner = ABILITY_BY_ID.get(choice.abilityId);
+    const duplicate = preview.habilidadeEscolhas.some((saved) => saved.abilityId === choice.abilityId && saved.type === choice.type && saved.valueId === choice.valueId);
+    if (!duplicate || owner?.name === "<Habilidade> Aprimorada") preview.habilidadeEscolhas.push({ ...choice, level: plan.toLevel });
+    if (owner?.name === "Dominar Habilidade Ritualística" && choice.type === "habilidade") {
+      preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), choice.valueId])];
+    }
   }
   if (selectedPowerNamed("Transcender")) {
     preview.transcenderNiveis = [...new Set([...(preview.transcenderNiveis ?? []), plan.toLevel])].sort((a, b) => a - b);
@@ -1877,6 +2447,8 @@ function validateLevelUpStep(character, step) {
     const required = Math.min(2, powerTrainingOptions.length);
     if (!isExactValidSelection(levelUpState.powerTrainingSkills, powerTrainingOptions, required)) return "Complete as escolhas de Treinamento em Perícia.";
   }
+  const structuredError = validateStructuredLevelUpChoices(character, plan);
+  if (structuredError) return structuredError;
   const ritualOptions = availableLevelUpRituals(character, plan).map((entry) => entry.id);
   const ritualRequired = requiredLevelUpRitualPicks(character, plan);
   if (plan.ritualPicks && !isExactValidSelection(levelUpState.ritualIds, ritualOptions, ritualRequired)) return `Escolha ${ritualRequired} ritual(is).`;
@@ -1902,7 +2474,7 @@ function bindLevelUpDialog(character) {
     else applyLevelUp(character);
   });
   bindLevelUpSingle(character, "[data-level-up-class]", "targetClass", () => { levelUpState.targetTrail = ""; levelUpState.classGroupSkills = []; levelUpState.peritoSkills = []; levelUpState.ritualIds = []; clearNestedPowerSelections(); });
-  bindLevelUpSingle(character, "[data-level-up-trail]", "targetTrail");
+  bindLevelUpSingle(character, "[data-level-up-trail]", "targetTrail", () => { levelUpState.structuredChoices = []; });
   bindLevelUpSingle(character, "[data-level-up-attribute]", "attribute", () => { if (levelUpState.attribute !== "intelecto") levelUpState.intellectSkill = ""; });
   bindLevelUpSingle(character, "[data-level-up-int-skill]", "intellectSkill");
   bindLevelUpSingle(character, "[data-level-up-class-power]", "classPowerId", () => {
@@ -1915,12 +2487,14 @@ function bindLevelUpDialog(character) {
     levelUpState.expandedClassPowerId = "";
     levelUpState.affinityElement = "";
     levelUpState.powerTrainingSkills = [];
+    levelUpState.structuredChoices = [];
     return followUpSelectorForParanormalPower(character, currentLevelUpPlan(character));
   });
   bindLevelUpSingle(character, "[data-level-up-transcender-ritual]", "paranormalRitualId", () => followUpSelectorAfterNestedPower(character, currentLevelUpPlan(character)));
   bindLevelUpSingle(character, "[data-level-up-paranormal-element]", "paranormalElement", () => followUpSelectorAfterNestedPower(character, currentLevelUpPlan(character)));
   bindLevelUpSingle(character, "[data-level-up-expanded-power]", "expandedClassPowerId", () => {
     levelUpState.powerTrainingSkills = [];
+    levelUpState.structuredChoices = [];
     return followUpSelectorAfterNestedPower(character, currentLevelUpPlan(character));
   });
   bindLevelUpSingle(character, "[data-level-up-affinity-element]", "affinityElement", () => selectedPowerNamed("Treinamento em Perícia") ? "#level-up-power-training-choice" : "");
@@ -1942,6 +2516,25 @@ function bindLevelUpDialog(character) {
     const plan = currentLevelUpPlan(character);
     return plan ? requiredLevelUpRitualPicks(character, plan) : 0;
   });
+  document.querySelectorAll("[data-level-up-structured-choice]").forEach((input) => input.addEventListener("change", () => {
+    const scrollTop = currentLevelUpScrollTop();
+    const ownerId = input.dataset.choiceOwner;
+    const type = input.dataset.choiceType;
+    const isSelect = input.tagName === "SELECT";
+    const isSingle = isSelect || input.type === "radio";
+    const valueId = input.value;
+    const value = isSelect
+      ? input.selectedOptions?.[0]?.dataset.choiceLabel ?? input.selectedOptions?.[0]?.textContent ?? valueId
+      : input.dataset.choiceLabel ?? valueId;
+    let choices = [...(levelUpState.structuredChoices ?? [])];
+    if (isSingle) choices = choices.filter((choice) => !(choice.abilityId === ownerId && choice.type === type));
+    if (!isSingle && !input.checked) choices = choices.filter((choice) => !(choice.abilityId === ownerId && choice.type === type && choice.valueId === valueId));
+    if (valueId && (isSingle || input.checked)) {
+      choices.push({ abilityId: ownerId, type, valueId, value, level: currentLevelUpPlan(character)?.toLevel ?? characterLevel(character) });
+    }
+    levelUpState.structuredChoices = choices;
+    reopenLevelUp(character, { scrollTop });
+  }));
 }
 
 function clearNestedPowerSelections() {
@@ -1951,6 +2544,7 @@ function clearNestedPowerSelections() {
   levelUpState.expandedClassPowerId = "";
   levelUpState.affinityElement = "";
   levelUpState.powerTrainingSkills = [];
+  levelUpState.structuredChoices = [];
 }
 
 function followUpSelectorForSelectedPower() {
@@ -2015,6 +2609,7 @@ function applyLevelUp(character) {
     rituals: [...levelUpState.ritualIds, levelUpState.paranormalRitualId].filter(Boolean),
     affinityElement: levelUpState.affinityElement || "",
     paranormalElement: levelUpState.paranormalElement || "",
+    structuredChoices: [...(levelUpState.structuredChoices ?? [])],
     appliedAt: new Date().toISOString(),
   }];
   const saved = upsertCharacter(preview);
@@ -2065,6 +2660,25 @@ function bindSheetInteractions(character) {
     });
   });
 
+  document.querySelectorAll("[data-session-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const action = button.dataset.sessionAction;
+      if (action === "turn") {
+        startNextTurn(character);
+        showToast("Novo turno: o limite de gasto foi renovado.");
+      } else if (action === "scene") {
+        startNextScene(character);
+        showToast("Nova cena: usos por cena e limite do turno foram renovados.");
+      } else if (action === "undo") {
+        const result = undoLastUse(character);
+        if (!result.ok) return showToast(result.message);
+        showToast(`${result.record.name}: último uso desfeito.`);
+      } else return;
+      upsertCharacter(character);
+      renderSheet(character.id);
+    });
+  });
+
   document.querySelectorAll("[data-autosave]").forEach((fieldElement) => {
     fieldElement.addEventListener("change", () => {
       character[fieldElement.dataset.autosave] = fieldElement.value;
@@ -2105,6 +2719,8 @@ function bindSheetInteractions(character) {
   bindItemDialog(character);
   bindOptionalRulesDialog(character);
   bindLevelUpDialog(character);
+  bindAbilityChoiceDialog(character);
+  bindSpendDialog(character);
 }
 
 function bindAbilityDialog(character) {
@@ -2139,6 +2755,7 @@ function bindAbilityDialog(character) {
     const results = document.querySelector("#ability-picker-results");
     if (results) results.innerHTML = renderAbilityPickerResults(character);
     bindAbilityToggleButtons(character, true);
+    if (results) bindAbilityChoiceDialog(character, results);
   });
   bindAbilityToggleButtons(character, false);
 }
@@ -2153,8 +2770,18 @@ function bindAbilityToggleButtons(character, resultsOnly) {
       if (!ABILITY_BY_ID.has(id)) return;
       const wasOpen = Boolean(document.querySelector("#ability-dialog")?.open);
       const selected = new Set(character.habilidadesSelecionadas);
-      if (selected.has(id)) selected.delete(id);
-      else selected.add(id);
+      if (selected.has(id)) {
+        selected.delete(id);
+        character.habilidadeEscolhas = (character.habilidadeEscolhas ?? []).filter((choice) => choice.abilityId !== id);
+      } else {
+        const entry = ABILITY_BY_ID.get(id);
+        const specs = choiceSpecsForAbility(entry, character, [], choiceContext(character));
+        if (specs.length) {
+          startAbilityChoice(character, entry, { pendingAdd: true, returnPicker: wasOpen });
+          return;
+        }
+        selected.add(id);
+      }
       character.habilidadesSelecionadas = [...selected];
       upsertCharacter(character);
       renderSheet(character.id);
