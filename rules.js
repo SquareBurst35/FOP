@@ -301,12 +301,16 @@ export function sanitizeSkillSelections(character) {
     .filter((skill) => !blockedForFree.has(skill))
     .slice(0, config.classChoiceCount);
 
+  character.periciasAdicionais = uniqueSkills(character.periciasAdicionais ?? [])
+    .filter((skill) => !blockedForFree.has(skill));
+
   character.periciasTreinadas = uniqueSkills([
     ...config.originAutomatic,
     ...character.periciasOrigemEscolhidas,
     ...config.classAutomatic,
     ...character.periciasClasseObrigatorias,
     ...character.periciasEscolhidas,
+    ...character.periciasAdicionais,
   ]);
 
   return character;
