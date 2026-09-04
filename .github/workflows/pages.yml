@@ -24,6 +24,16 @@ jobs:
       - name: Baixar o projeto
         uses: actions/checkout@v4
 
+      - name: Validar regras e level up
+        run: |
+          node --check app.js
+          node --check content.js
+          node --check items.js
+          node --check progression.js
+          node --check rules.js
+          node tests/rules-regression.mjs
+          node tests/level-up-regression.mjs
+
       - name: Configurar Pages
         uses: actions/configure-pages@v5
 

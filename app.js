@@ -15,7 +15,7 @@ import {
   sanitizeSkillSelections,
   skillSelectionStatus,
   usesSeparateLevel,
-} from "./rules.js?v=7";
+} from "./rules.js?v=8";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -31,15 +31,15 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=7";
+} from "./content.js?v=8";
 import {
   INVENTORY_GROUPS,
   ITEMS,
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=7";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=7";
+} from "./items.js?v=8";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=8";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -50,6 +50,8 @@ const ATTRIBUTE_LABELS = {
   presenca: "PRE",
   vigor: "VIG",
 };
+
+const PARANORMAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
 
 const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Recursos", "Revisão"];
 
@@ -131,6 +133,9 @@ function createBlankCharacter() {
     habilidades: "",
     habilidadesNotas: "",
     habilidadesSelecionadas: [],
+    habilidadeEscolhas: [],
+    afinidadeElemental: "",
+    transcenderNiveis: [],
     rituaisSelecionados: [],
     rituaisNotas: "",
     peritoPericias: [],
@@ -185,6 +190,30 @@ function normalizeCharacter(character) {
     : [];
   character.levelUpHistory = Array.isArray(character.levelUpHistory)
     ? character.levelUpHistory
+    : [];
+  const migratedTranscenderLevels = character.levelUpHistory
+    .filter((entry) =>
+      Array.isArray(entry?.abilities) &&
+      entry.abilities.some((id) => ABILITY_BY_ID.get(id)?.name === "Transcender"),
+    )
+    .map((entry) => Number(entry.toLevel));
+  character.transcenderNiveis = [...new Set([
+    ...(Array.isArray(character.transcenderNiveis) ? character.transcenderNiveis : []),
+    ...migratedTranscenderLevels,
+  ].map(Number).filter((value) => Number.isInteger(value) && value >= 1 && value <= LEVEL_CAP))].sort((a, b) => a - b);
+  character.afinidadeElemental = PARANORMAL_ELEMENTS.includes(character.afinidadeElemental)
+    ? character.afinidadeElemental
+    : "";
+  character.habilidadeEscolhas = Array.isArray(character.habilidadeEscolhas)
+    ? character.habilidadeEscolhas
+        .filter((entry) => entry && ABILITY_BY_ID.has(entry.abilityId) && ["elemento", "ritual", "poder"].includes(entry.type))
+        .map((entry) => ({
+          abilityId: entry.abilityId,
+          type: entry.type,
+          valueId: String(entry.valueId ?? ""),
+          value: String(entry.value ?? ""),
+          level: clamp(numberOr(entry.level, characterLevel(character)), 0, LEVEL_CAP),
+        }))
     : [];
   const inventoryQuantities = new Map();
   for (const selected of Array.isArray(character.inventarioItens) ? character.inventarioItens : []) {
@@ -972,6 +1001,7 @@ function renderAbilitiesTab(character) {
         <div><h2>Habilidades</h2><p class="muted small">Poderes de origem e habilidades liberadas da trilha entram sozinhos.</p></div>
         <button class="button primary compact" id="open-ability-picker" type="button">+ Adicionar habilidade</button>
       </div>
+      ${character.afinidadeElemental ? `<div class="affinity-banner"><span>Afinidade elemental</span><strong>${escapeHtml(character.afinidadeElemental)}</strong></div>` : ""}
       <div class="collection-block">
         <h3>Automáticas <span class="badge">${automatic.length}</span></h3>
         <div class="entry-list">${automatic.length ? automatic.map((entry) => renderAbilityCard(entry, { automatic: true })).join("") : emptyCollection("Nenhuma habilidade automática neste nível.")}</div>
@@ -999,6 +1029,7 @@ function renderAbilityCard(entry, { automatic = false, removable = false, picker
       </summary>
       <div class="entry-body">
         <p>${escapeHtml(entry.summary)}</p>
+        ${renderSavedAbilityChoices(entry)}
         ${entry.details?.length ? `<ul class="entry-details">${entry.details.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul>` : ""}
         <dl class="entry-meta">
           <div><dt>Custo</dt><dd>${escapeHtml(entry.cost)}</dd></div>
@@ -1009,6 +1040,15 @@ function renderAbilityCard(entry, { automatic = false, removable = false, picker
       </div>
     </details>
   `;
+}
+
+function renderSavedAbilityChoices(entry) {
+  const route = currentRoute();
+  const character = route.page === "ficha" ? getCharacter(route.id) : null;
+  const choices = (character?.habilidadeEscolhas ?? []).filter((choice) => choice.abilityId === entry.id);
+  if (!choices.length) return "";
+  const labels = { elemento: "Elemento", ritual: "Ritual aprendido", poder: "Poder recebido" };
+  return `<div class="ability-saved-choices">${choices.map((choice) => `<span><small>${escapeHtml(labels[choice.type] ?? "Escolha")}</small><strong>${escapeHtml(choice.value)}</strong></span>`).join("")}</div>`;
 }
 
 function renderAbilityDialog(character) {
@@ -1287,6 +1327,10 @@ function startLevelUp(character) {
     gradeUpgrades: [],
     classPowerId: "",
     paranormalPowerId: "",
+    paranormalRitualId: "",
+    paranormalElement: "",
+    expandedClassPowerId: "",
+    affinityElement: "",
     powerTrainingSkills: [],
     versatilityId: "",
     ritualIds: [],
@@ -1356,7 +1400,7 @@ function renderLevelUpGains(character, plan) {
   const previousAutomatic = new Set(automaticAbilitiesFor(character).map((entry) => entry.id));
   const automatic = automaticAbilitiesFor(preview).filter((entry) => !previousAutomatic.has(entry.id)).map((entry) => entry.name);
   const classGains = automaticClassGains(plan);
-  const choices = levelUpChoiceLabels(plan);
+  const choices = levelUpChoiceLabels(character, plan);
   return `<section class="level-up-section">
     <p class="eyebrow">Etapa 2 de 4</p><h3>Ganhos deste nível</h3><p class="muted">Os valores máximos e benefícios entram na ficha somente ao confirmar.</p>
     <div class="level-up-resource-grid">${levelUpResourceCard("PV máximo", before.pvMax, after.pvMax)}${after.usesDetermination ? levelUpResourceCard("PD máximo", before.pdMax, after.pdMax) : `${levelUpResourceCard("PE máximo", before.peMax, after.peMax)}${levelUpResourceCard("SAN máxima", before.sanMax, after.sanMax)}`}</div>
@@ -1378,16 +1422,17 @@ function automaticClassGains(plan) {
   return gains;
 }
 
-function levelUpChoiceLabels(plan) {
+function levelUpChoiceLabels(character, plan) {
   const labels = [];
   if (plan.firstAgentLevel) labels.push("Perícias iniciais da classe");
   if (plan.firstAgentLevel && plan.className === "Especialista") labels.push("Duas perícias para Perito");
   if (plan.needsTrail) labels.push("Trilha da classe");
-  if (plan.needsAttribute) labels.push("Aumento de um atributo");
+  if (plan.needsAttribute && attributeIncreaseOptions(character).length) labels.push("Aumento de um atributo");
   if (plan.trainingRank) labels.push(`${plan.trainingCount} perícia(s) para grau +${plan.trainingRank}`);
-  if (plan.needsClassPower) labels.push("Um poder da classe");
-  if (plan.needsVersatility) labels.push("Versatilidade");
-  if (plan.ritualPicks) labels.push(`${plan.ritualPicks} ritual(is)`);
+  if (plan.needsClassPower && availableClassPowers(character, plan).length) labels.push("Um poder da classe");
+  if (plan.needsVersatility && availableVersatilityAbilities(character, plan).length) labels.push("Versatilidade");
+  const ritualPicks = requiredLevelUpRitualPicks(character, plan);
+  if (ritualPicks) labels.push(`${ritualPicks} ritual(is)`);
   return labels;
 }
 
@@ -1402,15 +1447,27 @@ function renderLevelUpChoices(character, plan) {
   if (plan.firstAgentLevel) sections.push(renderFirstAgentSkillChoices(character, plan));
   if (plan.firstAgentLevel && plan.className === "Especialista") sections.push(renderPeritoChoices(preview));
   if (plan.needsTrail) sections.push(renderTrailChoice(plan));
-  if (plan.needsAttribute) sections.push(renderAttributeIncrease(character));
+  if (plan.needsAttribute && attributeIncreaseOptions(character).length) sections.push(renderAttributeIncrease(character));
+  if (plan.needsAttribute && !attributeIncreaseOptions(character).length) sections.push(renderUnavailableChoice("Aumento de atributo", "Todos os atributos já estão no máximo; este avanço continua sem uma escolha impossível."));
   if (plan.needsAttribute && levelUpState.attribute === "intelecto") sections.push(renderIntellectSkillChoice(preview));
   if (plan.trainingRank) sections.push(renderTrainingUpgradeChoices(character, plan));
-  if (plan.needsClassPower) sections.push(renderClassPowerChoice(character, plan));
-  if (plan.needsVersatility) sections.push(renderVersatilityChoice(character, plan));
-  if (selectedGrantedPower()?.name === "Transcender") sections.push(renderParanormalPowerChoice(character, plan));
-  if (selectedGrantedPower()?.name === "Treinamento em Perícia") sections.push(renderPowerTrainingChoices(preview, plan));
+  if (plan.needsClassPower && availableClassPowers(character, plan).length) sections.push(renderClassPowerChoice(character, plan));
+  if (plan.needsClassPower && !availableClassPowers(character, plan).length) sections.push(renderUnavailableChoice("Poder da classe", "Nenhum poder válido permanece no catálogo para esta ficha; a evolução não fica bloqueada."));
+  if (plan.needsVersatility && availableVersatilityAbilities(character, plan).length) sections.push(renderVersatilityChoice(character, plan));
+  if (plan.needsVersatility && !availableVersatilityAbilities(character, plan).length) sections.push(renderUnavailableChoice("Versatilidade", "Nenhuma opção válida permanece para esta ficha; a evolução não fica bloqueada."));
+  if (selectedPowerNamed("Transcender")) sections.push(renderParanormalPowerChoice(character, plan));
+  const paranormalPower = selectedParanormalPower();
+  if (paranormalPower?.name === "Aprender Ritual") sections.push(renderTranscenderRitualChoice(character, plan));
+  if (paranormalPower?.name === "Resistir a Elemento") sections.push(renderParanormalElementChoice(character, paranormalPower));
+  if (paranormalPower?.name === "Expansão de Conhecimento") sections.push(renderExpansionPowerChoice(character, plan));
+  if (needsAffinityChoice(character, plan)) sections.push(renderAffinityChoice(character));
+  if (selectedPowerNamed("Treinamento em Perícia")) sections.push(renderPowerTrainingChoices(preview, plan));
   if (plan.ritualPicks) sections.push(renderLevelUpRitualChoices(character, plan));
   return `<section class="level-up-section"><p class="eyebrow">Etapa 3 de 4</p><h3>Escolhas do nível</h3><p class="muted">Complete tudo que o sistema liberar neste avanço.</p><div class="level-up-choice-stack">${sections.length ? sections.join("") : `<div class="level-up-complete-box">✓ Este nível não exige escolhas adicionais.</div>`}</div></section>`;
+}
+
+function renderUnavailableChoice(title, description) {
+  return `<div class="level-up-complete-box"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small></div>`;
 }
 
 function levelUpClassDraft(character, plan) {
@@ -1438,9 +1495,9 @@ function renderFirstAgentSkillChoices(character, plan) {
   </fieldset>`;
 }
 
-function renderSkillCheckboxBlock({ title, description, skills, selected, dataAttribute, required }) {
+function renderSkillCheckboxBlock({ title, description, skills, selected, dataAttribute, required, blockId = "" }) {
   const valid = selected.filter((skill) => skills.includes(skill));
-  return `<fieldset class="level-up-choice-block"><legend>${escapeHtml(title)}</legend><div class="skill-choice-head"><p class="muted small">${escapeHtml(description)}</p><strong class="skill-counter ${valid.length === required ? "complete" : ""}">${valid.length}/${required}</strong></div><div class="skill-grid">${skills.map((skill) => { const checked = valid.includes(skill); const disabled = !checked && valid.length >= required; return `<label class="skill-option ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="checkbox" value="${escapeAttribute(skill)}" ${dataAttribute} ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span>${escapeHtml(skill)}</span></label>`; }).join("") || `<p class="muted small">Nenhuma perícia elegível foi encontrada.</p>`}</div></fieldset>`;
+  return `<fieldset class="level-up-choice-block" ${blockId ? `id="${escapeAttribute(blockId)}"` : ""}><legend>${escapeHtml(title)}</legend><div class="skill-choice-head"><p class="muted small">${escapeHtml(description)}</p><strong class="skill-counter ${valid.length === required ? "complete" : ""}">${valid.length}/${required}</strong></div><div class="skill-grid">${skills.map((skill) => { const checked = valid.includes(skill); const disabled = !checked && valid.length >= required; return `<label class="skill-option ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="checkbox" value="${escapeAttribute(skill)}" ${dataAttribute} ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span>${escapeHtml(skill)}</span></label>`; }).join("") || `<p class="muted small">Nenhuma perícia elegível foi encontrada.</p>`}</div></fieldset>`;
 }
 
 function renderPeritoChoices(preview) {
@@ -1452,13 +1509,22 @@ function renderTrailChoice(plan) {
   return `<fieldset class="level-up-choice-block"><legend>Escolha uma trilha</legend><p class="muted small">A habilidade de NEX 10% entra automaticamente.</p><div class="class-choice-grid">${(CLASSES[plan.className]?.trails ?? []).map((name) => { const entry = TRAIL_ABILITIES.find((item) => item.category === plan.className && item.group === name && item.unlockNex === 10); const selected = levelUpState.targetTrail === name; return `<label class="level-choice-card ${selected ? "selected" : ""}"><input type="radio" name="level-up-trail" value="${escapeAttribute(name)}" data-level-up-trail ${selected ? "checked" : ""}/><strong>${escapeHtml(name)}</strong><small>${escapeHtml(entry?.summary ?? "Habilidade inicial da trilha.")}</small></label>`; }).join("")}</div></fieldset>`;
 }
 
+function attributeIncreaseOptions(character) {
+  return Object.entries(ATTRIBUTE_LABELS).filter(([key]) => numberOr(character.atributos?.[key], 0) < 5);
+}
+
 function renderAttributeIncrease(character) {
-  return `<fieldset class="level-up-choice-block"><legend>Aumento de atributo</legend><p class="muted small">Escolha um atributo para aumentar em +1, até o máximo 5.</p><div class="attribute-choice-grid">${Object.entries(ATTRIBUTE_LABELS).map(([key, label]) => { const current = numberOr(character.atributos?.[key], 0); const selected = levelUpState.attribute === key; const disabled = current >= 5; return `<label class="level-choice-card ${selected ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="radio" name="level-up-attribute" value="${key}" data-level-up-attribute ${selected ? "checked" : ""} ${disabled ? "disabled" : ""}/><strong>${label}</strong><small>${current} → ${disabled ? "máx. 5" : current + 1}</small></label>`; }).join("")}</div></fieldset>`;
+  return `<fieldset class="level-up-choice-block"><legend>Aumento de atributo</legend><p class="muted small">Escolha um atributo para aumentar em +1, até o máximo 5.</p><div class="attribute-choice-grid">${attributeIncreaseOptions(character).map(([key, label]) => { const current = numberOr(character.atributos?.[key], 0); const selected = levelUpState.attribute === key; return `<label class="level-choice-card ${selected ? "selected" : ""}"><input type="radio" name="level-up-attribute" value="${key}" data-level-up-attribute ${selected ? "checked" : ""}/><strong>${label}</strong><small>${current} → ${current + 1}</small></label>`; }).join("")}</div></fieldset>`;
+}
+
+function intellectSkillOptions(preview) {
+  const trained = new Set((preview.periciasTreinadas ?? []).filter((skill) => skill !== levelUpState.intellectSkill));
+  return SKILLS.filter((skill) => !trained.has(skill));
 }
 
 function renderIntellectSkillChoice(preview) {
-  const trained = new Set((preview.periciasTreinadas ?? []).filter((skill) => skill !== levelUpState.intellectSkill));
-  const skills = SKILLS.filter((skill) => !trained.has(skill));
+  const skills = intellectSkillOptions(preview);
+  if (!skills.length) return renderUnavailableChoice("Nova perícia por INT", "Todas as perícias já estão treinadas; o aumento de Intelecto não bloqueia a evolução.");
   return `<fieldset class="level-up-choice-block"><legend>Nova perícia por INT</legend><p class="muted small">O ponto adicional de Intelecto concede treinamento em uma nova perícia.</p><div class="skill-grid">${skills.map((skill) => { const selected = levelUpState.intellectSkill === skill; return `<label class="skill-option ${selected ? "selected" : ""}"><input type="radio" name="level-up-int-skill" value="${escapeAttribute(skill)}" data-level-up-int-skill ${selected ? "checked" : ""}/><span>${escapeHtml(skill)}</span></label>`; }).join("")}</div></fieldset>`;
 }
 
@@ -1478,11 +1544,22 @@ function renderTrainingUpgradeChoices(character, plan) {
 
 function availableClassPowers(character, plan) {
   const selected = new Set(character.habilidadesSelecionadas ?? []);
-  return [...CLASS_POWERS, ...GENERAL_POWERS].filter((entry) => (entry.category === plan.className || entry.category === "Gerais") && entry.unlockNex <= plan.targetProgressNex && (!selected.has(entry.id) || ["Transcender", "Treinamento em Perícia"].includes(entry.name)));
+  return [...CLASS_POWERS, ...GENERAL_POWERS]
+    .filter((entry) =>
+      (entry.category === plan.className || entry.category === "Gerais") &&
+      entry.unlockNex <= plan.targetProgressNex &&
+      !(usesSeparateLevel(character) && entry.name === "Transcender") &&
+      (!selected.has(entry.id) || ["Transcender", "Treinamento em Perícia"].includes(entry.name)),
+    )
+    .filter((entry) => {
+      if (entry.name === "Transcender") return availableParanormalPowers(character, plan).length > 0;
+      if (entry.name === "Treinamento em Perícia") return powerTrainingEligible(character, plan).length > 0;
+      return true;
+    });
 }
 
-function renderAbilityRadioBlock(title, description, entries, selectedId, dataAttribute) {
-  return `<fieldset class="level-up-choice-block"><legend>${escapeHtml(title)}</legend><p class="muted small">${escapeHtml(description)}</p><div class="level-up-option-list">${entries.map((entry) => `<label class="ability-choice-card ${selectedId === entry.id ? "selected" : ""}"><input type="radio" name="${dataAttribute.replace("data-", "")}" value="${entry.id}" ${dataAttribute} ${selectedId === entry.id ? "checked" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em><small>Requisito: ${escapeHtml(entry.requirement)}</small></span></label>`).join("") || `<p class="muted small">Nenhuma opção disponível.</p>`}</div></fieldset>`;
+function renderAbilityRadioBlock(title, description, entries, selectedId, dataAttribute, blockId = "") {
+  return `<fieldset class="level-up-choice-block" ${blockId ? `id="${escapeAttribute(blockId)}"` : ""}><legend>${escapeHtml(title)}</legend><p class="muted small">${escapeHtml(description)}</p><div class="level-up-option-list">${entries.map((entry) => `<label class="ability-choice-card ${selectedId === entry.id ? "selected" : ""}"><input type="radio" name="${dataAttribute.replace("data-", "")}" value="${escapeAttribute(entry.id)}" ${dataAttribute} ${selectedId === entry.id ? "checked" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em><small>Requisito: ${escapeHtml(entry.requirement)}</small></span></label>`).join("") || `<p class="muted small">Nenhuma opção disponível para esta ficha.</p>`}</div></fieldset>`;
 }
 
 function renderClassPowerChoice(character, plan) {
@@ -1497,13 +1574,138 @@ function selectedVersatilityAbility() {
   return ABILITY_BY_ID.get(levelUpState?.versatilityId);
 }
 
-function selectedGrantedPower() {
-  return selectedClassPower() ?? selectedVersatilityAbility();
+function selectedParanormalPower() {
+  return PARANORMAL_POWERS.find((entry) => entry.id === levelUpState?.paranormalPowerId);
+}
+
+function selectedExpandedClassPower() {
+  return CLASS_POWERS.find((entry) => entry.id === levelUpState?.expandedClassPowerId);
+}
+
+function selectedGrantedPowers() {
+  return [selectedClassPower(), selectedVersatilityAbility(), selectedExpandedClassPower()].filter(Boolean);
+}
+
+function selectedPowerNamed(name) {
+  return selectedGrantedPowers().some((entry) => entry.name === name);
+}
+
+function knownAbilityChoiceValues(character, abilityId, type) {
+  return new Set(
+    (character.habilidadeEscolhas ?? [])
+      .filter((entry) => entry.abilityId === abilityId && entry.type === type)
+      .map((entry) => entry.valueId || entry.value),
+  );
+}
+
+function transcenderRitualCircle(plan) {
+  if (plan.targetProgressNex >= 75) return 3;
+  if (plan.targetProgressNex >= 45) return 2;
+  return 1;
+}
+
+function availableTranscenderRituals(character, plan) {
+  const blocked = new Set([
+    ...(character.rituaisSelecionados ?? []),
+    ...(levelUpState?.ritualIds ?? []),
+  ]);
+  const maximumCircle = transcenderRitualCircle(plan);
+  return RITUALS.filter((entry) => entry.circle <= maximumCircle && !blocked.has(entry.id));
+}
+
+function availableExpansionPowers(character, plan) {
+  const selected = new Set(character.habilidadesSelecionadas ?? []);
+  const selectedNames = new Set(
+    [...selected].map((id) => ABILITY_BY_ID.get(id)?.name).filter(Boolean),
+  );
+  return CLASS_POWERS.filter((entry) =>
+    entry.category !== plan.className &&
+    entry.unlockNex <= plan.targetProgressNex &&
+    entry.name !== "Transcender" &&
+    !selected.has(entry.id) &&
+    (!selectedNames.has(entry.name) || entry.name === "Treinamento em Perícia") &&
+    (entry.name !== "Treinamento em Perícia" || powerTrainingEligible(character, plan).length > 0),
+  );
+}
+
+function availableResistanceElements(character, powerId) {
+  const selected = knownAbilityChoiceValues(character, powerId, "elemento");
+  return PARANORMAL_ELEMENTS.filter((element) => !selected.has(element));
+}
+
+function availableParanormalPowers(character, plan) {
+  const selected = new Set(character.habilidadesSelecionadas ?? []);
+  return PARANORMAL_POWERS.filter((entry) => {
+    if (entry.unlockNex > plan.targetProgressNex) return false;
+    if (!selected.has(entry.id)) return true;
+    if (entry.name === "Aprender Ritual") return availableTranscenderRituals(character, plan).length > 0;
+    if (entry.name === "Resistir a Elemento") return availableResistanceElements(character, entry.id).length > 0;
+    return false;
+  }).filter((entry) => {
+    if (entry.name === "Aprender Ritual") return availableTranscenderRituals(character, plan).length > 0;
+    if (entry.name === "Expansão de Conhecimento") return availableExpansionPowers(character, plan).length > 0;
+    if (entry.name === "Resistir a Elemento") return availableResistanceElements(character, entry.id).length > 0;
+    return true;
+  });
 }
 
 function renderParanormalPowerChoice(character, plan) {
-  const selected = new Set(character.habilidadesSelecionadas ?? []);
-  return renderAbilityRadioBlock("Transcender — poder paranormal", "Confira os pré-requisitos de elemento.", PARANORMAL_POWERS.filter((entry) => entry.unlockNex <= plan.targetProgressNex && !selected.has(entry.id)), levelUpState.paranormalPowerId, "data-level-up-paranormal-power");
+  return renderAbilityRadioBlock(
+    "Transcender — poder paranormal",
+    "Escolha o poder recebido nesta transcendência. Opções sem escolha válida são ocultadas.",
+    availableParanormalPowers(character, plan),
+    levelUpState.paranormalPowerId,
+    "data-level-up-paranormal-power",
+    "level-up-paranormal-power-choice",
+  );
+}
+
+function renderTranscenderRitualChoice(character, plan) {
+  const entries = availableTranscenderRituals(character, plan);
+  return `<fieldset class="level-up-choice-block" id="level-up-transcender-ritual-choice"><legend>Aprender Ritual — escolha um ritual</legend><p class="muted small">Círculo máximo permitido neste NEX: ${transcenderRitualCircle(plan)}º.</p><div class="level-up-option-list">${entries.map((entry) => `<label class="ability-choice-card ritual-choice ${levelUpState.paranormalRitualId === entry.id ? "selected" : ""}"><input type="radio" name="level-up-transcender-ritual" value="${escapeAttribute(entry.id)}" data-level-up-transcender-ritual ${levelUpState.paranormalRitualId === entry.id ? "checked" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small><em>${escapeHtml(entry.summary)}</em></span></label>`).join("") || `<p class="muted small">Não há ritual novo disponível dentro do limite.</p>`}</div></fieldset>`;
+}
+
+function renderParanormalElementChoice(character, power) {
+  const options = availableResistanceElements(character, power.id);
+  return `<fieldset class="level-up-choice-block" id="level-up-paranormal-element-choice"><legend>Resistir a Elemento — escolha um elemento</legend><p class="muted small">Elementos já escolhidos com este poder não aparecem novamente.</p><div class="attribute-choice-grid">${options.map((element) => `<label class="level-choice-card ${levelUpState.paranormalElement === element ? "selected" : ""}"><input type="radio" name="level-up-paranormal-element" value="${escapeAttribute(element)}" data-level-up-paranormal-element ${levelUpState.paranormalElement === element ? "checked" : ""}/><strong>${escapeHtml(element)}</strong></label>`).join("")}</div></fieldset>`;
+}
+
+function renderExpansionPowerChoice(character, plan) {
+  return renderAbilityRadioBlock(
+    "Expansão de Conhecimento — poder de outra classe",
+    "Escolha um poder que não pertença à sua classe. Transcender é ocultado para impedir uma cadeia sem fim.",
+    availableExpansionPowers(character, plan),
+    levelUpState.expandedClassPowerId,
+    "data-level-up-expanded-power",
+    "level-up-expanded-power-choice",
+  );
+}
+
+function affinityOptions(character) {
+  const owned = new Set(
+    (character.habilidadesSelecionadas ?? [])
+      .map((id) => ABILITY_BY_ID.get(id))
+      .filter((entry) => entry && PARANORMAL_ELEMENTS.includes(entry.group))
+      .map((entry) => entry.group),
+  );
+  const current = selectedParanormalPower();
+  if (current && PARANORMAL_ELEMENTS.includes(current.group)) owned.add(current.group);
+  if (current?.name === "Resistir a Elemento" && PARANORMAL_ELEMENTS.includes(levelUpState.paranormalElement)) {
+    owned.add(levelUpState.paranormalElement);
+  }
+  return PARANORMAL_ELEMENTS.filter((element) => owned.has(element));
+}
+
+function needsAffinityChoice(character, plan) {
+  return selectedPowerNamed("Transcender") &&
+    !usesSeparateLevel(character) &&
+    plan.targetProgressNex >= 50 &&
+    !character.afinidadeElemental;
+}
+
+function renderAffinityChoice(character) {
+  const options = affinityOptions(character);
+  return `<fieldset class="level-up-choice-block" id="level-up-affinity-choice"><legend>Afinidade elemental</legend><p class="muted small">Na primeira transcendência a partir de 50% de NEX, escolha um elemento entre os poderes que o agente possui.</p><div class="attribute-choice-grid">${options.map((element) => `<label class="level-choice-card ${levelUpState.affinityElement === element ? "selected" : ""}"><input type="radio" name="level-up-affinity-element" value="${escapeAttribute(element)}" data-level-up-affinity-element ${levelUpState.affinityElement === element ? "checked" : ""}/><strong>${escapeHtml(element)}</strong></label>`).join("")}</div></fieldset>`;
 }
 
 function powerTrainingEligible(character, plan) {
@@ -1516,24 +1718,42 @@ function renderPowerTrainingChoices(_preview, plan) {
   const route = currentRoute();
   const character = route.page === "ficha" ? getCharacter(route.id) : null;
   const skills = character ? powerTrainingEligible(character, plan) : [];
-  return renderSkillCheckboxBlock({ title: "Treinamento em Perícia — escolha duas", description: "Cada escolha avança um grau permitido pelo seu NEX.", skills, selected: levelUpState.powerTrainingSkills, dataAttribute: "data-level-up-power-training", required: Math.min(2, skills.length) });
+  return renderSkillCheckboxBlock({ title: "Treinamento em Perícia — escolha duas", description: "Cada escolha avança um grau permitido pelo seu NEX.", skills, selected: levelUpState.powerTrainingSkills, dataAttribute: "data-level-up-power-training", required: Math.min(2, skills.length), blockId: "level-up-power-training-choice" });
 }
 
-function renderVersatilityChoice(character, plan) {
+function availableVersatilityAbilities(character, plan) {
   const selected = new Set(character.habilidadesSelecionadas ?? []);
   const otherTrails = TRAIL_ABILITIES.filter((entry) => entry.category === plan.className && entry.unlockNex === 10 && entry.group !== (levelUpState.targetTrail || character.trilha) && !selected.has(entry.id));
   const powers = availableClassPowers(character, plan).filter((entry) => !selected.has(entry.id) || ["Transcender", "Treinamento em Perícia"].includes(entry.name));
-  return renderAbilityRadioBlock("Versatilidade", "Escolha um poder da classe ou a primeira habilidade de outra trilha.", [...powers, ...otherTrails], levelUpState.versatilityId, "data-level-up-versatility");
+  return [...powers, ...otherTrails];
+}
+
+function renderVersatilityChoice(character, plan) {
+  return renderAbilityRadioBlock("Versatilidade", "Escolha um poder da classe ou a primeira habilidade de outra trilha.", availableVersatilityAbilities(character, plan), levelUpState.versatilityId, "data-level-up-versatility");
 }
 
 function ritualElementLabel(entry) {
   return (entry.elements ?? [entry.element]).join(" + ");
 }
 
+function availableLevelUpRituals(character, plan) {
+  const blocked = new Set([
+    ...(character.rituaisSelecionados ?? []),
+    levelUpState?.paranormalRitualId,
+  ].filter(Boolean));
+  return RITUALS.filter((entry) => entry.circle <= plan.ritualCircle && !blocked.has(entry.id));
+}
+
+function requiredLevelUpRitualPicks(character, plan) {
+  return Math.min(plan.ritualPicks, availableLevelUpRituals(character, plan).length);
+}
+
 function renderLevelUpRitualChoices(character, plan) {
-  const selected = new Set(character.rituaisSelecionados ?? []);
-  const available = RITUALS.filter((entry) => entry.circle <= plan.ritualCircle && !selected.has(entry.id));
-  return `<fieldset class="level-up-choice-block"><legend>Novos rituais conhecidos</legend><div class="skill-choice-head"><p class="muted small">Escolha ${plan.ritualPicks}. Círculos liberados: 1º ao ${plan.ritualCircle}º.</p><strong class="skill-counter ${levelUpState.ritualIds.length === plan.ritualPicks ? "complete" : ""}">${levelUpState.ritualIds.length}/${plan.ritualPicks}</strong></div><div class="level-up-ritual-groups">${RITUAL_CIRCLES.filter((circle) => circle <= plan.ritualCircle).map((circle) => `<details class="level-up-catalog-group" ${circle === plan.ritualCircle ? "open" : ""}><summary>${circle}º círculo <span>${available.filter((entry) => entry.circle === circle).length} opções</span></summary><div class="level-up-option-list">${available.filter((entry) => entry.circle === circle).map((entry) => { const checked = levelUpState.ritualIds.includes(entry.id); const disabled = !checked && levelUpState.ritualIds.length >= plan.ritualPicks; return `<label class="ability-choice-card ritual-choice ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="checkbox" value="${entry.id}" data-level-up-ritual ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em></span></label>`; }).join("")}</div></details>`).join("")}</div></fieldset>`;
+  const available = availableLevelUpRituals(character, plan);
+  const required = requiredLevelUpRitualPicks(character, plan);
+  if (!required) return renderUnavailableChoice("Novo ritual da classe", "Todos os rituais permitidos já estão na ficha; a evolução continua sem travar.");
+  const validSelected = levelUpState.ritualIds.filter((id) => available.some((entry) => entry.id === id));
+  return `<fieldset class="level-up-choice-block"><legend>Novos rituais conhecidos</legend><div class="skill-choice-head"><p class="muted small">Escolha ${required}. Círculos liberados: 1º ao ${plan.ritualCircle}º.</p><strong class="skill-counter ${validSelected.length === required ? "complete" : ""}">${validSelected.length}/${required}</strong></div><div class="level-up-ritual-groups">${RITUAL_CIRCLES.filter((circle) => circle <= plan.ritualCircle).map((circle) => `<details class="level-up-catalog-group" ${circle === plan.ritualCircle ? "open" : ""}><summary>${circle}º círculo <span>${available.filter((entry) => entry.circle === circle).length} opções</span></summary><div class="level-up-option-list">${available.filter((entry) => entry.circle === circle).map((entry) => { const checked = validSelected.includes(entry.id); const disabled = !checked && validSelected.length >= required; return `<label class="ability-choice-card ritual-choice ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="checkbox" value="${escapeAttribute(entry.id)}" data-level-up-ritual ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em></span></label>`; }).join("")}</div></details>`).join("")}</div></fieldset>`;
 }
 
 function renderLevelUpReview(character, plan) {
@@ -1549,11 +1769,15 @@ function renderLevelUpReview(character, plan) {
   if (levelUpState.gradeUpgrades.length) choices.push([`Perícias +${plan.trainingRank}`, levelUpState.gradeUpgrades.join(", ")]);
   if (selectedClassPower()) choices.push(["Poder", selectedClassPower().name]);
   if (levelUpState.paranormalPowerId) choices.push(["Poder paranormal", ABILITY_BY_ID.get(levelUpState.paranormalPowerId)?.name ?? "—"]);
+  if (levelUpState.paranormalRitualId) choices.push(["Ritual de Aprender Ritual", RITUAL_BY_ID.get(levelUpState.paranormalRitualId)?.name ?? "—"]);
+  if (levelUpState.paranormalElement) choices.push(["Elemento escolhido", levelUpState.paranormalElement]);
+  if (levelUpState.expandedClassPowerId) choices.push(["Poder de Expansão", ABILITY_BY_ID.get(levelUpState.expandedClassPowerId)?.name ?? "—"]);
+  if (levelUpState.affinityElement) choices.push(["Afinidade elemental", levelUpState.affinityElement]);
   if (levelUpState.versatilityId) choices.push(["Versatilidade", ABILITY_BY_ID.get(levelUpState.versatilityId)?.name ?? "—"]);
   if (levelUpState.ritualIds.length) choices.push(["Rituais", levelUpState.ritualIds.map((id) => RITUAL_BY_ID.get(id)?.name).filter(Boolean).join(", ")]);
   const oldAutomatic = new Set(automaticAbilitiesFor(character).map((entry) => entry.id));
   const newAutomatic = automaticAbilitiesFor(preview).filter((entry) => !oldAutomatic.has(entry.id)).map((entry) => entry.name);
-  return `<section class="level-up-section"><p class="eyebrow">Etapa 4 de 4</p><h3>Revisão e confirmação</h3><p class="muted">Nada foi alterado ainda.</p><div class="review-list level-up-review">${reviewRow("Progressão", `${levelLabel(plan.fromLevel)} → Nível ${plan.toLevel}${usesSeparateLevel(character) ? "" : ` · NEX ${plan.targetProgressNex}%`}`)}${reviewRow("Recursos máximos", levelUpResourceReview(before, after))}${choices.map(([label, value]) => reviewRow(label, value)).join("")}${reviewRow("Habilidades automáticas", newAutomatic.join(", ") || "Nenhuma nova")}</div><div class="level-up-confirm-note"><strong>Pronto para aplicar</strong><p>O FOP salvará um registro desta evolução.</p></div></section>`;
+  return `<section class="level-up-section"><p class="eyebrow">Etapa 4 de 4</p><h3>Revisão e confirmação</h3><p class="muted">Nada foi alterado ainda.</p><div class="review-list level-up-review">${reviewRow("Progressão", `${levelLabel(plan.fromLevel)} → Nível ${plan.toLevel}${usesSeparateLevel(character) ? "" : ` · NEX ${plan.targetProgressNex}%`}`)}${reviewRow("Recursos máximos", levelUpResourceReview(before, after))}${choices.map(([label, value]) => reviewRow(label, value)).join("")}${reviewRow("Habilidades automáticas", newAutomatic.join(", ") || "Nenhuma nova")}</div>${selectedPowerNamed("Transcender") && !usesSeparateLevel(character) && !after.usesDetermination ? `<p class="catalog-note level-up-note">Transcender aplicado: este avanço não aumenta a SAN máxima.</p>` : ""}<div class="level-up-confirm-note"><strong>Pronto para aplicar</strong><p>O FOP salvará um registro desta evolução.</p></div></section>`;
 }
 
 function levelUpResourceReview(before, after) {
@@ -1587,11 +1811,32 @@ function buildLevelUpPreview(character, { includePowerTraining = true } = {}) {
     }
   }
   preview.peritoPericias = [...levelUpState.peritoSkills];
-  preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), levelUpState.classPowerId, levelUpState.paranormalPowerId, levelUpState.versatilityId].filter(Boolean))];
-  preview.rituaisSelecionados = [...new Set([...(preview.rituaisSelecionados ?? []), ...levelUpState.ritualIds])];
+  preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), levelUpState.classPowerId, levelUpState.paranormalPowerId, levelUpState.expandedClassPowerId, levelUpState.versatilityId].filter(Boolean))];
+  preview.rituaisSelecionados = [...new Set([...(preview.rituaisSelecionados ?? []), ...levelUpState.ritualIds, levelUpState.paranormalRitualId].filter(Boolean))];
+  preview.habilidadeEscolhas = [...(preview.habilidadeEscolhas ?? [])];
+  if (levelUpState.paranormalRitualId && levelUpState.paranormalPowerId) {
+    appendAbilityChoice(preview, levelUpState.paranormalPowerId, "ritual", levelUpState.paranormalRitualId, RITUAL_BY_ID.get(levelUpState.paranormalRitualId)?.name ?? "Ritual", plan.toLevel);
+  }
+  if (levelUpState.paranormalElement && levelUpState.paranormalPowerId) {
+    appendAbilityChoice(preview, levelUpState.paranormalPowerId, "elemento", levelUpState.paranormalElement, levelUpState.paranormalElement, plan.toLevel);
+  }
+  if (levelUpState.expandedClassPowerId && levelUpState.paranormalPowerId) {
+    appendAbilityChoice(preview, levelUpState.paranormalPowerId, "poder", levelUpState.expandedClassPowerId, ABILITY_BY_ID.get(levelUpState.expandedClassPowerId)?.name ?? "Poder", plan.toLevel);
+  }
+  if (selectedPowerNamed("Transcender")) {
+    preview.transcenderNiveis = [...new Set([...(preview.transcenderNiveis ?? []), plan.toLevel])].sort((a, b) => a - b);
+  }
+  if (levelUpState.affinityElement) preview.afinidadeElemental = levelUpState.affinityElement;
   sanitizeSkillSelections(preview);
   setInitialTrainingGrades(preview);
   return applyDerived(preview);
+}
+
+function appendAbilityChoice(character, abilityId, type, valueId, value, level) {
+  const duplicate = character.habilidadeEscolhas.some((entry) =>
+    entry.abilityId === abilityId && entry.type === type && entry.valueId === valueId,
+  );
+  if (!duplicate) character.habilidadeEscolhas.push({ abilityId, type, valueId, value, level });
 }
 
 function validateLevelUpStep(character, step) {
@@ -1603,16 +1848,44 @@ function validateLevelUpStep(character, step) {
     if (!skillSelectionStatus(levelUpClassDraft(character, plan)).complete) return "Complete as perícias iniciais.";
     if (plan.className === "Especialista" && levelUpState.peritoSkills.length !== 2) return "Escolha duas perícias para Perito.";
   }
-  if (plan.needsTrail && !levelUpState.targetTrail) return "Escolha uma trilha.";
-  if (plan.needsAttribute && !levelUpState.attribute) return "Escolha o atributo que vai aumentar.";
-  if (levelUpState.attribute === "intelecto" && !levelUpState.intellectSkill) return "Escolha a nova perícia de Intelecto.";
-  if (plan.trainingRank && levelUpState.gradeUpgrades.length !== trainingRequiredCount(character, plan)) return "Complete os aumentos de treinamento.";
-  if (plan.needsClassPower && !levelUpState.classPowerId) return "Escolha um poder.";
-  if (selectedGrantedPower()?.name === "Transcender" && !levelUpState.paranormalPowerId) return "Escolha o poder paranormal.";
-  if (selectedGrantedPower()?.name === "Treinamento em Perícia" && levelUpState.powerTrainingSkills.length !== Math.min(2, powerTrainingEligible(character, plan).length)) return "Escolha duas perícias para Treinamento em Perícia.";
-  if (plan.needsVersatility && !levelUpState.versatilityId) return "Escolha o benefício de Versatilidade.";
-  if (plan.ritualPicks && levelUpState.ritualIds.length !== plan.ritualPicks) return `Escolha ${plan.ritualPicks} ritual(is).`;
+  const trails = CLASSES[plan.className]?.trails ?? [];
+  if (plan.needsTrail && !trails.includes(levelUpState.targetTrail)) return "Escolha uma trilha válida.";
+  const attributeOptions = attributeIncreaseOptions(character).map(([key]) => key);
+  if (plan.needsAttribute && attributeOptions.length && !attributeOptions.includes(levelUpState.attribute)) return "Escolha o atributo que vai aumentar.";
+  if (levelUpState.attribute === "intelecto") {
+    const intellectOptions = intellectSkillOptions(buildLevelUpPreview(character));
+    if (intellectOptions.length && !intellectOptions.includes(levelUpState.intellectSkill)) return "Escolha a nova perícia de Intelecto.";
+  }
+  const trainingOptions = trainingEligibleSkills(character, plan);
+  const trainingRequired = trainingRequiredCount(character, plan);
+  if (plan.trainingRank && !isExactValidSelection(levelUpState.gradeUpgrades, trainingOptions, trainingRequired)) return "Complete os aumentos de treinamento.";
+  const classPowerOptions = availableClassPowers(character, plan);
+  if (plan.needsClassPower && classPowerOptions.length && !classPowerOptions.some((entry) => entry.id === levelUpState.classPowerId)) return "Escolha um poder válido.";
+  const versatilityOptions = availableVersatilityAbilities(character, plan);
+  if (plan.needsVersatility && versatilityOptions.length && !versatilityOptions.some((entry) => entry.id === levelUpState.versatilityId)) return "Escolha um benefício válido de Versatilidade.";
+  if (selectedPowerNamed("Transcender")) {
+    const paranormalOptions = availableParanormalPowers(character, plan);
+    if (!paranormalOptions.some((entry) => entry.id === levelUpState.paranormalPowerId)) return "Escolha o poder paranormal recebido por Transcender.";
+    const paranormalPower = selectedParanormalPower();
+    if (paranormalPower?.name === "Aprender Ritual" && !availableTranscenderRituals(character, plan).some((entry) => entry.id === levelUpState.paranormalRitualId)) return "Escolha o ritual recebido por Aprender Ritual.";
+    if (paranormalPower?.name === "Resistir a Elemento" && !availableResistanceElements(character, paranormalPower.id).includes(levelUpState.paranormalElement)) return "Escolha o elemento de Resistir a Elemento.";
+    if (paranormalPower?.name === "Expansão de Conhecimento" && !availableExpansionPowers(character, plan).some((entry) => entry.id === levelUpState.expandedClassPowerId)) return "Escolha o poder de outra classe.";
+    if (needsAffinityChoice(character, plan) && !affinityOptions(character).includes(levelUpState.affinityElement)) return "Escolha a afinidade elemental.";
+  }
+  if (selectedPowerNamed("Treinamento em Perícia")) {
+    const powerTrainingOptions = powerTrainingEligible(character, plan);
+    const required = Math.min(2, powerTrainingOptions.length);
+    if (!isExactValidSelection(levelUpState.powerTrainingSkills, powerTrainingOptions, required)) return "Complete as escolhas de Treinamento em Perícia.";
+  }
+  const ritualOptions = availableLevelUpRituals(character, plan).map((entry) => entry.id);
+  const ritualRequired = requiredLevelUpRitualPicks(character, plan);
+  if (plan.ritualPicks && !isExactValidSelection(levelUpState.ritualIds, ritualOptions, ritualRequired)) return `Escolha ${ritualRequired} ritual(is).`;
   return "";
+}
+
+function isExactValidSelection(selected, available, required) {
+  const unique = [...new Set(selected ?? [])];
+  return unique.length === required && unique.every((value) => available.includes(value));
 }
 
 function bindLevelUpDialog(character) {
@@ -1628,32 +1901,100 @@ function bindLevelUpDialog(character) {
     if (levelUpState.step < 3) { levelUpState.step += 1; reopenLevelUp(character); }
     else applyLevelUp(character);
   });
-  bindLevelUpSingle(character, "[data-level-up-class]", "targetClass", () => { levelUpState.targetTrail = ""; levelUpState.classGroupSkills = []; levelUpState.peritoSkills = []; levelUpState.ritualIds = []; });
+  bindLevelUpSingle(character, "[data-level-up-class]", "targetClass", () => { levelUpState.targetTrail = ""; levelUpState.classGroupSkills = []; levelUpState.peritoSkills = []; levelUpState.ritualIds = []; clearNestedPowerSelections(); });
   bindLevelUpSingle(character, "[data-level-up-trail]", "targetTrail");
   bindLevelUpSingle(character, "[data-level-up-attribute]", "attribute", () => { if (levelUpState.attribute !== "intelecto") levelUpState.intellectSkill = ""; });
   bindLevelUpSingle(character, "[data-level-up-int-skill]", "intellectSkill");
-  bindLevelUpSingle(character, "[data-level-up-class-power]", "classPowerId", () => { levelUpState.paranormalPowerId = ""; levelUpState.powerTrainingSkills = []; });
-  bindLevelUpSingle(character, "[data-level-up-paranormal-power]", "paranormalPowerId");
-  bindLevelUpSingle(character, "[data-level-up-versatility]", "versatilityId", () => { levelUpState.paranormalPowerId = ""; levelUpState.powerTrainingSkills = []; });
-  document.querySelectorAll("[data-level-up-skill-group]").forEach((input) => input.addEventListener("change", () => { levelUpState.classGroupSkills[Number(input.dataset.levelUpSkillGroup)] = input.value; levelUpState.classFreeSkills = levelUpState.classFreeSkills.filter((skill) => skill !== input.value); reopenLevelUp(character); }));
+  bindLevelUpSingle(character, "[data-level-up-class-power]", "classPowerId", () => {
+    clearNestedPowerSelections();
+    return followUpSelectorForSelectedPower();
+  });
+  bindLevelUpSingle(character, "[data-level-up-paranormal-power]", "paranormalPowerId", () => {
+    levelUpState.paranormalRitualId = "";
+    levelUpState.paranormalElement = "";
+    levelUpState.expandedClassPowerId = "";
+    levelUpState.affinityElement = "";
+    levelUpState.powerTrainingSkills = [];
+    return followUpSelectorForParanormalPower(character, currentLevelUpPlan(character));
+  });
+  bindLevelUpSingle(character, "[data-level-up-transcender-ritual]", "paranormalRitualId", () => followUpSelectorAfterNestedPower(character, currentLevelUpPlan(character)));
+  bindLevelUpSingle(character, "[data-level-up-paranormal-element]", "paranormalElement", () => followUpSelectorAfterNestedPower(character, currentLevelUpPlan(character)));
+  bindLevelUpSingle(character, "[data-level-up-expanded-power]", "expandedClassPowerId", () => {
+    levelUpState.powerTrainingSkills = [];
+    return followUpSelectorAfterNestedPower(character, currentLevelUpPlan(character));
+  });
+  bindLevelUpSingle(character, "[data-level-up-affinity-element]", "affinityElement", () => selectedPowerNamed("Treinamento em Perícia") ? "#level-up-power-training-choice" : "");
+  bindLevelUpSingle(character, "[data-level-up-versatility]", "versatilityId", () => {
+    clearNestedPowerSelections();
+    return followUpSelectorForSelectedPower();
+  });
+  document.querySelectorAll("[data-level-up-skill-group]").forEach((input) => input.addEventListener("change", () => {
+    const scrollTop = currentLevelUpScrollTop();
+    levelUpState.classGroupSkills[Number(input.dataset.levelUpSkillGroup)] = input.value;
+    levelUpState.classFreeSkills = levelUpState.classFreeSkills.filter((skill) => skill !== input.value);
+    reopenLevelUp(character, { scrollTop });
+  }));
   bindLevelUpArray(character, "[data-level-up-class-free]", "classFreeSkills", () => getSkillConfiguration(levelUpClassDraft(character, currentLevelUpPlan(character))).classChoiceCount);
   bindLevelUpArray(character, "[data-level-up-perito]", "peritoSkills", 2);
   bindLevelUpArray(character, "[data-level-up-grade]", "gradeUpgrades", () => trainingRequiredCount(character, currentLevelUpPlan(character)));
   bindLevelUpArray(character, "[data-level-up-power-training]", "powerTrainingSkills", () => Math.min(2, powerTrainingEligible(character, currentLevelUpPlan(character)).length));
-  bindLevelUpArray(character, "[data-level-up-ritual]", "ritualIds", () => currentLevelUpPlan(character)?.ritualPicks ?? 0);
+  bindLevelUpArray(character, "[data-level-up-ritual]", "ritualIds", () => {
+    const plan = currentLevelUpPlan(character);
+    return plan ? requiredLevelUpRitualPicks(character, plan) : 0;
+  });
+}
+
+function clearNestedPowerSelections() {
+  levelUpState.paranormalPowerId = "";
+  levelUpState.paranormalRitualId = "";
+  levelUpState.paranormalElement = "";
+  levelUpState.expandedClassPowerId = "";
+  levelUpState.affinityElement = "";
+  levelUpState.powerTrainingSkills = [];
+}
+
+function followUpSelectorForSelectedPower() {
+  if (selectedPowerNamed("Transcender")) return "#level-up-paranormal-power-choice";
+  if (selectedPowerNamed("Treinamento em Perícia")) return "#level-up-power-training-choice";
+  return "";
+}
+
+function followUpSelectorForParanormalPower(character, plan) {
+  const power = selectedParanormalPower();
+  if (power?.name === "Aprender Ritual") return "#level-up-transcender-ritual-choice";
+  if (power?.name === "Resistir a Elemento") return "#level-up-paranormal-element-choice";
+  if (power?.name === "Expansão de Conhecimento") return "#level-up-expanded-power-choice";
+  if (needsAffinityChoice(character, plan)) return "#level-up-affinity-choice";
+  return "";
+}
+
+function followUpSelectorAfterNestedPower(character, plan) {
+  if (needsAffinityChoice(character, plan)) return "#level-up-affinity-choice";
+  if (selectedPowerNamed("Treinamento em Perícia")) return "#level-up-power-training-choice";
+  return "";
+}
+
+function currentLevelUpScrollTop() {
+  return numberOr(document.querySelector(".level-up-body")?.scrollTop, 0);
 }
 
 function bindLevelUpSingle(character, selector, key, after = null) {
-  document.querySelectorAll(selector).forEach((input) => input.addEventListener("change", () => { levelUpState[key] = input.value; after?.(); reopenLevelUp(character); }));
+  document.querySelectorAll(selector).forEach((input) => input.addEventListener("change", () => {
+    const scrollTop = currentLevelUpScrollTop();
+    levelUpState[key] = input.value;
+    const focusSelector = after?.() || "";
+    reopenLevelUp(character, { scrollTop, focusSelector });
+  }));
 }
 
 function bindLevelUpArray(character, selector, key, maxValue) {
   document.querySelectorAll(selector).forEach((input) => input.addEventListener("change", () => {
+    const scrollTop = currentLevelUpScrollTop();
     const values = new Set(levelUpState[key] ?? []);
     if (input.checked) values.add(input.value); else values.delete(input.value);
     const max = typeof maxValue === "function" ? maxValue() : maxValue;
     levelUpState[key] = [...values].slice(0, Math.max(0, max));
-    reopenLevelUp(character);
+    reopenLevelUp(character, { scrollTop });
   }));
 }
 
@@ -1662,7 +2003,20 @@ function applyLevelUp(character) {
   const error = validateLevelUpStep(character, 2);
   if (!plan || error) return showToast(error || "Não foi possível aplicar.");
   const preview = buildLevelUpPreview(character);
-  preview.levelUpHistory = [...(preview.levelUpHistory ?? []), { fromLevel: plan.fromLevel, toLevel: plan.toLevel, nex: plan.targetNex, className: plan.className, trail: levelUpState.targetTrail || preview.trilha || "", attribute: levelUpState.attribute || "", skills: [...levelUpState.gradeUpgrades, levelUpState.intellectSkill].filter(Boolean), abilities: [levelUpState.classPowerId, levelUpState.paranormalPowerId, levelUpState.versatilityId].filter(Boolean), rituals: [...levelUpState.ritualIds], appliedAt: new Date().toISOString() }];
+  preview.levelUpHistory = [...(preview.levelUpHistory ?? []), {
+    fromLevel: plan.fromLevel,
+    toLevel: plan.toLevel,
+    nex: plan.targetNex,
+    className: plan.className,
+    trail: levelUpState.targetTrail || preview.trilha || "",
+    attribute: levelUpState.attribute || "",
+    skills: [...levelUpState.gradeUpgrades, levelUpState.intellectSkill].filter(Boolean),
+    abilities: [levelUpState.classPowerId, levelUpState.paranormalPowerId, levelUpState.expandedClassPowerId, levelUpState.versatilityId].filter(Boolean),
+    rituals: [...levelUpState.ritualIds, levelUpState.paranormalRitualId].filter(Boolean),
+    affinityElement: levelUpState.affinityElement || "",
+    paranormalElement: levelUpState.paranormalElement || "",
+    appliedAt: new Date().toISOString(),
+  }];
   const saved = upsertCharacter(preview);
   levelUpState = null;
   activeSheetTab = "resumo";
@@ -1670,9 +2024,17 @@ function applyLevelUp(character) {
   showToast(`Evolução para o nível ${plan.toLevel} aplicada.`);
 }
 
-function reopenLevelUp(character) {
+function reopenLevelUp(character, { scrollTop = 0, focusSelector = "" } = {}) {
   renderSheet(character.id);
-  document.querySelector("#level-up-dialog")?.showModal();
+  const dialog = document.querySelector("#level-up-dialog");
+  dialog?.showModal();
+  const body = document.querySelector(".level-up-body");
+  if (body) body.scrollTop = scrollTop;
+  if (focusSelector) {
+    const target = document.querySelector(focusSelector);
+    target?.classList.add("selection-revealed");
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 }
 
 function bindSheetInteractions(character) {

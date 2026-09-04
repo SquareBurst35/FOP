@@ -212,6 +212,12 @@ export function calculateDerived(character) {
   const usesDetermination = Boolean(
     character.optionalRules?.determination && classData?.determination,
   );
+  const transcenderLevels = Array.isArray(character.transcenderNiveis)
+    ? [...new Set(character.transcenderNiveis.map(Number).filter((value) => Number.isInteger(value) && value >= 1 && value <= level))]
+    : [];
+  const transcenderSanPenalty = !usesDetermination && !usesSeparateLevel(character)
+    ? transcenderLevels.length * (classData?.gain?.san ?? 0)
+    : 0;
 
   if (!classData) {
     return {
@@ -227,13 +233,14 @@ export function calculateDerived(character) {
       level,
       usesDetermination: false,
       pdMax: 0,
+      transcenderSanPenalty: 0,
     };
   }
 
   return {
     pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor),
     peMax: classData.initial.pe + presenca + advances * (classData.gain.pe + presenca),
-    sanMax: classData.initial.san + advances * classData.gain.san,
+    sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade,
     deslocamento: 9,
     advances,
@@ -242,6 +249,7 @@ export function calculateDerived(character) {
     skillChoiceGroups: classData.skillChoiceGroups,
     level,
     usesDetermination,
+    transcenderSanPenalty,
     pdMax: usesDetermination
       ? classData.determination.initial + presenca + advances * (classData.determination.gain + presenca)
       : 0,
