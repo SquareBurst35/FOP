@@ -1220,7 +1220,7 @@ function renderAbilityDialog(character) {
   const groups = [...new Set(categoryEntries.map((entry) => entry.group))];
   if (!groups.includes(activeAbilityGroup)) activeAbilityGroup = groups[0] ?? "";
   return `
-    <dialog class="picker-dialog" id="ability-dialog" aria-labelledby="ability-dialog-title">
+    <dialog class="picker-dialog catalog-picker-dialog" id="ability-dialog" aria-labelledby="ability-dialog-title">
       <div class="dialog-heading">
         <div><p class="eyebrow">Catálogo</p><h2 id="ability-dialog-title">Adicionar habilidade</h2></div>
         <button class="dialog-close" id="close-ability-dialog" type="button" aria-label="Fechar">×</button>
@@ -1323,7 +1323,7 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
 
 function renderRitualDialog(character) {
   return `
-    <dialog class="picker-dialog" id="ritual-dialog" aria-labelledby="ritual-dialog-title">
+    <dialog class="picker-dialog catalog-picker-dialog" id="ritual-dialog" aria-labelledby="ritual-dialog-title">
       <div class="dialog-heading">
         <div><p class="eyebrow">Catálogo</p><h2 id="ritual-dialog-title">Adicionar ritual</h2></div>
         <button class="dialog-close" id="close-ritual-dialog" type="button" aria-label="Fechar">×</button>
@@ -1846,7 +1846,7 @@ function inventoryAddError(character, item) {
 function renderItemDialog(character) {
   const sources = ["Todos", ...new Set(ITEMS.map((item) => item.source))];
   return `
-    <dialog class="picker-dialog" id="item-dialog" aria-labelledby="item-dialog-title">
+    <dialog class="picker-dialog catalog-picker-dialog" id="item-dialog" aria-labelledby="item-dialog-title">
       <div class="dialog-heading">
         <div><p class="eyebrow">Equipamentos</p><h2 id="item-dialog-title">Adicionar item</h2></div>
         <button class="dialog-close" id="close-item-dialog" type="button" aria-label="Fechar">×</button>
