@@ -66,11 +66,12 @@ assert.equal(result.ok, true);
 assert.equal(spend.recursos.peAtual, 9);
 assert.equal(spend.controleSessao.gastoTurno, 3);
 result = useAbility(spend, { id: "teste-2", name: "Teste 2", cost: 3, resource: "effort", turnLimit: 5 });
-assert.equal(result.reason, "turn");
-assert.equal(spend.recursos.peAtual, 9);
+assert.equal(result.ok, true);
+assert.equal(spend.recursos.peAtual, 6);
+assert.equal(spend.controleSessao.gastoTurno, 6);
 assert.equal(undoLastUse(spend).ok, true);
-assert.equal(spend.recursos.peAtual, 12);
-assert.equal(spend.controleSessao.gastoTurno, 0);
+assert.equal(spend.recursos.peAtual, 9);
+assert.equal(spend.controleSessao.gastoTurno, 3);
 
 const determination = character({ optionalRules: { separateLevelNex: false, determination: true } });
 result = useAbility(determination, { id: "pd", name: "Uso com PD", cost: 2, resource: "effort", turnLimit: 5 });

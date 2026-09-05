@@ -57,10 +57,9 @@ import {
   startNextScene,
   startNextTurn,
   startNewSession,
-  turnSpendLimit,
   undoLastUse,
   useAbility,
-} from "./session.js?v=11";
+} from "./session.js?v=12";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -1073,37 +1072,19 @@ function choiceContext(character) {
   };
 }
 
-function ownedAbilityNames(character) {
-  return new Set([
-    ...automaticAbilitiesFor(character),
-    ...(character.habilidadesSelecionadas ?? []).map((id) => ABILITY_BY_ID.get(id)).filter(Boolean),
-  ].map((entry) => entry.name));
-}
-
-function sessionSpendLimit(character, ritual = false) {
-  const names = ownedAbilityNames(character);
-  return turnSpendLimit(character, {
-    hasFacingDeath: names.has("Encarar a Morte"),
-    ritual,
-    hasPowerfulPresence: names.has("Presença Poderosa"),
-  });
-}
-
 function renderSessionControl(character) {
   const session = normalizeSession(character);
   const resource = effortResource(character);
-  const limit = sessionSpendLimit(character);
-  const ritualLimit = sessionSpendLimit(character, true);
-  const percent = Math.min(100, Math.round((session.gastoTurno / Math.max(1, limit)) * 100));
+  const current = numberOr(character.recursos?.[resource.currentKey], 0);
+  const maximum = numberOr(character.recursos?.[resource.maxKey], 0);
   const last = session.historico.at(-1);
   return `
     <section class="session-control" aria-label="Controle da sessão">
       <div class="session-control-heading">
         <div><span>Cena ${session.cena}</span><strong>Turno ${session.turno}</strong></div>
-        <span class="session-limit-label">${session.gastoTurno}/${limit} ${resource.label}</span>
+        <span class="session-resource-label">${current}/${maximum} ${resource.label}</span>
       </div>
-      <div class="session-spend-track" role="progressbar" aria-label="${resource.label} gasto neste turno" aria-valuemin="0" aria-valuemax="${limit}" aria-valuenow="${session.gastoTurno}"><span style="width:${percent}%"></span></div>
-      <p>${ritualLimit > limit ? `Limite: ${limit} normalmente · ${ritualLimit} em rituais` : `Limite por turno: ${limit} ${resource.label}`}</p>
+      <p>Os custos são descontados automaticamente. O limite por turno fica sob controle do jogador.</p>
       <div class="session-control-actions">
         <button type="button" data-session-action="turn">Novo turno</button>
         <button type="button" data-session-action="scene">Nova cena</button>
@@ -1650,23 +1631,21 @@ function renderSpendDialog(character) {
     : spendState.resource === "san"
       ? { label: "SAN", currentKey: "sanAtual" }
       : effortResource(character);
-  const limit = sessionSpendLimit(character, spendState.type === "ritual");
-  const spent = numberOr(character.controleSessao?.gastoTurno, 0);
   const available = numberOr(character.recursos?.[resource.currentKey], 0);
   const maximum = ["pv", "san"].includes(spendState.resource)
     ? available
-    : Math.min(available, Math.max(0, limit - spent), spendState.max);
+    : Math.min(available, spendState.max);
   return `
     <dialog class="picker-dialog spend-dialog" id="spend-dialog" aria-labelledby="spend-title">
       <div class="dialog-heading">
-        <div><p class="eyebrow">${spendState.type === "ritual" ? "Conjurar ritual" : "Usar habilidade"}</p><h2 id="spend-title">${escapeHtml(entry.name)}</h2><p>${available} ${resource.label} disponível · limite restante ${Math.max(0, limit - spent)}</p></div>
+        <div><p class="eyebrow">${spendState.type === "ritual" ? "Conjurar ritual" : "Usar habilidade"}</p><h2 id="spend-title">${escapeHtml(entry.name)}</h2><p>${available} ${resource.label} disponível</p></div>
         <button class="dialog-close" id="close-spend-dialog" type="button" aria-label="Fechar">×</button>
       </div>
       <div class="spend-dialog-body">
         ${spendState.reductions?.length ? `<div class="cost-reduction-note"><strong>Redução automática</strong><span>${escapeHtml(spendState.reductions.join(" · "))}</span></div>` : ""}
         ${spendState.extras?.length ? `<div class="spend-presets"><button type="button" data-spend-preset="${spendState.min}" class="${spendState.value === spendState.min ? "active" : ""}">Básico · ${spendState.min} ${resource.label}</button>${spendState.extras.map((item) => { const total = spendState.min + item.extra; return `<button type="button" data-spend-preset="${total}" class="${spendState.value === total ? "active" : ""}">${escapeHtml(item.label.replace(/\s*\([^)]*\)\s*:/, ""))} · ${total} ${resource.label}</button>`; }).join("")}</div>` : ""}
         <label class="spend-amount" for="spend-amount"><span>Custo total</span><div><input id="spend-amount" type="number" min="${spendState.min}" max="${Math.max(spendState.min, maximum)}" value="${spendState.value}" /><strong>${resource.label}</strong></div><small>${spendState.type === "ritual" ? "Use o custo total da forma básica, Discente ou Verdadeiro." : "Informe o valor escolhido para este uso."}</small></label>
-        <p class="spend-warning" ${spendState.value <= maximum ? "hidden" : ""}>Este valor ultrapassa o recurso disponível ou o limite do turno.</p>
+        <p class="spend-warning" ${spendState.value <= maximum ? "hidden" : ""}>Este valor ultrapassa o recurso disponível.</p>
       </div>
       <div class="choice-dialog-footer"><button class="button ghost" id="cancel-spend-dialog" type="button">Cancelar</button><span></span><button class="button primary" id="confirm-spend-dialog" type="button" ${spendState.value > maximum ? "disabled" : ""}>Confirmar uso</button></div>
     </dialog>`;
@@ -1694,7 +1673,7 @@ function bindSpendDialog(character) {
         ? { currentKey: "sanAtual" }
         : effortResource(character);
     const available = numberOr(character.recursos?.[resource.currentKey], 0);
-    const remaining = ["pv", "san"].includes(spendState.resource) ? available : Math.min(available, Math.max(0, sessionSpendLimit(character, spendState.type === "ritual") - numberOr(character.controleSessao?.gastoTurno, 0)));
+    const remaining = available;
     if (confirm) confirm.disabled = spendState.value > remaining;
     if (warning) warning.hidden = spendState.value <= remaining;
   });
@@ -1712,7 +1691,6 @@ function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, 
     type,
     cost,
     resource,
-    turnLimit: sessionSpendLimit(character, type === "ritual"),
     sceneKey: type === "habilidade" ? `habilidade:${entry.id}` : "",
     sceneLimit,
     sessionKey: type === "habilidade" ? `habilidade:${entry.id}` : "",

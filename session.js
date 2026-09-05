@@ -164,15 +164,6 @@ export function useAbility(character, use) {
     countsAgainstTurn = true;
   }
 
-  const survivorMinimumUse = character?.classe === "Sobrevivente" && session.gastoTurno === 0;
-  if (countsAgainstTurn && !survivorMinimumUse && session.gastoTurno + cost > numberOr(use.turnLimit, 1)) {
-    const remaining = Math.max(0, numberOr(use.turnLimit, 1) - session.gastoTurno);
-    return {
-      ok: false,
-      reason: "turn",
-      message: `Limite do turno excedido. Você ainda pode gastar ${remaining} ${resourceLabel}.`,
-    };
-  }
   if (currentKey && numberOr(character.recursos?.[currentKey], 0) < cost) {
     return { ok: false, reason: "resource", message: `${resourceLabel} insuficiente para este uso.` };
   }

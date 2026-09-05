@@ -1129,7 +1129,7 @@ fieldset.skill-choice-block {
   font-size: 0.88rem;
 }
 
-.session-limit-label {
+.session-resource-label {
   padding: 4px 7px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -1138,23 +1138,8 @@ fieldset.skill-choice-block {
   font-weight: 850;
 }
 
-.session-spend-track {
-  height: 7px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #090a0c;
-}
-
-.session-spend-track span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--red-dark), var(--red));
-  transition: width 180ms ease;
-}
-
 .session-control > p {
-  margin: -3px 0 0;
+  margin: 0;
 }
 
 .session-control-actions {
@@ -1594,8 +1579,8 @@ fieldset.skill-choice-block {
   min-width: 0;
 }
 
-.entry-card-shell:has(> .entry-use-button) .entry-card summary {
-  padding-right: 155px;
+.entry-card-shell:has(> .entry-use-button) .entry-card {
+  border-radius: 10px 10px 0 0;
 }
 
 .entry-card {
@@ -1738,11 +1723,11 @@ fieldset.skill-choice-block {
 }
 
 .entry-use-button {
-  position: absolute;
-  z-index: 2;
-  top: 13px;
-  right: 44px;
-  min-height: 31px;
+  position: static;
+  width: 100%;
+  min-height: 38px;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
   border-color: rgba(226, 46, 58, 0.55);
   background: var(--red-soft);
   color: #ffbac0;
@@ -2794,16 +2779,8 @@ fieldset.skill-choice-block {
     align-items: flex-start;
   }
 
-  .entry-card-shell:has(> .entry-use-button) .entry-card summary {
-    padding-right: 13px;
-    padding-bottom: 50px;
-  }
-
   .entry-use-button {
-    top: 58px;
-    right: 13px;
-    left: 13px;
-    width: calc(100% - 26px);
+    width: 100%;
   }
 
   .choice-option-grid {
