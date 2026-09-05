@@ -2128,8 +2128,10 @@ fieldset.skill-choice-block {
   position: fixed;
   inset: 0;
   width: min(940px, calc(100vw - 28px));
-  height: auto;
-  max-height: min(820px, calc(100vh - 28px));
+  height: min(820px, calc(100vh - 28px));
+  height: min(820px, calc(100dvh - 28px));
+  max-height: calc(100vh - 28px);
+  max-height: calc(100dvh - 28px);
   margin: auto;
   padding: 0;
   overflow: hidden;
@@ -2141,7 +2143,16 @@ fieldset.skill-choice-block {
 }
 
 .picker-dialog[open] {
+  display: flex;
+  flex-direction: column;
   animation: dialog-enter 150ms ease-out;
+}
+
+.picker-dialog > .dialog-heading,
+.picker-dialog > .choice-dialog-footer,
+.picker-dialog > .level-up-footer,
+.picker-dialog > .level-up-stepper {
+  flex: 0 0 auto;
 }
 
 .picker-dialog::backdrop {
@@ -2153,7 +2164,9 @@ fieldset.skill-choice-block {
 .level-up-dialog[open] {
   display: flex;
   height: min(820px, calc(100vh - 28px));
+  height: min(820px, calc(100dvh - 28px));
   max-height: calc(100vh - 28px);
+  max-height: calc(100dvh - 28px);
   flex-direction: column;
 }
 .level-up-dialog .dialog-heading,
@@ -2230,7 +2243,10 @@ fieldset.skill-choice-block {
 .choice-dialog[open],
 .spend-dialog[open] {
   display: flex;
+  height: min(720px, calc(100vh - 24px));
+  height: min(720px, calc(100dvh - 24px));
   max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
   flex-direction: column;
 }
 
@@ -2244,8 +2260,12 @@ fieldset.skill-choice-block {
 .choice-dialog-body,
 .spend-dialog-body {
   min-height: 0;
+  flex: 1 1 auto;
   padding: 18px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .choice-dialog-intro {
@@ -2357,6 +2377,9 @@ fieldset.skill-choice-block {
 }
 
 .choice-dialog-footer {
+  position: relative;
+  z-index: 4;
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: auto 1fr auto auto;
   gap: 8px;
@@ -2467,10 +2490,15 @@ fieldset.skill-choice-block {
 }
 
 .picker-body {
-  max-height: calc(100vh - 128px);
+  min-height: 0;
+  max-height: none;
+  flex: 1 1 auto;
   padding: 16px;
-  overflow: auto;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .picker-tabs,
@@ -2722,7 +2750,12 @@ fieldset.skill-choice-block {
   .level-up-stepper { gap: 4px; padding: 8px; }
   .level-up-step { justify-content: center; padding: 7px 4px; }
   .level-up-step strong { display: none; }
-  .level-up-dialog[open] { height: calc(100vh - 16px); max-height: calc(100vh - 16px); }
+  .level-up-dialog[open] {
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
   .level-up-body { min-height: 0; padding: 15px; }
   .level-up-route, .level-up-gain-grid, .level-up-resource-grid, .class-choice-grid { grid-template-columns: 1fr; }
   .level-up-route > b { transform: rotate(90deg); text-align: center; }
@@ -2825,13 +2858,17 @@ fieldset.skill-choice-block {
   .picker-dialog {
     width: calc(100vw - 16px);
     max-width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
     max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
     border-radius: 11px;
   }
 
   .picker-body {
-    max-height: calc(100vh - 105px);
+    max-height: none;
     padding: 12px;
+    padding-bottom: max(22px, env(safe-area-inset-bottom));
   }
 
   .picker-dialog .dialog-heading {
