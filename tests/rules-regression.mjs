@@ -121,11 +121,13 @@ assert.ok(PARANORMAL_POWERS.every((entry) => entry.category === "Poderes Paranor
 for (const [className, data] of Object.entries(CLASSES)) {
   if (className === "Mundano") continue;
   for (const trail of data.trails) {
-    const unlocks = TRAIL_ABILITIES
+    const entries = TRAIL_ABILITIES
       .filter((entry) => entry.category === className && entry.group === trail)
-      .map((entry) => entry.unlockNex)
-      .sort((a, b) => a - b);
-    assert.deepEqual(unlocks, [10, 40, 65, 99], `${className}/${trail} está incompleta`);
+    if (className === "Sobrevivente") {
+      assert.deepEqual(entries.map((entry) => entry.unlockStage).sort((a, b) => a - b), [2, 4], `${className}/${trail} está incompleta`);
+    } else {
+      assert.deepEqual(entries.map((entry) => entry.unlockNex).sort((a, b) => a - b), [10, 40, 65, 99], `${className}/${trail} está incompleta`);
+    }
   }
 }
 

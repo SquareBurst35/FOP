@@ -5,9 +5,9 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=9";
-import { ITEMS } from "./items.js?v=9";
-import { SKILLS } from "./rules.js?v=9";
+} from "./content.js?v=11";
+import { ITEMS } from "./items.js?v=11";
+import { SKILLS } from "./rules.js?v=11";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",
@@ -23,6 +23,7 @@ export const CHOICE_TYPE_LABELS = {
 };
 
 const ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
+const PARANORMAL_DANGERS = ELEMENTS;
 const ALLY_TYPES = [
   "Assassino",
   "Atirador",
@@ -74,6 +75,7 @@ export function abilityCanRepeatChoice(entry) {
     "<Habilidade> Aprimorada",
     "Aprender Ritual",
     "Dominar Habilidade Ritualística",
+    "Foco em Perícia",
     "Resistir a Elemento",
     "Transcender",
     "Treinamento em Perícia",
@@ -95,6 +97,25 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
       count: Math.min(2, trained.length),
       help: "Luta e Pontaria não podem ser escolhidas.",
     })];
+  }
+  if (name === "Foco em Perícia") {
+    const used = new Set((character.habilidadeEscolhas ?? []).filter((choice) => choice.abilityId === entry.id && choice.type === "pericia").map((choice) => choice.valueId));
+    const trained = (character.periciasTreinadas ?? []).filter((skill) => !["Luta", "Pontaria"].includes(skill) && !used.has(skill));
+    return [spec(entry.id, "pericia", "Escolha a perícia em foco", trained.map((skill) => option(skill, skill)), { help: "O poder pode ser adquirido novamente para outra perícia." })];
+  }
+  if (name === "Pai de Pet") {
+    const skills = SKILLS.filter((skill) => !["Luta", "Pontaria"].includes(skill));
+    return [spec(entry.id, "pericia", "Escolha duas perícias ajudadas pelo pet", skills.map((skill) => option(skill, skill)), { count: 2, help: "As escolhas devem ser aprovadas pelo mestre." })];
+  }
+  if (name === "Parceiro") {
+    return [spec(entry.id, "aliado", "Escolha o tipo de aliado", ALLY_TYPES.map((type) => option(type, type)))];
+  }
+  if (name === "Entendido") {
+    const trained = (character.periciasTreinadas ?? []).filter((skill) => !["Luta", "Pontaria"].includes(skill));
+    return [spec(entry.id, "pericia", "Escolha duas perícias para Entendido", trained.map((skill) => option(skill, skill)), { count: Math.min(2, trained.length) })];
+  }
+  if (name === "Cicatrizado") {
+    return [spec(entry.id, "elemento", "Escolha o elemento do perigo paranormal", PARANORMAL_DANGERS.map((element) => option(element, element)))];
   }
   if (name === "Treinamento em Perícia") {
     const maxRank = levelNex >= 70 ? 15 : levelNex >= 35 ? 10 : 5;

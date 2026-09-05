@@ -45,7 +45,7 @@ const slug = (value) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-const ability = ({ name, category, group, summary, cost = "Passivo", requirement = "Nenhum", unlockNex = 0, source = "Livro base", page = "", details = [], key = "" }) => ({
+const ability = ({ name, category, group, summary, cost = "Passivo", requirement = "Nenhum", unlockNex = 0, unlockStage = 0, source = "Livro base", page = "", details = [], key = "" }) => ({
   id: slug(`${category}-${group}-${name}${key ? `-${key}` : ""}`),
   name,
   category,
@@ -54,12 +54,16 @@ const ability = ({ name, category, group, summary, cost = "Passivo", requirement
   cost,
   requirement,
   unlockNex,
+  unlockStage,
   source,
   page,
   details,
 });
 
 export const CORE_CLASS_ABILITIES = [
+  ability({ name: "Empenho", category: "Sobrevivente", group: "Habilidades de classe", summary: "Depois de fazer um teste de perícia, gaste 1 PE para receber +2 no resultado.", cost: "1 PE", requirement: "Classe Sobrevivente", unlockStage: 1, source: "Sobrevivendo ao Horror", page: "31" }),
+  ability({ name: "Treinamento Especial", category: "Sobrevivente", group: "Habilidades de classe", summary: "Quando a história permitir, o próximo avanço pode converter o sobrevivente em Combatente, Especialista ou Ocultista de NEX 5%, mantendo as habilidades já recebidas e aplicando os ajustes da classe escolhida.", cost: "Narrativo", requirement: "Autorização do mestre", unlockStage: 1, source: "Sobrevivendo ao Horror", page: "32", details: ["Combatente: +8 PV, duas escolhas de perícia, armas táticas, proteções leves e Ataque Especial.", "Especialista: +4 PV, +1 PE, +4 SAN, seis perícias, proteções leves, Eclético e Perito.", "Ocultista: +2 PE, +8 SAN, Ocultismo, Vontade, duas perícias e Escolhido pelo Outro Lado."] }),
+  ability({ name: "Cicatrizado", category: "Sobrevivente", group: "Habilidades de classe", summary: "Escolha um perigo paranormal ligado a um elemento. Uma vez por sessão, use uma reação e reduza permanentemente 1 ponto de um recurso máximo para ignorar um dano mental ou gasto de PE, ou reduzir um dano físico à metade.", cost: "1 vez por sessão", requirement: "Sobrevivente · Estágio 5", unlockStage: 5, source: "Sobrevivendo ao Horror", page: "31", details: ["A escolha do perigo e do elemento fica registrada na ficha.", "O teste de resistência contra o perigo escolhido sofre a penalidade indicada pela regra."] }),
   ability({ name: "Ataque Especial", category: "Combatente", group: "Habilidades de classe", summary: "Gaste PE ao atacar para aumentar o teste, o dano ou os dois, respeitando o limite disponível no NEX.", cost: "2 a 5 PE", requirement: "Classe Combatente", unlockNex: 5 }),
   ability({ name: "Eclético", category: "Especialista", group: "Habilidades de classe", summary: "Permite receber temporariamente os benefícios de treinamento em uma perícia usada no teste.", cost: "2 PE", requirement: "Classe Especialista", unlockNex: 5 }),
   ability({ name: "Perito", category: "Especialista", group: "Habilidades de classe", summary: "Escolha duas perícias treinadas, exceto Luta e Pontaria, para acrescentar um dado de bônus ao gastar PE.", cost: "2 a 5 PE", requirement: "Classe Especialista", unlockNex: 5 }),
@@ -173,6 +177,45 @@ export const CLASS_POWERS = [
 ];
 
 export const GENERAL_POWERS = [
+  // Sobrevivendo ao Horror — poderes gerais
+  ability({ name: "Acrobático", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Acrobacia ou +2 se já for treinado; terreno difícil não reduz seu deslocamento nem impede investidas.", requirement: "AGI 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Ás do Volante", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Pilotagem ou +2 se já for treinado. Uma vez por rodada, um teste de Pilotagem pode evitar dano ao veículo pilotado.", requirement: "AGI 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Atlético", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Atletismo ou +2 se já for treinado e aumenta o deslocamento em 3 m.", requirement: "FOR 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Atraente", category: "Gerais", group: "Poderes Gerais", summary: "Concede +5 em Artes, Diplomacia, Enganação e Intimidação contra pessoas que possam se sentir atraídas por você.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Dedos Ágeis", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Crime ou +2 se já for treinado; acelera ações de arrombar, furtar e sabotar conforme a regra.", requirement: "AGI 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Detector de Mentiras", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Intuição ou +2 se já for treinado e aplica −10 aos testes de Enganação feitos para mentir para você.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Especialista em Emergências", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Medicina ou +2 se já for treinado; permite aplicar cicatrizantes e medicamentos como ação de movimento e sacar um deles livremente uma vez por rodada.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Estigmado", category: "Gerais", group: "Poderes Gerais", summary: "Ao sofrer dano mental causado por medo, você pode convertê-lo em perda equivalente de PV.", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Foco em Perícia", category: "Gerais", group: "Poderes Gerais", summary: "Escolha uma perícia treinada, exceto Luta e Pontaria. Você rola +1d20 nos testes dela; pode repetir o poder para perícias diferentes.", requirement: "Treinado na perícia escolhida", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Inventário Organizado", category: "Gerais", group: "Poderes Gerais", summary: "Soma Intelecto à capacidade de carga e faz itens de 0,5 espaço ocuparem apenas 0,25 espaço.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Informado", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Atualidades ou +2 se já for treinado; com aprovação do mestre, Atualidades substitui outra perícia em testes de informação.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "33" }),
+  ability({ name: "Interrogador", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Intimidação ou +2 se já for treinado e permite coagir com uma ação padrão, uma vez por cena por alvo.", requirement: "FOR 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "33" }),
+  ability({ name: "Mentiroso Nato", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Enganação ou +2 se já for treinado e reduz a penalidade por mentiras muito improváveis.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "33" }),
+  ability({ name: "Observador", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Investigação ou +2 se já for treinado e soma Intelecto aos testes de Intuição.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "33" }),
+  ability({ name: "Pai de Pet", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Adestramento ou +2 se já for treinado e um aliado animal que fornece +2 em duas perícias válidas escolhidas.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "33" }),
+  ability({ name: "Palavras de Devoção", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Religião ou +2 se já for treinado. Uma vez por cena, fortalece contra dano mental um grupo limitado por sua Presença.", cost: "3 PE e ação completa", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34", details: ["Participantes recebem resistência a dano mental 5 até o fim da cena."] }),
+  ability({ name: "Parceiro", category: "Gerais", group: "Poderes Gerais", summary: "Concede um aliado de tipo escolhido. Se ele deixar o grupo, uma folga da Ordem é necessária para obter outro.", requirement: "Treinado em Diplomacia e NEX 30%", unlockNex: 30, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Pensamento Tático", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Tática ou +2 se já for treinado. Analisar terreno pode dar uma ação de movimento extra ao grupo na primeira rodada do próximo combate ali.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Personalidade Esotérica", category: "Gerais", group: "Poderes Gerais", summary: "Concede +3 PE máximos e treinamento em Ocultismo, ou +2 na perícia se já for treinado.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Persuasivo", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Diplomacia ou +2 se já for treinado e reduz em 5 a penalidade de pedidos custosos ou perigosos.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Pesquisador Científico", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Ciências ou +2 se já for treinado; Ciências pode substituir Ocultismo ou Sobrevivência para identificar criaturas e animais.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Proativo", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Iniciativa ou +2 se já for treinado. Um resultado natural 19 ou 20 em um dos dados concede uma ação padrão extra no primeiro turno.", requirement: "AGI 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Provisões de Emergência", category: "Gerais", group: "Poderes Gerais", summary: "Uma vez por missão, uma ação de interlúdio permite obter uma nova seleção de equipamentos correspondente à patente inicial da missão.", cost: "1 vez por missão", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Racionalidade Inflexível", category: "Gerais", group: "Poderes Gerais", summary: "Permite usar Intelecto no lugar de Presença em Vontade e no cálculo dos PE máximos.", requirement: "INT 3", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "34" }),
+  ability({ name: "Rato de Computador", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Tecnologia ou +2 se já for treinado, acelera operações digitais e permite procurar uma pista sem gastar rodada uma vez por cena de investigação.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Resposta Rápida", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Reflexos ou +2 se já for treinado. Ao falhar em Percepção para evitar ficar desprevenido, pode refazer o teste com Reflexos.", cost: "2 PE", requirement: "AGI 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Talentoso", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Artes ou +2 se já for treinado e melhora gradualmente o bônus concedido ao impressionar com Artes.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Teimosia Obstinada", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Vontade ou +2 se já for treinado. Contra condições mentais ou mudança de atitude, pode receber +5 no teste.", cost: "2 PE", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Tenacidade", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Fortitude ou +2 se já for treinado e libera um teste progressivo para encerrar a condição morrendo enquanto ainda estiver consciente.", requirement: "VIG 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Sentidos Aguçados", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Percepção ou +2 se já for treinado, evita ficar desprevenido contra alvos não vistos e permite refazer a chance de falha por camuflagem.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Sobrevivencialista", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Sobrevivência ou +2 se já for treinado, +2 contra clima e ignora a redução de deslocamento de terreno difícil natural.", requirement: "INT 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Sorrateiro", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Furtividade ou +2 se já for treinado e remove penalidades específicas por movimento e perseguição furtiva.", requirement: "AGI 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Vitalidade Reforçada", category: "Gerais", group: "Poderes Gerais", summary: "Concede +1 PV por nível ou por cada 5% de NEX, além de +2 em Fortitude.", requirement: "VIG 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Vontade Inabalável", category: "Gerais", group: "Poderes Gerais", summary: "Concede +1 PE a cada dois níveis ou 10% de NEX, além de +2 em Vontade.", requirement: "PRE 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "35" }),
+  ability({ name: "Artista Marcial", category: "Gerais", group: "Poderes Gerais", summary: "Seus ataques desarmados causam 1d6, podem usar Agilidade e melhoram para 1d8 no NEX 35% e 1d10 no NEX 70%.", requirement: "AGI 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Combater com Duas Armas", category: "Gerais", group: "Poderes Gerais", summary: "Ao atacar com duas armas adequadas, permite um ataque com cada uma, aplicando a penalidade prevista.", requirement: "AGI 3 e treinado em Luta ou Pontaria", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Saque Rápido", category: "Gerais", group: "Poderes Gerais", summary: "Permite sacar ou guardar itens livremente e reduz o tempo necessário para recarregar armas.", requirement: "Treinado em Iniciativa", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
+  ability({ name: "Tiro Certeiro", category: "Gerais", group: "Poderes Gerais", summary: "Soma Agilidade ao dano com armas de disparo e evita a penalidade por alvo em combate corpo a corpo.", requirement: "Treinado em Pontaria", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "32" }),
   ability({ name: "Cicatrizes Expostas", category: "Gerais", group: "Poderes Gerais", summary: "Ao expor uma cicatriz, seus danos recebem +1d8 do mesmo tipo até o fim da cena, mas você sofre uma penalidade de um dado em Vontade e em ações que exijam calma.", cost: "Ação de movimento", requirement: "Ter cicatrizes", unlockNex: 15, source: "Arquivos Secretos #1", page: "46", details: ["O efeito também começa se outra criatura expuser a cicatriz."] }),
   ability({ name: "Curiosidade Oculta", category: "Gerais", group: "Poderes Gerais", summary: "Concede treinamento em Ocultismo ou +2 se você já for treinado. Em um teste de Vontade, permite usar Ocultismo no lugar dela.", cost: "2 PE para substituir o teste", requirement: "INT 2", unlockNex: 15, source: "Arquivos Secretos #1", page: "46" }),
   ability({ name: "Especialista Esotérico", category: "Gerais", group: "Poderes Gerais", summary: "Ao conjurar um ritual, permite combinar os efeitos de até três catalisadores ritualísticos diferentes.", requirement: "INT 3, ritual de 2º círculo e Domínio Esotérico", unlockNex: 30, source: "Arquivos Secretos #1", page: "46" }),
@@ -201,6 +244,18 @@ const trail = (category, group, source, entries) =>
   );
 
 export const TRAIL_ABILITIES = [
+  ...trail("Sobrevivente", "Durão", "Sobrevivendo ao Horror", [
+    ["Durão", 2, "Recebe +4 PV no estágio 2 e mais +2 PV ao chegar ao estágio 3."],
+    ["Pancada Forte", 4, "Ao fazer um ataque, gaste 1 PE para receber +1d20 no teste de ataque.", "1 PE"],
+  ]).map((entry) => ({ ...entry, unlockStage: entry.unlockNex, unlockNex: 0 })),
+  ...trail("Sobrevivente", "Esperto", "Sobrevivendo ao Horror", [
+    ["Esperto", 2, "Concede treinamento em uma perícia adicional à sua escolha."],
+    ["Entendido", 4, "Escolha duas perícias treinadas, exceto Luta e Pontaria; ao testá-las, gaste 1 PE para somar 1d4 ao resultado.", "1 PE"],
+  ]).map((entry) => ({ ...entry, unlockStage: entry.unlockNex, unlockNex: 0 })),
+  ...trail("Sobrevivente", "Esotérico", "Sobrevivendo ao Horror", [
+    ["Esotérico", 2, "Sente energias paranormais em alcance curto para obter pistas ou alertas definidos pelo mestre.", "1 PE e ação padrão"],
+    ["Iniciado", 4, "Aprende e pode conjurar um ritual de 1º círculo à escolha."],
+  ]).map((entry) => ({ ...entry, unlockStage: entry.unlockNex, unlockNex: 0 })),
   ...trail("Combatente", "Aniquilador", "Livro base", [
     ["A Favorita", 10, "Escolha uma arma; ela passa a exigir uma categoria a menos para ser requisitada."],
     ["Técnica Secreta", 40, "Ao atacar com a arma favorita, aplique uma técnica para ampliar crítico ou atravessar resistência.", "2 PE"],
@@ -356,6 +411,14 @@ export const TRAIL_ABILITIES = [
 ];
 
 export const PARANORMAL_POWERS = [
+  ability({ name: "Absorver Conhecimento", category: "Poderes Paranormais", group: "Conhecimento", summary: "Com uma fonte escrita em mãos, permite obter automaticamente uma resposta contida nela; também melhora o dado de bônus da ação de interlúdio ler.", cost: "1 PE e ação completa", requirement: "Afinidade reduz em 1 PE certos rituais de Conhecimento por toque", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "46" }),
+  ability({ name: "Apatia Herege", category: "Poderes Paranormais", group: "Conhecimento", summary: "Ao testar contra uma condição de medo, permite refazer o teste e aceitar o segundo resultado.", cost: "2 PE", requirement: "Conhecimento 1; afinidade permite escolher o melhor resultado", unlockNex: 30, source: "Sobrevivendo ao Horror", page: "47" }),
+  ability({ name: "Antecipar Vitalidade", category: "Poderes Paranormais", group: "Morte", summary: "Em um teste, acumule uma carga para rolar +1d20. O máximo é seu Vigor e as cargas são removidas durante ações de interlúdio dormir em vez de recuperar PV.", requirement: "Afinidade aumenta o limite de cargas em 2", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "46" }),
+  ability({ name: "Aura de Pavor", category: "Poderes Paranormais", group: "Morte", summary: "Afeta uma pessoa ou animal em alcance médio com uma condição de medo; Vontade reduz o efeito e cada alvo só pode ser afetado uma vez por dia.", cost: "2 PE e ação de movimento", requirement: "Afinidade aumenta a DT e permite escolher vários alvos", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "46" }),
+  ability({ name: "Conexão Empática", category: "Poderes Paranormais", group: "Energia", summary: "Ao tocar um objeto elétrico ligado, permite conversar com ele até o fim da cena ou até soltar o objeto; as informações dependem do que ele consegue registrar.", cost: "2 PE e ação completa", requirement: "Energia 1; afinidade concede +5 em testes mentais com o objeto", unlockNex: 30, source: "Sobrevivendo ao Horror", page: "47" }),
+  ability({ name: "Espreitar da Besta", category: "Poderes Paranormais", group: "Sangue", summary: "Concede +5 em Furtividade, permite usá-la no lugar de Atletismo ao caçar em perseguições e remove a penalidade indicada para ações discretas.", requirement: "Afinidade aumenta o bônus de Furtividade para +10", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "46" }),
+  ability({ name: "Instintos Sanguinários", category: "Poderes Paranormais", group: "Sangue", summary: "Concede visão no escuro e faro.", requirement: "Afinidade evita flanqueamento e desprevenido e concede +5 em resistências contra armadilhas", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "46" }),
+  ability({ name: "Valer-se do Caos", category: "Poderes Paranormais", group: "Energia", summary: "Antes de um teste, permite rolar +1d20; uma falha ou resultado baixo nesse dado extra causa perda de 1d4 SAN.", requirement: "Afinidade reduz a faixa que ativa a perda de SAN", unlockNex: 15, source: "Sobrevivendo ao Horror", page: "47" }),
   ability({ name: "Aprender Ritual", category: "Poderes Paranormais", group: "Conhecimento", summary: "Aprende um ritual permitido pelo círculo disponível para o personagem.", cost: "Conforme o ritual", requirement: "Afinidade: aprende novamente um ritual do elemento", unlockNex: 15 }),
   ability({ name: "Expansão de Conhecimento", category: "Poderes Paranormais", group: "Conhecimento", summary: "Permite escolher um poder de classe que não seja da sua classe, cumprindo os pré-requisitos.", requirement: "INT 2; afinidade reduz exigências", unlockNex: 30 }),
   ability({ name: "Precognição", category: "Poderes Paranormais", group: "Conhecimento", summary: "Concede bônus defensivo e em Reflexos por antecipar ameaças.", requirement: "Afinidade amplia o benefício", unlockNex: 15 }),
@@ -609,7 +672,7 @@ export const RITUALS = [
   ritual("Passagem de Conhecimento Expandido", ["Sangue", "Conhecimento"], 4, "Realiza uma troca permanente de consciências entre dois grupos, sempre com quantidade par de participantes. Os envolvidos passam a usar atributos e habilidades dos novos corpos.", "Arquivos Secretos #1", { page: "50", execution: "1 dia", range: "Curto", target: "2 a 10 pessoas, em número par", duration: "Permanente", resistance: "Não indicada", requirement: "Conhecer Passagem de Conhecimento", details: ["Os participantes são divididos em dois grupos e cada integrante do grupo principal é ligado a alguém do outro.", "Para recuperar os corpos originais, o ritual deve ser realizado novamente com os envolvidos presentes."] }),
 ];
 
-export const ABILITY_CATEGORIES = ["Combatente", "Especialista", "Ocultista", "Gerais", "Origens", "Poderes Paranormais"];
+export const ABILITY_CATEGORIES = ["Sobrevivente", "Combatente", "Especialista", "Ocultista", "Gerais", "Origens", "Poderes Paranormais"];
 export const RITUAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue", "Medo"];
 export const RITUAL_CIRCLES = [1, 2, 3, 4];
 

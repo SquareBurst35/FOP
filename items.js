@@ -72,6 +72,7 @@ export const INVENTORY_GROUPS = [
   "Munições",
   "Proteções",
   "Acessórios",
+  "Modificações",
   "Explosivos",
   "Operacionais",
   "Medicamentos",
@@ -234,6 +235,31 @@ export const ITEMS = [
   utility("Pendrive selado", "Paranormais", "II", 0.5, "Dispositivo protegido contra efeitos de Energia, útil para armazenar dados e interagir com outros aparelhos.", "Sobrevivendo ao Horror", "45"),
   utility("Valete da salvação", "Paranormais", "I", 0.5, "Carta consumível que aponta uma rota de fuga e garante uma ação de cortar caminho numa perseguição.", "Sobrevivendo ao Horror", "45"),
 
+  // Sobrevivendo ao Horror — modificações
+  utility("Carregador rápido", "Modificações", "Mod.", 0, "Modificação para arma de fogo, besta ou balestra. Permite uma recarga como ação livre por rodada dentro da capacidade do carregador.", "Sobrevivendo ao Horror", "37", [["Aplicação", "Armas de fogo, bestas e balestras"], ["Categoria do item", "+I"]]),
+  utility("Bateria potente", "Modificações", "Mod.", 0, "Modificação de item elétrico que dobra a duração da bateria e o alcance de luz; em taser, dobra usos, aumenta o dano para 1d8 e a DT em +5.", "Sobrevivendo ao Horror", "38", [["Aplicação", "Objeto elétrico"], ["Categoria do item", "+I"]]),
+
+  // Sobrevivendo ao Horror — novos itens amaldiçoados
+  utility("Ampulheta do Tempo Sofrido", "Paranormais", "II", 1, "Ao gastar 5 PE, concede imediatamente o benefício de uma ação de interlúdio escolhida. Só pode ser reutilizada depois de dedicar outra ação de interlúdio ao item.", "Sobrevivendo ao Horror", "58", [["Elemento", "Morte"], ["Ativação", "5 PE"]]),
+  utility("Arreio Neural", "Paranormais", "II", 1, "Ao sofrer pelo menos 5 de dano elétrico ou de Energia, recupera 1 PE, até o limite diário de duas vezes seu Vigor.", "Sobrevivendo ao Horror", "60", [["Elemento", "Energia"], ["Limite diário", "2 × Vigor em PE"]]),
+  utility("Câmera Obscura", "Paranormais", "III", 1, "Câmera de aura com lente paranormal aprimorada: aumenta em +10 a DT do efeito e pode causar 6d6 de frio a criaturas com invisibilidade, incorporeidade ou camuflagem.", "Sobrevivendo ao Horror", "59", [["Elemento", "Conhecimento"], ["Dano adicional", "6d6 frio"]]),
+  utility("Centrifugador Existencial", "Paranormais", "III", 1, "Por uma rodada, cria duas possibilidades do usuário e concede um turno adicional na última iniciativa; depois, uma das posições é sorteada. Exige teste progressivo de Ocultismo a cada uso diário.", "Sobrevivendo ao Horror", "60", [["Elemento", "Energia"], ["Ativação", "Ação padrão e 3 PE"], ["Teste", "Ocultismo DT 15 +5 por uso adicional no dia"]]),
+  utility("Conector de Membros", "Paranormais", "III", 1, "Permite reconectar uma parte corporal perdida há no máximo três rodadas. O alvo deixa condições críticas, fica inconsciente com 1 PV e pode receber uma complicação aleatória de 25%.", "Sobrevivendo ao Horror", "56", [["Elemento", "Sangue"], ["Ativação", "Ação padrão"], ["Janela", "Até 3 rodadas"]]),
+  utility("Dose d’A Praga", "Paranormais", "III", 1, "Até o fim da cena, concede temporariamente Arma de Sangue, Sangue de Ferro e Sangue Vivo. Ao terminar, exige Fortitude DT 20, +5 por dose anterior desde o último interlúdio.", "Sobrevivendo ao Horror", "56", [["Elemento", "Sangue"], ["Ativação", "Ação padrão"]]),
+  utility("Enxame Fantasmagórico", "Paranormais", "III", 1, "Enquanto vestido, deixa o usuário invisível, mas causa 1 ponto de dano mental no início de cada turno, ignorando resistência.", "Sobrevivendo ao Horror", "59", [["Elemento", "Conhecimento"], ["Custo contínuo", "1 dano mental por turno"]]),
+  utility("Espelho Refletor", "Paranormais", "II", 1, "Permite observar um ponto fora do ângulo de visão em alcance médio com +1d20 em Percepção. Pode ser consumido para evitar dano de Energia e devolvê-lo à origem.", "Sobrevivendo ao Horror", "60", [["Elemento", "Energia"], ["Observação", "Ação de movimento"]]),
+  utility("Fuzil Alheio", "Paranormais", "IV", 2, "Fuzil de precisão com mira telescópica e laser, dano de Energia e sem necessidade de munição.", "Sobrevivendo ao Horror", "60", [["Elemento", "Energia"], ["Tipo", "Fuzil de precisão paranormal"]]),
+  utility("Injeção de Lodo", "Paranormais", "II", 0.5, "Consumível aplicado a um alvo voluntário: até o fim da cena, ele recebe vulnerabilidades específicas, mas na próxima vez que chegaria a 0 PV fica com 1 PV.", "Sobrevivendo ao Horror", "58", [["Elemento", "Morte"], ["Ativação", "Ação padrão"]]),
+  utility("Instantâneo Mortal", "Paranormais", "II", 0.5, "Ao procurar pistas ligadas ao tema da imagem, gaste 1 PE para receber +1d20 no teste de perícia, conforme aprovação do mestre.", "Sobrevivendo ao Horror", "58", [["Elemento", "Morte"], ["Ativação", "1 PE"]]),
+  utility("Mandíbula Agonizante", "Paranormais", "II", 1, "Arremessada em alcance médio, encobre sons num raio de 30 m até o fim da cena e garante sucesso em uma tentativa de distração numa cena de furtividade.", "Sobrevivendo ao Horror", "56", [["Elemento", "Sangue"], ["Ativação", "Ação padrão"], ["Recarga", "Descansar por uma cena"]]),
+  utility("A Primeira Adaga", "Paranormais", "III", 1, "Como componente, aplica ao ritual os quatro catalisadores do suplemento e muda a conjuração para uma rodada, cobrando metade dos PV totais do conjurador.", "Sobrevivendo ao Horror", "61", [["Elemento", "Medo"], ["Custo", "Metade dos PV totais"]]),
+  utility("Projétil de Lodo, curto", "Paranormais", "I", 1, "Munição curta que converte todo o dano da arma para Morte; a arma se desfaz ao fim da cena.", "Sobrevivendo ao Horror", "58", [["Elemento", "Morte"], ["Aplicação", "Munição curta"]]),
+  utility("Projétil de Lodo, longo", "Paranormais", "II", 1, "Munição longa que converte todo o dano da arma para Morte; a arma se desfaz ao fim da cena.", "Sobrevivendo ao Horror", "58", [["Elemento", "Morte"], ["Aplicação", "Munição longa"]]),
+  utility("Rádio Chiador", "Paranormais", "II", 1, "Quando ligado, indica presença, direção e distância aproximada de criaturas paranormais em alcance extremo, mas seu som pode atraí-las.", "Sobrevivendo ao Horror", "58", [["Elemento", "Morte"], ["Alcance", "Extremo"], ["Bateria", "12 horas"]]),
+  utility("Repositório do Fracasso", "Paranormais", "II", 1, "Acumula até 6 cargas quando criaturas paranormais em alcance médio rolam resultados 1. Uma vez por rodada, consome uma carga para recuperar 1d4 PE e aplica −1 cumulativo em Vontade até o próximo interlúdio.", "Sobrevivendo ao Horror", "59", [["Elemento", "Conhecimento"], ["Cargas", "Máximo 6"]]),
+  utility("Retalho Tenebroso", "Paranormais", "II", 1, "Concede faro, visão no escuro e +1 cumulativo em dano por dia de uso, mas aplica vulnerabilidade a Morte, penalidade social e um teste diário para evitar perda de PV.", "Sobrevivendo ao Horror", "56", [["Elemento", "Sangue"], ["Ativação", "Ação padrão"]]),
+  utility("Tábula do Saber Custoso", "Paranormais", "II", 1, "Permite receber temporariamente o benefício de treinamento em uma perícia por um teste; o custo é SAN igual ao atributo-chave dessa perícia.", "Sobrevivendo ao Horror", "59", [["Elemento", "Conhecimento"], ["Custo", "SAN igual ao atributo-chave"]]),
+
   // Arquivos Secretos #1
   utility("Agrupador ritualístico", "Paranormais", "II", 1, "Permite prender até quatro componentes ou catalisadores, que contam como empunhados junto com o agrupador.", "Arquivos Secretos #1", "54"),
   utility("Amuleto sinalizador de <Elemento>", "Paranormais", "II", 1, "Ao ser adquirido, escolhe um elemento que não seja Medo; sinaliza criaturas desse elemento em alcance longo.", "Arquivos Secretos #1", "54"),
@@ -266,7 +292,11 @@ export const ITEM_BY_ID = new Map(ITEMS.map((entry) => [entry.id, entry]));
 
 export function inventoryCapacity(character) {
   const strength = Math.max(0, Number(character?.atributos?.forca) || 0);
-  return strength === 0 ? 2 : strength * 5;
+  const base = strength === 0 ? 2 : strength * 5;
+  const organized = (character?.habilidadesSelecionadas ?? []).some((id) =>
+    String(id).endsWith("-inventario-organizado"),
+  );
+  return base + (organized ? Math.max(0, Number(character?.atributos?.intelecto) || 0) : 0);
 }
 
 export function inventoryUsage(character) {
@@ -274,11 +304,15 @@ export function inventoryUsage(character) {
   const categoryCounts = { I: 0, II: 0, III: 0, IV: 0 };
   let spaces = 0;
   let quantity = 0;
+  const organized = (character?.habilidadesSelecionadas ?? []).some((id) =>
+    String(id).endsWith("-inventario-organizado"),
+  );
   for (const selected of entries) {
     const catalogItem = ITEM_BY_ID.get(selected.itemId);
     if (!catalogItem) continue;
     const amount = Math.max(1, Math.min(99, Number(selected.quantity) || 1));
-    spaces += catalogItem.spaces * amount;
+    const unitSpaces = organized && catalogItem.spaces === 0.5 ? 0.25 : catalogItem.spaces;
+    spaces += unitSpaces * amount;
     quantity += amount;
     if (categoryCounts[catalogItem.category] !== undefined) {
       categoryCounts[catalogItem.category] += amount;

@@ -1,4 +1,4 @@
-import { characterLevel, usesSeparateLevel } from "./rules.js?v=8";
+import { characterLevel, usesSeparateLevel } from "./rules.js?v=11";
 
 export const LEVEL_CAP = 20;
 export const CLASS_POWER_LEVELS = [3, 6, 9, 12, 15, 18];

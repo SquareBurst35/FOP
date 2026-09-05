@@ -1,5 +1,6 @@
 import {
   ATTRIBUTE_MAX_AT_CREATION,
+  SURVIVOR_STAGE_CAP,
   CLASSES,
   ORIGINS,
   SKILLS,
@@ -11,11 +12,13 @@ import {
   findOrigin,
   getSkillConfiguration,
   isMundaneCharacter,
+  isSurvivorCharacter,
   levelFromNex,
   sanitizeSkillSelections,
   skillSelectionStatus,
+  survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=9";
+} from "./rules.js?v=11";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -31,21 +34,21 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=9";
+} from "./content.js?v=11";
 import {
   INVENTORY_GROUPS,
   ITEMS,
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=9";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=9";
+} from "./items.js?v=11";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=11";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=9";
+} from "./choices.js?v=11";
 import {
   effortResource,
   normalizeSession,
@@ -53,10 +56,11 @@ import {
   rollUseCost,
   startNextScene,
   startNextTurn,
+  startNewSession,
   turnSpendLimit,
   undoLastUse,
   useAbility,
-} from "./session.js?v=9";
+} from "./session.js?v=11";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -92,6 +96,7 @@ const NON_USABLE_ABILITY_NAMES = new Set([
   "Ser Amaldiçoado",
   "Transcender",
   "Treinamento em Perícia",
+  "Treinamento Especial",
 ]);
 
 const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Recursos", "Revisão"];
@@ -137,6 +142,7 @@ function createBlankCharacter() {
     trilha: "",
     nex: 0,
     nivel: 0,
+    sobreviventeEstagio: 1,
     patente: "Sem patente",
     optionalRules: {
       separateLevelNex: false,
@@ -188,6 +194,7 @@ function createBlankCharacter() {
       cena: 1,
       gastoTurno: 0,
       usosCena: {},
+      usosSessao: {},
       historico: [],
     },
     anotacoes: "",
@@ -204,6 +211,9 @@ function normalizeCharacter(character) {
   character.periciasTreinadas = Array.isArray(character.periciasTreinadas)
     ? character.periciasTreinadas
     : [];
+  character.sobreviventeEstagio = isSurvivorCharacter(character)
+    ? clamp(Math.trunc(numberOr(character.sobreviventeEstagio, 1)), 1, SURVIVOR_STAGE_CAP)
+    : 1;
   character.periciasAdicionais = Array.isArray(character.periciasAdicionais)
     ? [...new Set(character.periciasAdicionais.filter((skill) => SKILLS.includes(skill)))]
     : [];
@@ -279,7 +289,7 @@ function normalizeCharacter(character) {
   character.anotacoes ??= "";
   character.pericias ??= "";
 
-  if (isMundaneCharacter(character) || character.classe === "Mundano") {
+  if (isMundaneCharacter(character) || character.classe === "Mundano" || isSurvivorCharacter(character)) {
     character.patente = "Sem patente";
   } else if (!PATENTS.includes(character.patente)) {
     character.patente = "Recruta";
@@ -453,7 +463,7 @@ function renderCharacterGrid(characters) {
               </div>
               <div class="character-meta">
                 <span class="badge red">NEX ${numberOr(character.nex, 0)}%</span>
-                <span class="badge">Nível ${characterLevel(character)}</span>
+                <span class="badge">${isSurvivorCharacter(character) ? `Estágio ${survivorStage(character)}` : `Nível ${characterLevel(character)}`}</span>
                 <span class="badge">${escapeHtml(character.classe || "Classe pendente")}</span>
                 <span class="badge">${escapeHtml(character.origem || "Origem pendente")}</span>
                 ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
@@ -536,10 +546,12 @@ function renderCreatorStep() {
 
   if (currentStep === 1) {
     const isMundane = isMundaneCharacter(creatorState);
+    const isSurvivor = isSurvivorCharacter(creatorState);
+    const zeroNex = numberOr(creatorState.nex, 0) === 0 && !usesSeparateLevel(creatorState);
     return `
       <p class="eyebrow">Etapa 2 de ${STEPS.length}</p>
       <h1>Formação</h1>
-      <p class="muted">Cada 5% de NEX equivale a um nível. Em 0%, o personagem é Mundano.</p>
+      <p class="muted">Cada 5% de NEX equivale a um nível. Em 0%, escolha Mundano ou Sobrevivente, que evolui por estágios.</p>
       <div class="form-grid">
         <div class="field">
           <label for="origem">Origem</label>
@@ -549,11 +561,11 @@ function renderCreatorStep() {
         </div>
         ${renderNexPicker()}
         ${
-          isMundane
-            ? `<div class="field"><span class="field-label">Classe</span><div class="locked-value">Mundano <small>NEX 0%</small></div></div>`
+          zeroNex
+            ? `<div class="field"><label for="classe">Classe de NEX 0%</label><select id="classe" name="classe">${selectOptions(["Mundano", "Sobrevivente"], creatorState.classe, "Selecione")}</select><small class="field-help">Sobrevivente usa estágios 1–5 e as regras próprias do suplemento.</small></div>`
             : `<div class="field"><label for="classe">Classe</label><select id="classe" name="classe">${selectOptions(["", "Combatente", "Especialista", "Ocultista"], creatorState.classe, "Selecione")}</select></div>`
         }
-        ${isMundane ? "" : renderPatentField(creatorState.patente)}
+        ${isMundane || isSurvivor ? "" : renderPatentField(creatorState.patente)}
         ${renderTrailField()}
       </div>
       ${renderOriginPreview(creatorState.origem)}
@@ -621,7 +633,7 @@ function renderCreatorStep() {
       ${reviewRow("Agente", creatorState.nome || "Sem nome")}
       ${reviewRow("Jogador", creatorState.jogador || "Não informado")}
       ${reviewRow("Formação", `${creatorState.origem || "Origem pendente"} · ${creatorState.classe || "Classe pendente"}${creatorState.trilha ? ` · ${creatorState.trilha}` : ""}`)}
-      ${reviewRow("Progressão", `Nível ${characterLevel(creatorState)} · NEX ${numberOr(creatorState.nex, 0)}% · ${creatorState.patente || "Sem patente"}`)}
+      ${reviewRow("Progressão", `${isSurvivorCharacter(creatorState) ? `Estágio ${survivorStage(creatorState)}` : `Nível ${characterLevel(creatorState)}`} · NEX ${numberOr(creatorState.nex, 0)}% · ${creatorState.patente || "Sem patente"}`)}
       ${reviewRow("Perícias treinadas", creatorState.periciasTreinadas?.join(", ") || "Nenhuma")}
       ${reviewRow("Recursos", resourceSummary(creatorState))}
     </div>
@@ -798,15 +810,17 @@ function saveCreatorFields() {
   if (currentStep === 1) {
     creatorState.origem = value("origem")?.trim() || "";
     creatorState.nex = clamp(numberOr(value("nex"), creatorState.nex), 0, 100);
+    const selectedClass = value("classe") || creatorState.classe;
     creatorState.nivel = usesSeparateLevel(creatorState)
       ? clamp(numberOr(value("nivel"), creatorState.nivel), 1, 20)
       : levelFromNex(creatorState.nex);
-    if (isMundaneCharacter(creatorState)) {
-      creatorState.classe = "Mundano";
+    if (creatorState.nex === 0 && !usesSeparateLevel(creatorState)) {
+      creatorState.classe = selectedClass === "Sobrevivente" ? "Sobrevivente" : "Mundano";
+      creatorState.sobreviventeEstagio = 1;
       creatorState.trilha = "";
       creatorState.patente = "Sem patente";
     } else {
-      creatorState.classe = value("classe") || "";
+      creatorState.classe = selectedClass || "";
       creatorState.trilha = value("trilha") || "";
       creatorState.patente = PATENTS.includes(value("patente"))
         ? value("patente")
@@ -847,12 +861,14 @@ function renderSheet(id) {
     return;
   }
   if (levelUpState && levelUpState.characterId !== character.id) levelUpState = null;
-  const atLevelCap = characterLevel(character) >= LEVEL_CAP;
+  const atLevelCap = isSurvivorCharacter(character)
+    ? survivorStage(character) >= SURVIVOR_STAGE_CAP
+    : characterLevel(character) >= LEVEL_CAP;
 
   headerActions.innerHTML = `
     <button class="button ghost compact" id="back-home" type="button">Arquivos</button>
     <button class="button compact" id="edit-core" type="button">Editar nome</button>
-    <button class="button primary compact" id="start-level-up" type="button" ${atLevelCap ? "disabled" : ""}>${atLevelCap ? "Nível máximo" : "↑ Subir nível"}</button>
+    <button class="button primary compact" id="start-level-up" type="button" ${atLevelCap ? "disabled" : ""}>${atLevelCap ? (isSurvivorCharacter(character) ? "Estágio máximo" : "Nível máximo") : (isSurvivorCharacter(character) ? "↑ Avançar estágio" : "↑ Subir nível")}</button>
   `;
 
   app.innerHTML = `
@@ -864,7 +880,7 @@ function renderSheet(id) {
           <p class="muted">${escapeHtml(character.jogador || "Jogador não informado")}</p>
           <div class="badge-row">
             <span class="badge red">NEX ${numberOr(character.nex, 0)}%</span>
-            <span class="badge">Nível ${characterLevel(character)}</span>
+            <span class="badge">${isSurvivorCharacter(character) ? `Estágio ${survivorStage(character)}` : `Nível ${characterLevel(character)}`}</span>
             <span class="badge">${escapeHtml(character.classe || "Sem classe")}</span>
             <span class="badge">${escapeHtml(character.origem || "Sem origem")}</span>
             ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
@@ -927,7 +943,7 @@ function renderSheetTab(character) {
 }
 
 function renderSummaryTab(character) {
-  const isMundane = isMundaneCharacter(character) || character.classe === "Mundano";
+  const isMundane = isMundaneCharacter(character) || character.classe === "Mundano" || isSurvivorCharacter(character);
   return `
     <div class="sheet-section">
       <div class="section-heading"><h2>Atributos</h2><span class="muted small">Valores atuais</span></div>
@@ -952,7 +968,7 @@ function renderSummaryTab(character) {
         <label for="sheet-patent">Patente</label>
         ${
           isMundane
-            ? `<div class="locked-value">Sem patente <small>Mundano</small></div>`
+            ? `<div class="locked-value">Sem patente <small>${isSurvivorCharacter(character) ? "Sobrevivente" : "Mundano"}</small></div>`
             : `<select id="sheet-patent" data-patent-select>${PATENTS.map((patent) => `<option value="${escapeAttribute(patent)}" ${patent === character.patente ? "selected" : ""}>${escapeHtml(patent)}</option>`).join("")}</select>`
         }
       </div>
@@ -1035,13 +1051,17 @@ function automaticAbilitiesFor(character) {
     (entry) => entry.category === "Origens" && entry.group === character.origem,
   );
   const classAbilities = CORE_CLASS_ABILITIES.filter(
-    (entry) => entry.category === character.classe && entry.unlockNex <= progressNex,
+    (entry) => entry.category === character.classe && (isSurvivorCharacter(character)
+      ? entry.unlockStage <= survivorStage(character)
+      : entry.unlockNex <= progressNex),
   );
   const trailAbilities = TRAIL_ABILITIES.filter(
     (entry) =>
       entry.category === character.classe &&
       entry.group === character.trilha &&
-      entry.unlockNex <= progressNex,
+      (isSurvivorCharacter(character)
+        ? entry.unlockStage <= survivorStage(character)
+        : entry.unlockNex <= progressNex),
   );
   return uniqueById([originAbility, ...classAbilities, ...trailAbilities].filter(Boolean));
 }
@@ -1087,6 +1107,7 @@ function renderSessionControl(character) {
       <div class="session-control-actions">
         <button type="button" data-session-action="turn">Novo turno</button>
         <button type="button" data-session-action="scene">Nova cena</button>
+        <button type="button" data-session-action="session">Nova sessão</button>
       </div>
       ${last ? `<div class="session-last-use"><span>Último uso</span><strong>${escapeHtml(last.name)}</strong><small>${last.cost ? `−${last.cost} ${escapeHtml(last.resource)}` : "Sem custo de recurso"}</small><button type="button" data-session-action="undo">Desfazer</button></div>` : `<div class="session-last-use empty"><span>Os usos aparecerão aqui.</span></div>`}
     </section>
@@ -1105,13 +1126,17 @@ function abilityUseButton(entry, character) {
   const resource = model.resource === "pv" ? "PV" : model.resource === "san" ? "SAN" : effortResource(character).label;
   const sceneKey = `habilidade:${entry.id}`;
   const used = numberOr(character.controleSessao?.usosCena?.[sceneKey], 0);
-  const disabled = model.sceneLimit && used >= model.sceneLimit;
+  const sessionKey = `habilidade:${entry.id}`;
+  const usedInSession = numberOr(character.controleSessao?.usosSessao?.[sessionKey], 0);
+  const disabled = (model.sceneLimit && used >= model.sceneLimit) || (model.sessionLimit && usedInSession >= model.sessionLimit);
   const label = model.kind === "fixed"
     ? `Usar · ${model.min} ${resource}`
     : model.kind === "random"
       ? `Usar · rolar ${model.diceCount}d${model.diceSides} ${resource}`
     : model.kind === "scene"
       ? disabled ? "Usada nesta cena" : "Usar · 1/cena"
+    : model.kind === "session"
+      ? disabled ? "Usada nesta sessão" : "Usar · 1/sessão"
       : model.kind === "action"
         ? "Registrar uso"
         : "Usar · escolher custo";
@@ -1167,7 +1192,7 @@ function renderAbilityCard(entry, { automatic = false, removable = false, picker
       <details class="entry-card">
         <summary>
           <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)}</small></span>
-          <span class="entry-summary-side">${!resolved ? `<span class="badge warning">Escolha pendente</span>` : automatic ? `<span class="badge red">Automática</span>` : entry.unlockNex ? `<span class="badge">NEX ${entry.unlockNex}%</span>` : ""}<span class="chevron" aria-hidden="true">⌄</span></span>
+          <span class="entry-summary-side">${!resolved ? `<span class="badge warning">Escolha pendente</span>` : automatic ? `<span class="badge red">Automática</span>` : entry.unlockStage ? `<span class="badge">Estágio ${entry.unlockStage}</span>` : entry.unlockNex ? `<span class="badge">NEX ${entry.unlockNex}%</span>` : ""}<span class="chevron" aria-hidden="true">⌄</span></span>
         </summary>
         <div class="entry-body">
           <p>${escapeHtml(entry.summary)}</p>
@@ -1591,8 +1616,9 @@ function startEntryUse(character, type, id) {
   const model = abilityUseModel(entry);
   if (model.kind === "none") return showToast("Esta habilidade não possui uso ativo para registrar.");
   const sceneLimit = model.sceneLimit || (/uma vez por cena/i.test(entry.summary) ? 1 : 0);
+  const sessionLimit = model.sessionLimit || (/uma vez por sess[aã]o/i.test(entry.summary) ? 1 : 0);
   if (model.kind === "random") {
-    commitEntryUse(character, entry, type, rollUseCost(model), model.resource, sceneLimit);
+    commitEntryUse(character, entry, type, rollUseCost(model), model.resource, sceneLimit, sessionLimit);
     return;
   }
   if (["variable"].includes(model.kind)) {
@@ -1605,13 +1631,14 @@ function startEntryUse(character, type, id) {
       value: model.min,
       resource: model.resource,
       sceneLimit,
+      sessionLimit,
       extras: [],
       reductions: [],
     };
     reopenSpendDialog(character);
     return;
   }
-  commitEntryUse(character, entry, type, model.min, model.resource, sceneLimit);
+  commitEntryUse(character, entry, type, model.min, model.resource, sceneLimit, sessionLimit);
 }
 
 function renderSpendDialog(character) {
@@ -1674,11 +1701,11 @@ function bindSpendDialog(character) {
   document.querySelector("#confirm-spend-dialog")?.addEventListener("click", () => {
     const entry = spendState.type === "ritual" ? RITUAL_BY_ID.get(spendState.entryId) : ABILITY_BY_ID.get(spendState.entryId);
     if (!entry) return;
-    commitEntryUse(character, entry, spendState.type, spendState.value, spendState.resource, spendState.sceneLimit);
+    commitEntryUse(character, entry, spendState.type, spendState.value, spendState.resource, spendState.sceneLimit, spendState.sessionLimit);
   });
 }
 
-function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0) {
+function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, sessionLimit = 0) {
   const result = useAbility(character, {
     id: entry.id,
     name: entry.name,
@@ -1688,6 +1715,8 @@ function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0) 
     turnLimit: sessionSpendLimit(character, type === "ritual"),
     sceneKey: type === "habilidade" ? `habilidade:${entry.id}` : "",
     sceneLimit,
+    sessionKey: type === "habilidade" ? `habilidade:${entry.id}` : "",
+    sessionLimit,
   });
   if (!result.ok) return showToast(result.message);
   spendState = null;
@@ -1733,8 +1762,10 @@ function renderInventoryTab(character) {
       <div class="inventory-overview">
         <div class="inventory-capacity ${capacityState}"><span>Espaços ocupados</span><strong>${formatInventoryNumber(usage.spaces)} / ${formatInventoryNumber(usage.capacity)}</strong><small>${usage.spaces > usage.capacity * 2 ? "Acima do limite máximo" : usage.overloaded ? "Sobrecarregado" : `${usage.quantity} item(ns)`}</small></div>
         <div class="inventory-category-summary">
-          <span>Itens por categoria · ${escapeHtml(character.patente || "Sem patente")}</span>
-          ${limits
+          <span>Itens por categoria · ${isSurvivorCharacter(character) ? "Sobrevivente" : escapeHtml(character.patente || "Sem patente")}</span>
+          ${isSurvivorCharacter(character)
+            ? `<div><span class="category-usage ${usage.categoryCounts.I > 1 ? "over" : ""}"><b>I</b> ${usage.categoryCounts.I}/1</span><span class="category-usage"><b>0</b> livres</span></div><small>Itens de categoria 0 devem combinar com a origem.</small>`
+            : limits
             ? `<div>${["I", "II", "III", "IV"].map((category) => { const used = usage.categoryCounts[category]; const limit = limits[category]; return `<span class="category-usage ${used > limit ? "over" : ""}"><b>${category}</b> ${used}/${limit}</span>`; }).join("")}</div>`
             : `<small>Personagens Mundanos combinam o equipamento disponível com o mestre.</small>`}
         </div>
@@ -1785,7 +1816,22 @@ function renderItemPickerAction(item) {
   const route = currentRoute();
   const character = route.page === "ficha" ? getCharacter(route.id) : null;
   const quantity = character?.inventarioItens?.find((selected) => selected.itemId === item.id)?.quantity ?? 0;
-  return `<button class="button primary compact" type="button" data-item-add="${item.id}">${quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
+  const error = character ? inventoryAddError(character, item) : "";
+  return `<button class="button ${error ? "ghost" : "primary"} compact" type="button" data-item-add="${item.id}" ${error ? `disabled title="${escapeAttribute(error)}"` : ""}>${error ? "Limite atingido" : quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
+}
+
+function inventoryAddError(character, item) {
+  if (!item || item.category === "0" || item.group === "Modificações") return "";
+  const usage = inventoryUsage(character);
+  if (isSurvivorCharacter(character)) {
+    if (item.category !== "I") return "Sobreviventes só escolhem itens de categoria 0 e um item de categoria I.";
+    if (usage.categoryCounts.I >= 1) return "O único item de categoria I do sobrevivente já foi escolhido.";
+    return "";
+  }
+  const limits = PATENT_ITEM_LIMITS[character.patente];
+  if (!limits || limits[item.category] == null) return "";
+  if (usage.categoryCounts[item.category] >= limits[item.category]) return `Limite de itens de categoria ${item.category} atingido para esta patente.`;
+  return "";
 }
 
 function renderItemDialog(character) {
@@ -1827,6 +1873,24 @@ function renderItemPickerResults() {
 const LEVEL_UP_STEPS = ["Progressão", "Ganhos", "Escolhas", "Revisão"];
 
 function startLevelUp(character) {
+  if (isSurvivorCharacter(character)) {
+    const fromStage = survivorStage(character);
+    if (fromStage >= SURVIVOR_STAGE_CAP) return showToast("Este sobrevivente já chegou ao estágio 5.");
+    levelUpState = {
+      mode: "survivor",
+      characterId: character.id,
+      step: 0,
+      fromStage,
+      toStage: fromStage + 1,
+      targetTrail: character.trilha || "",
+      attribute: "",
+      survivorSkill: "",
+      survivorTrailSkills: [],
+      survivorRitualId: "",
+      survivorDanger: "",
+    };
+    return reopenLevelUp(character);
+  }
   const plan = createLevelUpPlan(character);
   if (!plan) return showToast("Este agente já chegou ao nível 20.");
   levelUpState = {
@@ -1862,6 +1926,7 @@ function renderLevelUpDialog(character) {
   if (!levelUpState || levelUpState.characterId !== character.id) {
     return `<dialog class="picker-dialog level-up-dialog" id="level-up-dialog"></dialog>`;
   }
+  if (levelUpState.mode === "survivor") return renderSurvivorStageDialog(character);
   const plan = currentLevelUpPlan(character);
   if (!plan) return `<dialog class="picker-dialog level-up-dialog" id="level-up-dialog"></dialog>`;
   const finalStep = levelUpState.step === LEVEL_UP_STEPS.length - 1;
@@ -1886,6 +1951,187 @@ function renderLevelUpDialog(character) {
         <button class="button primary" id="next-level-up" type="button">${nextLabel}</button>
       </div>
     </dialog>`;
+}
+
+function renderSurvivorStageDialog(character) {
+  const finalStep = levelUpState.step === LEVEL_UP_STEPS.length - 1;
+  const nextLabel = finalStep ? "Confirmar estágio" : levelUpState.step === 2 ? "Revisar e confirmar" : "Continuar";
+  return `
+    <dialog class="picker-dialog level-up-dialog" id="level-up-dialog" aria-labelledby="level-up-title">
+      <div class="dialog-heading level-up-heading">
+        <div><p class="eyebrow">Evolução de sobrevivente</p><h2 id="level-up-title">Estágio ${levelUpState.fromStage} → Estágio ${levelUpState.toStage}</h2><p>NEX permanece em 0% · limite de PE por turno: 1</p></div>
+        <button class="dialog-close" id="close-level-up" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="level-up-stepper">
+        ${LEVEL_UP_STEPS.map((label, index) => `<div class="level-up-step ${index === levelUpState.step ? "active" : ""} ${index < levelUpState.step ? "done" : ""}"><span>${index < levelUpState.step ? "✓" : index + 1}</span><strong>${label}</strong></div>`).join("")}
+      </div>
+      <div class="level-up-body">${renderSurvivorStageStep(character)}</div>
+      <div class="level-up-footer">
+        <button class="button ghost" id="cancel-level-up" type="button">Cancelar</button><span></span>
+        <button class="button ghost" id="previous-level-up" type="button" ${levelUpState.step === 0 ? "disabled" : ""}>Voltar</button>
+        <button class="button primary" id="next-level-up" type="button">${nextLabel}</button>
+      </div>
+    </dialog>`;
+}
+
+function renderSurvivorStageStep(character) {
+  if (levelUpState.step === 0) {
+    return `<section class="level-up-section"><p class="eyebrow">Etapa 1 de 4</p><h3>Avanço por estágio</h3><p class="muted">Sobreviventes avançam um estágio por vez e continuam com NEX 0%.</p><div class="level-up-route"><div><span>Agora</span><strong>Estágio ${levelUpState.fromStage}</strong><small>Sobrevivente</small></div><b>→</b><div><span>Depois</span><strong>Estágio ${levelUpState.toStage}</strong><small>Sobrevivente</small></div></div><div class="level-up-lock"><span>Regra da classe</span><strong>Limite de 1 PE por turno</strong><small>Ao menos uma habilidade pode ser usada no custo mínimo a cada turno.</small></div></section>`;
+  }
+  if (levelUpState.step === 1) {
+    const before = calculateDerived(character);
+    const preview = buildSurvivorStagePreview(character);
+    const after = calculateDerived(preview);
+    const previous = new Set(automaticAbilitiesFor(character).map((entry) => entry.id));
+    const automatic = automaticAbilitiesFor(preview).filter((entry) => !previous.has(entry.id)).map((entry) => entry.name);
+    return `<section class="level-up-section"><p class="eyebrow">Etapa 2 de 4</p><h3>Ganhos do estágio</h3><p class="muted">Os recursos e habilidades só serão alterados ao confirmar.</p><div class="level-up-resource-grid">${levelUpResourceCard("PV máximo", before.pvMax, after.pvMax)}${after.usesDetermination ? levelUpResourceCard("PD máximo", before.pdMax, after.pdMax) : `${levelUpResourceCard("PE máximo", before.peMax, after.peMax)}${levelUpResourceCard("SAN máxima", before.sanMax, after.sanMax)}`}</div><div class="level-up-gain-card"><h4>Libera neste estágio</h4><ul>${automatic.length ? automatic.map((name) => `<li>${escapeHtml(name)}</li>`).join("") : `<li>${escapeHtml(survivorStageChoiceLabel(levelUpState.toStage))}</li>`}</ul></div></section>`;
+  }
+  if (levelUpState.step === 2) return renderSurvivorStageChoices(character);
+  return renderSurvivorStageReview(character);
+}
+
+function survivorStageChoiceLabel(stage) {
+  if (stage === 2) return "Escolha da trilha e primeira habilidade";
+  if (stage === 3) return "Aumento de atributo";
+  if (stage === 4) return "Segunda habilidade da trilha";
+  if (stage === 5) return "Cicatrizado e perigo paranormal";
+  return "Aumento de recursos";
+}
+
+function renderSurvivorStageChoices(character) {
+  const stage = levelUpState.toStage;
+  const sections = [];
+  if (stage === 2) {
+    sections.push(`<fieldset class="level-up-choice-block"><legend>Escolha uma trilha</legend><div class="class-choice-grid">${CLASSES.Sobrevivente.trails.map((name) => { const entry = TRAIL_ABILITIES.find((item) => item.category === "Sobrevivente" && item.group === name && item.unlockStage === 2); const selected = levelUpState.targetTrail === name; return `<label class="level-choice-card ${selected ? "selected" : ""}"><input type="radio" name="survivor-trail" value="${escapeAttribute(name)}" data-survivor-trail ${selected ? "checked" : ""}/><strong>${escapeHtml(name)}</strong><small>${escapeHtml(entry?.summary ?? "Primeira habilidade da trilha.")}</small></label>`; }).join("")}</div></fieldset>`);
+    if (levelUpState.targetTrail === "Esperto") sections.push(renderSurvivorNewSkillChoice(character, "Esperto — nova perícia"));
+  }
+  if (stage === 3) {
+    const options = Object.entries(ATTRIBUTE_LABELS).filter(([key]) => numberOr(character.atributos?.[key], 0) < 3);
+    sections.push(`<fieldset class="level-up-choice-block"><legend>Aumento de atributo</legend><p class="muted small">Aumente um atributo em +1, até o máximo 3.</p><div class="attribute-choice-grid">${options.map(([key, label]) => { const current = numberOr(character.atributos?.[key], 0); return `<label class="level-choice-card ${levelUpState.attribute === key ? "selected" : ""}"><input type="radio" name="survivor-attribute" value="${key}" data-survivor-attribute ${levelUpState.attribute === key ? "checked" : ""}/><strong>${label}</strong><small>${current} → ${current + 1}</small></label>`; }).join("")}</div></fieldset>`);
+    if (levelUpState.attribute === "intelecto") sections.push(renderSurvivorNewSkillChoice(character, "Nova perícia por Intelecto"));
+  }
+  if (stage === 4 && character.trilha === "Esperto") {
+    const eligible = (character.periciasTreinadas ?? []).filter((skill) => !["Luta", "Pontaria"].includes(skill));
+    sections.push(renderSkillCheckboxBlock({ title: "Entendido — escolha duas perícias", description: "Ao usar uma das escolhidas, você poderá gastar 1 PE para somar 1d4 ao teste.", skills: eligible, selected: levelUpState.survivorTrailSkills, dataAttribute: "data-survivor-trail-skill", required: Math.min(2, eligible.length) }));
+  }
+  if (stage === 4 && character.trilha === "Esotérico") {
+    const known = new Set(character.rituaisSelecionados ?? []);
+    const rituals = RITUALS.filter((entry) => entry.circle === 1 && !known.has(entry.id));
+    sections.push(renderAbilityRadioBlock("Iniciado — escolha um ritual", "Escolha um ritual de 1º círculo para aprender.", rituals.map((entry) => ({ ...entry, group: ritualElementLabel(entry), requirement: "1º círculo" })), levelUpState.survivorRitualId, "data-survivor-ritual"));
+  }
+  if (stage === 4 && character.trilha === "Durão") sections.push(`<div class="level-up-complete-box"><strong>Pancada Forte</strong><small>Entra automaticamente ao confirmar o estágio.</small></div>`);
+  if (stage === 5) {
+    const elements = ["Sangue", "Morte", "Conhecimento", "Energia"];
+    sections.push(`<fieldset class="level-up-choice-block"><legend>Cicatrizado — perigo paranormal</legend><p class="muted small">Registre o elemento ligado ao perigo que marcou o personagem.</p><div class="attribute-choice-grid">${elements.map((element) => `<label class="level-choice-card ${levelUpState.survivorDanger === element ? "selected" : ""}"><input type="radio" name="survivor-danger" value="${element}" data-survivor-danger ${levelUpState.survivorDanger === element ? "checked" : ""}/><strong>${element}</strong></label>`).join("")}</div></fieldset>`);
+  }
+  return `<section class="level-up-section"><p class="eyebrow">Etapa 3 de 4</p><h3>Escolhas do estágio</h3><p class="muted">O sistema bloqueia a confirmação enquanto faltar uma escolha obrigatória.</p><div class="level-up-choice-stack">${sections.join("") || `<div class="level-up-complete-box">✓ Nenhuma escolha adicional.</div>`}</div></section>`;
+}
+
+function renderSurvivorNewSkillChoice(character, title) {
+  const available = SKILLS.filter((skill) => !(character.periciasTreinadas ?? []).includes(skill));
+  return `<fieldset class="level-up-choice-block"><legend>${escapeHtml(title)}</legend><div class="skill-grid">${available.map((skill) => `<label class="skill-option ${levelUpState.survivorSkill === skill ? "selected" : ""}"><input type="radio" name="survivor-new-skill" value="${escapeAttribute(skill)}" data-survivor-skill ${levelUpState.survivorSkill === skill ? "checked" : ""}/><span>${escapeHtml(skill)}</span></label>`).join("")}</div></fieldset>`;
+}
+
+function buildSurvivorStagePreview(character) {
+  const preview = structuredClone(character);
+  preview.sobreviventeEstagio = levelUpState.toStage;
+  if (levelUpState.targetTrail) preview.trilha = levelUpState.targetTrail;
+  if (levelUpState.attribute) preview.atributos[levelUpState.attribute] = Math.min(3, numberOr(preview.atributos[levelUpState.attribute], 0) + 1);
+  if (levelUpState.survivorSkill) {
+    preview.periciasAdicionais = [...new Set([...(preview.periciasAdicionais ?? []), levelUpState.survivorSkill])];
+    preview.grausPericia[levelUpState.survivorSkill] = Math.max(5, numberOr(preview.grausPericia[levelUpState.survivorSkill], 0));
+  }
+  if (levelUpState.survivorRitualId) preview.rituaisSelecionados = [...new Set([...(preview.rituaisSelecionados ?? []), levelUpState.survivorRitualId])];
+  preview.habilidadeEscolhas = [...(preview.habilidadeEscolhas ?? [])];
+  const choiceOwner = levelUpState.toStage === 4 && preview.trilha === "Esperto"
+    ? TRAIL_ABILITIES.find((entry) => entry.category === "Sobrevivente" && entry.name === "Entendido")
+    : levelUpState.toStage === 5
+      ? CORE_CLASS_ABILITIES.find((entry) => entry.category === "Sobrevivente" && entry.name === "Cicatrizado")
+      : null;
+  if (choiceOwner?.name === "Entendido") {
+    preview.habilidadeEscolhas = preview.habilidadeEscolhas.filter((choice) => !(choice.abilityId === choiceOwner.id && choice.type === "pericia"));
+    for (const skill of levelUpState.survivorTrailSkills) preview.habilidadeEscolhas.push({ abilityId: choiceOwner.id, type: "pericia", valueId: skill, value: skill, level: 0 });
+  }
+  if (choiceOwner?.name === "Cicatrizado" && levelUpState.survivorDanger) {
+    preview.habilidadeEscolhas = preview.habilidadeEscolhas.filter((choice) => !(choice.abilityId === choiceOwner.id && choice.type === "elemento"));
+    preview.habilidadeEscolhas.push({ abilityId: choiceOwner.id, type: "elemento", valueId: levelUpState.survivorDanger, value: levelUpState.survivorDanger, level: 0 });
+  }
+  sanitizeSkillSelections(preview);
+  return applyDerived(preview);
+}
+
+function validateSurvivorStageChoices(character) {
+  const stage = levelUpState.toStage;
+  if (stage === 2 && !CLASSES.Sobrevivente.trails.includes(levelUpState.targetTrail)) return "Escolha uma trilha válida.";
+  if (stage === 2 && levelUpState.targetTrail === "Esperto" && !SKILLS.includes(levelUpState.survivorSkill)) return "Escolha a nova perícia de Esperto.";
+  if (stage === 3) {
+    if (!Object.keys(ATTRIBUTE_LABELS).includes(levelUpState.attribute) || numberOr(character.atributos?.[levelUpState.attribute], 3) >= 3) return "Escolha um atributo que ainda possa aumentar.";
+    if (levelUpState.attribute === "intelecto" && !SKILLS.includes(levelUpState.survivorSkill)) return "Escolha a nova perícia de Intelecto.";
+  }
+  if (stage === 4 && character.trilha === "Esperto") {
+    const eligible = (character.periciasTreinadas ?? []).filter((skill) => !["Luta", "Pontaria"].includes(skill));
+    if (!isExactValidSelection(levelUpState.survivorTrailSkills, eligible, Math.min(2, eligible.length))) return "Escolha as duas perícias de Entendido.";
+  }
+  if (stage === 4 && character.trilha === "Esotérico" && !RITUALS.some((entry) => entry.id === levelUpState.survivorRitualId && entry.circle === 1)) return "Escolha um ritual de 1º círculo.";
+  if (stage === 5 && !["Sangue", "Morte", "Conhecimento", "Energia"].includes(levelUpState.survivorDanger)) return "Escolha o elemento do perigo paranormal.";
+  return "";
+}
+
+function renderSurvivorStageReview(character) {
+  const preview = buildSurvivorStagePreview(character);
+  const before = calculateDerived(character);
+  const after = calculateDerived(preview);
+  const choices = [];
+  if (levelUpState.targetTrail && levelUpState.targetTrail !== character.trilha) choices.push(["Trilha", levelUpState.targetTrail]);
+  if (levelUpState.attribute) choices.push(["Atributo", `${ATTRIBUTE_LABELS[levelUpState.attribute]} +1`]);
+  if (levelUpState.survivorSkill) choices.push(["Nova perícia", levelUpState.survivorSkill]);
+  if (levelUpState.survivorTrailSkills.length) choices.push(["Entendido", levelUpState.survivorTrailSkills.join(", ")]);
+  if (levelUpState.survivorRitualId) choices.push(["Ritual", RITUAL_BY_ID.get(levelUpState.survivorRitualId)?.name ?? "—"]);
+  if (levelUpState.survivorDanger) choices.push(["Perigo paranormal", levelUpState.survivorDanger]);
+  const oldAutomatic = new Set(automaticAbilitiesFor(character).map((entry) => entry.id));
+  const automatic = automaticAbilitiesFor(preview).filter((entry) => !oldAutomatic.has(entry.id)).map((entry) => entry.name);
+  return `<section class="level-up-section"><p class="eyebrow">Etapa 4 de 4</p><h3>Revisão e confirmação</h3><p class="muted">Confira antes de aplicar o estágio.</p><div class="review-list level-up-review">${reviewRow("Progressão", `Estágio ${levelUpState.fromStage} → Estágio ${levelUpState.toStage}`)}${reviewRow("Recursos máximos", levelUpResourceReview(before, after))}${choices.map(([label, value]) => reviewRow(label, value)).join("")}${reviewRow("Habilidades automáticas", automatic.join(", ") || "Nenhuma nova")}</div><div class="level-up-confirm-note"><strong>Pronto para aplicar</strong><p>O avanço será salvo no histórico da ficha.</p></div></section>`;
+}
+
+function bindSurvivorStageDialog(character) {
+  const cancel = () => { levelUpState = null; renderSheet(character.id); };
+  document.querySelector("#close-level-up")?.addEventListener("click", cancel);
+  document.querySelector("#cancel-level-up")?.addEventListener("click", cancel);
+  closeDialogOnBackdrop(document.querySelector("#level-up-dialog"));
+  document.querySelector("#previous-level-up")?.addEventListener("click", () => { levelUpState.step = Math.max(0, levelUpState.step - 1); reopenLevelUp(character); });
+  document.querySelector("#next-level-up")?.addEventListener("click", () => {
+    if (levelUpState.step === 2) { const error = validateSurvivorStageChoices(character); if (error) return showToast(error); }
+    if (levelUpState.step < 3) { levelUpState.step += 1; reopenLevelUp(character); } else applySurvivorStage(character);
+  });
+  const bindSingle = (selector, key, after = null) => document.querySelectorAll(selector).forEach((input) => input.addEventListener("change", () => {
+    levelUpState[key] = input.value;
+    after?.();
+    reopenLevelUp(character, { scrollTop: currentLevelUpScrollTop() });
+  }));
+  bindSingle("[data-survivor-trail]", "targetTrail", () => { levelUpState.survivorSkill = ""; });
+  bindSingle("[data-survivor-attribute]", "attribute", () => { if (levelUpState.attribute !== "intelecto") levelUpState.survivorSkill = ""; });
+  bindSingle("[data-survivor-skill]", "survivorSkill");
+  bindSingle("[data-survivor-ritual]", "survivorRitualId");
+  bindSingle("[data-survivor-danger]", "survivorDanger");
+  document.querySelectorAll("[data-survivor-trail-skill]").forEach((input) => input.addEventListener("change", () => {
+    const values = new Set(levelUpState.survivorTrailSkills);
+    if (input.checked) values.add(input.value); else values.delete(input.value);
+    levelUpState.survivorTrailSkills = [...values].slice(0, 2);
+    reopenLevelUp(character, { scrollTop: currentLevelUpScrollTop() });
+  }));
+}
+
+function applySurvivorStage(character) {
+  const error = validateSurvivorStageChoices(character);
+  if (error) return showToast(error);
+  const preview = buildSurvivorStagePreview(character);
+  preview.levelUpHistory = [...(preview.levelUpHistory ?? []), { mode: "survivor", fromStage: levelUpState.fromStage, toStage: levelUpState.toStage, trail: levelUpState.targetTrail || preview.trilha || "", attribute: levelUpState.attribute || "", skills: [levelUpState.survivorSkill, ...levelUpState.survivorTrailSkills].filter(Boolean), rituals: [levelUpState.survivorRitualId].filter(Boolean), paranormalElement: levelUpState.survivorDanger || "", appliedAt: new Date().toISOString() }];
+  const saved = upsertCharacter(preview);
+  const stage = levelUpState.toStage;
+  levelUpState = null;
+  activeSheetTab = "resumo";
+  renderSheet(saved.id);
+  showToast(`Avanço para o estágio ${stage} aplicado.`);
 }
 
 function renderLevelUpStep(character, plan) {
@@ -2462,6 +2708,7 @@ function isExactValidSelection(selected, available, required) {
 
 function bindLevelUpDialog(character) {
   if (!levelUpState || levelUpState.characterId !== character.id) return;
+  if (levelUpState.mode === "survivor") return bindSurvivorStageDialog(character);
   const cancel = () => { levelUpState = null; renderSheet(character.id); };
   document.querySelector("#close-level-up")?.addEventListener("click", cancel);
   document.querySelector("#cancel-level-up")?.addEventListener("click", cancel);
@@ -2669,6 +2916,9 @@ function bindSheetInteractions(character) {
       } else if (action === "scene") {
         startNextScene(character);
         showToast("Nova cena: usos por cena e limite do turno foram renovados.");
+      } else if (action === "session") {
+        startNewSession(character);
+        showToast("Nova sessão: limites de uso foram renovados.");
       } else if (action === "undo") {
         const result = undoLastUse(character);
         if (!result.ok) return showToast(result.message);
@@ -2891,6 +3141,9 @@ function bindItemAddButtons(character, resultsOnly) {
     : "[data-item-add]";
   document.querySelectorAll(selector).forEach((button) => {
     button.addEventListener("click", () => {
+      const item = ITEM_BY_ID.get(button.dataset.itemAdd);
+      const error = inventoryAddError(character, item);
+      if (error) return showToast(error);
       const wasOpen = Boolean(document.querySelector("#item-dialog")?.open);
       changeInventoryQuantity(character, button.dataset.itemAdd, 1, false);
       if (wasOpen) document.querySelector("#item-dialog")?.showModal();
@@ -2901,6 +3154,13 @@ function bindItemAddButtons(character, resultsOnly) {
 
 function changeInventoryQuantity(character, itemId, delta, notify = true) {
   if (!ITEM_BY_ID.has(itemId) || !Number.isFinite(delta) || delta === 0) return;
+  if (delta > 0) {
+    const error = inventoryAddError(character, ITEM_BY_ID.get(itemId));
+    if (error) {
+      showToast(error);
+      return;
+    }
+  }
   const entries = [...(character.inventarioItens ?? [])];
   const index = entries.findIndex((selected) => selected.itemId === itemId);
   if (index < 0 && delta > 0) entries.push({ itemId, quantity: Math.min(99, delta) });
@@ -2992,7 +3252,7 @@ function renderNexPicker() {
       <input id="nex" name="nex" type="hidden" value="${nex}" />
       <div class="nex-picker">
         <button type="button" data-nex-delta="-5" aria-label="Diminuir NEX em 5" ${nex === 0 ? "disabled" : ""}>−</button>
-        <output for="nex"><strong>${nex}%</strong><small>${separated ? "NEX independente" : nex === 0 ? "Mundano · nível 0" : `Nível ${levelFromNex(nex)}`}</small></output>
+        <output for="nex"><strong>${nex}%</strong><small>${separated ? "NEX independente" : nex === 0 ? (isSurvivorCharacter(creatorState) ? "Sobrevivente · estágio 1" : "Mundano · nível 0") : `Nível ${levelFromNex(nex)}`}</small></output>
         <button type="button" data-nex-delta="5" aria-label="Aumentar NEX em 5" ${nex === 100 ? "disabled" : ""}>+</button>
       </div>
     </div>

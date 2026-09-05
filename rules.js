@@ -1,6 +1,7 @@
 export const ATTRIBUTE_TARGET = 9;
 export const MUNDANE_ATTRIBUTE_TARGET = 8;
 export const ATTRIBUTE_MAX_AT_CREATION = 3;
+export const SURVIVOR_STAGE_CAP = 5;
 
 export const SKILLS = [
   "Acrobacia",
@@ -94,6 +95,16 @@ export const CLASSES = {
     choiceSkills: (intellect) => Math.max(1, 1 + intellect),
     trails: [],
   },
+  Sobrevivente: {
+    survivor: true,
+    initial: { pv: 8, pe: 2, san: 8 },
+    gain: { pv: 2, pe: 1, san: 2 },
+    determination: { initial: 4, gain: 2 },
+    fixedSkills: [],
+    skillChoiceGroups: [],
+    choiceSkills: (intellect) => Math.max(1, 1 + intellect),
+    trails: ["Durão", "Esperto", "Esotérico"],
+  },
   Combatente: {
     initial: { pv: 20, pe: 2, san: 12 },
     gain: { pv: 4, pe: 2, san: 3 },
@@ -168,7 +179,19 @@ export function usesSeparateLevel(character) {
 }
 
 export function isMundaneCharacter(character) {
-  return !usesSeparateLevel(character) && Number(character?.nex) === 0;
+  return !usesSeparateLevel(character) && Number(character?.nex) === 0 && character?.classe !== "Sobrevivente";
+}
+
+export function isSurvivorCharacter(character) {
+  return character?.classe === "Sobrevivente";
+}
+
+export function survivorStage(character) {
+  if (!isSurvivorCharacter(character)) return 0;
+  return Math.min(
+    SURVIVOR_STAGE_CAP,
+    Math.max(1, Math.trunc(Number(character?.sobreviventeEstagio) || 1)),
+  );
 }
 
 export function characterLevel(character) {
@@ -200,18 +223,40 @@ export function attributeBudget(attributes, nex = 5, separateLevelNex = false) {
   };
 }
 
+function hasSelectedPower(character, powerSlug) {
+  return (character?.habilidadesSelecionadas ?? []).some((id) =>
+    String(id).endsWith(`-${powerSlug}`),
+  );
+}
+
 export function calculateDerived(character) {
   const classData = CLASSES[character.classe];
   const vigor = Number(character.atributos?.vigor) || 0;
   const presenca = Number(character.atributos?.presenca) || 0;
+  const intelecto = Number(character.atributos?.intelecto) || 0;
   const agilidade = Number(character.atributos?.agilidade) || 0;
   const rawNex = Number(character.nex);
   const nex = Number.isFinite(rawNex) ? Math.min(100, Math.max(0, rawNex)) : 0;
   const level = characterLevel(character);
-  const advances = character.classe === "Mundano" ? 0 : Math.max(0, level - 1);
+  const stage = survivorStage(character);
+  const advances = character.classe === "Mundano"
+    ? 0
+    : isSurvivorCharacter(character)
+      ? Math.max(0, stage - 1)
+      : Math.max(0, level - 1);
   const usesDetermination = Boolean(
     character.optionalRules?.determination && classData?.determination,
   );
+  const effortAttribute = hasSelectedPower(character, "racionalidade-inflexivel")
+    ? intelecto
+    : presenca;
+  const personalityEffort = hasSelectedPower(character, "personalidade-esoterica") ? 3 : 0;
+  const vitalityBonus = hasSelectedPower(character, "vitalidade-reforcada")
+    ? (isSurvivorCharacter(character) ? 0 : Math.max(0, level))
+    : 0;
+  const willEffortBonus = hasSelectedPower(character, "vontade-inabalavel")
+    ? (isSurvivorCharacter(character) ? 0 : Math.floor(Math.max(0, level) / 2))
+    : 0;
   const transcenderLevels = Array.isArray(character.transcenderNiveis)
     ? [...new Set(character.transcenderNiveis.map(Number).filter((value) => Number.isInteger(value) && value >= 1 && value <= level))]
     : [];
@@ -231,15 +276,41 @@ export function calculateDerived(character) {
       fixedSkills: [],
       skillChoiceGroups: [],
       level,
+      stage,
       usesDetermination: false,
       pdMax: 0,
       transcenderSanPenalty: 0,
     };
   }
 
+
+  if (isSurvivorCharacter(character)) {
+    const survivorDurability = character.trilha === "Durão"
+      ? (stage >= 3 ? 6 : stage >= 2 ? 4 : 0)
+      : 0;
+    return {
+      pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus,
+      peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus,
+      sanMax: classData.initial.san + advances * classData.gain.san,
+      defesa: 10 + agilidade,
+      deslocamento: 9,
+      advances,
+      skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
+      fixedSkills: classData.fixedSkills,
+      skillChoiceGroups: classData.skillChoiceGroups,
+      level: 0,
+      stage,
+      usesDetermination,
+      transcenderSanPenalty: 0,
+      pdMax: usesDetermination
+        ? classData.determination.initial + effortAttribute + advances * classData.determination.gain
+        : 0,
+    };
+  }
+
   return {
-    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor),
-    peMax: classData.initial.pe + presenca + advances * (classData.gain.pe + presenca),
+    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus,
+    peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade,
     deslocamento: 9,
@@ -248,16 +319,52 @@ export function calculateDerived(character) {
     fixedSkills: classData.fixedSkills,
     skillChoiceGroups: classData.skillChoiceGroups,
     level,
+    stage,
     usesDetermination,
     transcenderSanPenalty,
     pdMax: usesDetermination
-      ? classData.determination.initial + presenca + advances * (classData.determination.gain + presenca)
+      ? classData.determination.initial + effortAttribute + advances * (classData.determination.gain + effortAttribute)
       : 0,
   };
 }
 
 function uniqueSkills(skills) {
   return [...new Set(skills.filter((skill) => SKILLS.includes(skill)))];
+}
+
+const POWER_SKILL_GRANTS = [
+  ["-acrobatico", "Acrobacia"],
+  ["-as-do-volante", "Pilotagem"],
+  ["-atletico", "Atletismo"],
+  ["-dedos-ageis", "Crime"],
+  ["-detector-de-mentiras", "Intuição"],
+  ["-especialista-em-emergencias", "Medicina"],
+  ["-informado", "Atualidades"],
+  ["-interrogador", "Intimidação"],
+  ["-mentiroso-nato", "Enganação"],
+  ["-observador", "Investigação"],
+  ["-pai-de-pet", "Adestramento"],
+  ["-palavras-de-devocao", "Religião"],
+  ["-pensamento-tatico", "Tática"],
+  ["-personalidade-esoterica", "Ocultismo"],
+  ["-persuasivo", "Diplomacia"],
+  ["-pesquisador-cientifico", "Ciências"],
+  ["-proativo", "Iniciativa"],
+  ["-rato-de-computador", "Tecnologia"],
+  ["-resposta-rapida", "Reflexos"],
+  ["-talentoso", "Artes"],
+  ["-teimosia-obstinada", "Vontade"],
+  ["-tenacidade", "Fortitude"],
+  ["-sentidos-agucados", "Percepção"],
+  ["-sobrevivencialista", "Sobrevivência"],
+  ["-sorrateiro", "Furtividade"],
+];
+
+function powerGrantedSkills(character) {
+  const selected = (character?.habilidadesSelecionadas ?? []).map(String);
+  return uniqueSkills(POWER_SKILL_GRANTS
+    .filter(([suffix]) => selected.some((id) => id.endsWith(suffix)))
+    .map(([, skill]) => skill));
 }
 
 export function getSkillConfiguration(character) {
@@ -319,6 +426,7 @@ export function sanitizeSkillSelections(character) {
     ...character.periciasClasseObrigatorias,
     ...character.periciasEscolhidas,
     ...character.periciasAdicionais,
+    ...powerGrantedSkills(character),
   ]);
 
   return character;
@@ -347,6 +455,11 @@ export function applyDerived(character, resetCurrent = false) {
   const skillConfig = getSkillConfiguration(character);
   character.recursos ??= {};
   character.nivel = derived.level;
+  if (isSurvivorCharacter(character)) character.sobreviventeEstagio = derived.stage;
+  character.grausPericia ??= {};
+  for (const skill of powerGrantedSkills(character)) {
+    character.grausPericia[skill] = Math.max(5, Number(character.grausPericia[skill]) || 0);
+  }
 
   for (const resource of ["pv", "pe", "san"]) {
     const maxKey = `${resource}Max`;

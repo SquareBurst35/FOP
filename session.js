@@ -22,6 +22,13 @@ export function normalizeSession(character) {
           .map(([key, value]) => [key, Math.max(0, Math.trunc(numberOr(value, 0)))]),
       )
     : {};
+  session.usosSessao = session.usosSessao && typeof session.usosSessao === "object"
+    ? Object.fromEntries(
+        Object.entries(session.usosSessao)
+          .filter(([key, value]) => key && numberOr(value, 0) > 0)
+          .map(([key, value]) => [key, Math.max(0, Math.trunc(numberOr(value, 0)))]),
+      )
+    : {};
   session.historico = Array.isArray(session.historico)
     ? session.historico
         .filter((entry) => entry && entry.id && entry.name)
@@ -46,6 +53,7 @@ export function progressLevel(character) {
 }
 
 export function turnSpendLimit(character, { hasFacingDeath = false, ritual = false, hasPowerfulPresence = false } = {}) {
+  if (character?.classe === "Sobrevivente") return 1;
   let limit = progressLevel(character);
   if (hasFacingDeath) limit += character.afinidadeElemental === "Morte" ? 2 : 1;
   if (ritual && hasPowerfulPresence) {
@@ -65,6 +73,9 @@ export function parseUseCost(cost) {
   }
   if (/1 vez por cena/.test(normalized)) {
     return { kind: "scene", min: 0, max: 0, resource: "effort", sceneLimit: 1 };
+  }
+  if (/1 vez por sess[aã]o/.test(normalized)) {
+    return { kind: "session", min: 0, max: 0, resource: "effort", sessionLimit: 1 };
   }
   const pv = text.match(/(\d+)\s*PV/i);
   if (pv) {
@@ -125,8 +136,12 @@ export function useAbility(character, use) {
   const session = normalizeSession(character);
   const cost = Math.max(0, Math.trunc(numberOr(use.cost, 0)));
   const sceneKey = String(use.sceneKey ?? "");
+  const sessionKey = String(use.sessionKey ?? "");
   if (use.sceneLimit && numberOr(session.usosCena[sceneKey], 0) >= use.sceneLimit) {
     return { ok: false, reason: "scene", message: "Esta habilidade já atingiu o limite nesta cena." };
+  }
+  if (use.sessionLimit && numberOr(session.usosSessao[sessionKey], 0) >= use.sessionLimit) {
+    return { ok: false, reason: "session", message: "Esta habilidade já atingiu o limite nesta sessão." };
   }
 
   let currentKey = "";
@@ -149,7 +164,8 @@ export function useAbility(character, use) {
     countsAgainstTurn = true;
   }
 
-  if (countsAgainstTurn && session.gastoTurno + cost > numberOr(use.turnLimit, 1)) {
+  const survivorMinimumUse = character?.classe === "Sobrevivente" && session.gastoTurno === 0;
+  if (countsAgainstTurn && !survivorMinimumUse && session.gastoTurno + cost > numberOr(use.turnLimit, 1)) {
     const remaining = Math.max(0, numberOr(use.turnLimit, 1) - session.gastoTurno);
     return {
       ok: false,
@@ -164,6 +180,7 @@ export function useAbility(character, use) {
   if (currentKey) character.recursos[currentKey] = Math.max(0, numberOr(character.recursos[currentKey], 0) - cost);
   if (countsAgainstTurn) session.gastoTurno += cost;
   if (sceneKey) session.usosCena[sceneKey] = numberOr(session.usosCena[sceneKey], 0) + 1;
+  if (sessionKey) session.usosSessao[sessionKey] = numberOr(session.usosSessao[sessionKey], 0) + 1;
 
   const record = {
     id: String(use.id),
@@ -175,6 +192,7 @@ export function useAbility(character, use) {
     maxKey,
     countsAgainstTurn,
     sceneKey,
+    sessionKey,
     turno: session.turno,
     cena: session.cena,
     usedAt: new Date().toISOString(),
@@ -202,6 +220,11 @@ export function undoLastUse(character) {
     if (remaining) session.usosCena[record.sceneKey] = remaining;
     else delete session.usosCena[record.sceneKey];
   }
+  if (record.sessionKey) {
+    const remaining = Math.max(0, numberOr(session.usosSessao[record.sessionKey], 0) - 1);
+    if (remaining) session.usosSessao[record.sessionKey] = remaining;
+    else delete session.usosSessao[record.sessionKey];
+  }
   return { ok: true, record };
 }
 
@@ -218,5 +241,16 @@ export function startNextScene(character) {
   session.turno = 1;
   session.gastoTurno = 0;
   session.usosCena = {};
+  return session;
+}
+
+export function startNewSession(character) {
+  const session = normalizeSession(character);
+  session.cena = 1;
+  session.turno = 1;
+  session.gastoTurno = 0;
+  session.usosCena = {};
+  session.usosSessao = {};
+  session.historico = [];
   return session;
 }
