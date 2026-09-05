@@ -1764,6 +1764,77 @@ fieldset.skill-choice-block {
   background: #0d0f12;
 }
 
+.class-rules-preview {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #0d0f12;
+}
+
+.class-rules-preview.sah {
+  border-color: rgba(226, 46, 58, 0.42);
+  background: linear-gradient(135deg, rgba(226, 46, 58, 0.1), rgba(13, 15, 18, 0.96) 55%);
+}
+
+.class-rules-preview h3,
+.class-rules-preview p {
+  margin: 7px 0 0;
+}
+
+.class-rules-preview p {
+  color: var(--muted);
+}
+
+.class-rule-stats,
+.class-rule-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.class-rule-stats > span,
+.class-rule-tags > span {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.class-rule-stats strong {
+  color: var(--text);
+}
+
+.trail-source-stack {
+  display: grid;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.trail-source-group {
+  display: grid;
+  gap: 9px;
+}
+
+.trail-source-group h4 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.level-choice-card em,
+.ability-choice-source {
+  color: #ff8f98 !important;
+  font-size: 0.7rem;
+  font-style: normal;
+}
+
 .origin-detail-card[open] {
   border-color: var(--border-strong);
   background: #111419;

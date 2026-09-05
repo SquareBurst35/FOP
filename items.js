@@ -296,7 +296,13 @@ export function inventoryCapacity(character) {
   const organized = (character?.habilidadesSelecionadas ?? []).some((id) =>
     String(id).endsWith("-inventario-organizado"),
   );
-  return base + (organized ? Math.max(0, Number(character?.atributos?.intelecto) || 0) : 0);
+  const selected = (character?.habilidadesSelecionadas ?? []).map(String);
+  const mochileiro = selected.some((id) => id.endsWith("-mochileiro"));
+  const progressNex = character?.optionalRules?.separateLevelNex
+    ? Math.max(0, Number(character?.nivel) || 0) * 5
+    : Math.max(0, Number(character?.nex) || 0);
+  const mascate = character?.trilha === "Muambeiro" && progressNex >= 10;
+  return base + (organized ? Math.max(0, Number(character?.atributos?.intelecto) || 0) : 0) + (mochileiro ? 5 : 0) + (mascate ? 5 : 0);
 }
 
 export function inventoryUsage(character) {

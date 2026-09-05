@@ -18,7 +18,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=11";
+} from "./rules.js?v=13";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -34,21 +34,21 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=11";
+} from "./content.js?v=13";
 import {
   INVENTORY_GROUPS,
   ITEMS,
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=11";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=11";
+} from "./items.js?v=13";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=13";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=11";
+} from "./choices.js?v=13";
 import {
   effortResource,
   normalizeSession,
@@ -59,7 +59,7 @@ import {
   startNewSession,
   undoLastUse,
   useAbility,
-} from "./session.js?v=12";
+} from "./session.js?v=13";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -163,6 +163,8 @@ function createBlankCharacter() {
       sanMax: 10,
       pdAtual: 0,
       pdMax: 0,
+      ppAtual: 0,
+      ppMax: 0,
     },
     defesa: 10,
     deslocamento: 9,
@@ -568,6 +570,7 @@ function renderCreatorStep() {
         ${renderTrailField()}
       </div>
       ${renderOriginPreview(creatorState.origem)}
+      ${renderClassRulesPreview()}
     `;
   }
 
@@ -893,6 +896,7 @@ function renderSheet(id) {
               ? liveResource("PD", "pd", character.recursos.pdAtual, character.recursos.pdMax)
               : `${liveResource("PE", "pe", character.recursos.peAtual, character.recursos.peMax)}${liveResource("SAN", "san", character.recursos.sanAtual, character.recursos.sanMax)}`
           }
+          ${numberOr(character.recursos.ppMax, 0) > 0 ? liveResource("PP", "pp", character.recursos.ppAtual, character.recursos.ppMax) : ""}
         </div>
 
         ${renderSessionControl(character)}
@@ -1062,7 +1066,11 @@ function automaticAbilitiesFor(character) {
         ? entry.unlockStage <= survivorStage(character)
         : entry.unlockNex <= progressNex),
   );
-  return uniqueById([originAbility, ...classAbilities, ...trailAbilities].filter(Boolean));
+  const flashbackIds = [...ABILITY_BY_ID.values()].filter((entry) => entry.name === "Flashback").map((entry) => entry.id);
+  const flashbackOrigins = (character.habilidadeEscolhas ?? [])
+    .filter((choice) => flashbackIds.includes(choice.abilityId) && choice.type === "origem")
+    .map((choice) => ALL_ABILITIES.find((entry) => entry.category === "Origens" && entry.group === choice.valueId));
+  return uniqueById([originAbility, ...flashbackOrigins, ...classAbilities, ...trailAbilities].filter(Boolean));
 }
 
 function choiceContext(character) {
@@ -1547,6 +1555,29 @@ function applyGrantedChoiceEffects(character, entry, staged) {
   if (["Expansão de Conhecimento", "Dominar Habilidade Ritualística"].includes(entry.name)) {
     for (const choice of [...chosen("poder"), ...chosen("habilidade")]) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), choice.valueId])];
   }
+  if (["Especialista Diletante", "Ele Me Ensina"].includes(entry.name)) {
+    for (const choice of [...chosen("poder"), ...chosen("habilidade")]) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), choice.valueId])];
+  }
+  if (entry.name === "Carteirada") {
+    for (const choice of chosen("pericia")) {
+      const previous = numberOr(character.grausPericia?.[choice.valueId], 0);
+      if (previous === 0) {
+        character.grausPericia[choice.valueId] = 5;
+        character.periciasAdicionais = [...new Set([...(character.periciasAdicionais ?? []), choice.valueId])];
+      } else {
+        character.outrosBonusPericia[choice.valueId] = numberOr(character.outrosBonusPericia?.[choice.valueId], 0) + 2;
+      }
+    }
+  }
+  if (["Mascate", "Laboratório de Campo"].includes(entry.name)) {
+    const previous = numberOr(character.grausPericia?.Profissão, 0);
+    if (previous === 0) {
+      character.grausPericia.Profissão = 5;
+      character.periciasAdicionais = [...new Set([...(character.periciasAdicionais ?? []), "Profissão"] )];
+    } else if (entry.name === "Laboratório de Campo") {
+      character.outrosBonusPericia.Profissão = numberOr(character.outrosBonusPericia?.Profissão, 0) + 5;
+    }
+  }
   if (entry.name === "Aprender Ritual" || entry.name === "Mácula Ritualística") {
     for (const choice of chosen("ritual")) character.rituaisSelecionados = [...new Set([...(character.rituaisSelecionados ?? []), choice.valueId])];
   }
@@ -1937,7 +1968,7 @@ function renderSurvivorStageDialog(character) {
   return `
     <dialog class="picker-dialog level-up-dialog" id="level-up-dialog" aria-labelledby="level-up-title">
       <div class="dialog-heading level-up-heading">
-        <div><p class="eyebrow">Evolução de sobrevivente</p><h2 id="level-up-title">Estágio ${levelUpState.fromStage} → Estágio ${levelUpState.toStage}</h2><p>NEX permanece em 0% · limite de PE por turno: 1</p></div>
+        <div><p class="eyebrow">Evolução de sobrevivente</p><h2 id="level-up-title">Estágio ${levelUpState.fromStage} → Estágio ${levelUpState.toStage}</h2><p>NEX permanece em 0% · o jogador controla o gasto por turno</p></div>
         <button class="dialog-close" id="close-level-up" type="button" aria-label="Fechar">×</button>
       </div>
       <div class="level-up-stepper">
@@ -1954,7 +1985,7 @@ function renderSurvivorStageDialog(character) {
 
 function renderSurvivorStageStep(character) {
   if (levelUpState.step === 0) {
-    return `<section class="level-up-section"><p class="eyebrow">Etapa 1 de 4</p><h3>Avanço por estágio</h3><p class="muted">Sobreviventes avançam um estágio por vez e continuam com NEX 0%.</p><div class="level-up-route"><div><span>Agora</span><strong>Estágio ${levelUpState.fromStage}</strong><small>Sobrevivente</small></div><b>→</b><div><span>Depois</span><strong>Estágio ${levelUpState.toStage}</strong><small>Sobrevivente</small></div></div><div class="level-up-lock"><span>Regra da classe</span><strong>Limite de 1 PE por turno</strong><small>Ao menos uma habilidade pode ser usada no custo mínimo a cada turno.</small></div></section>`;
+    return `<section class="level-up-section"><p class="eyebrow">Etapa 1 de 4</p><h3>Avanço por estágio</h3><p class="muted">Sobreviventes avançam um estágio por vez e continuam com NEX 0%.</p><div class="level-up-route"><div><span>Agora</span><strong>Estágio ${levelUpState.fromStage}</strong><small>Sobrevivente</small></div><b>→</b><div><span>Depois</span><strong>Estágio ${levelUpState.toStage}</strong><small>Sobrevivente</small></div></div><div class="level-up-lock"><span>Controle manual</span><strong>Gasto por turno sob responsabilidade do jogador</strong><small>O FOP desconta os recursos usados, sem bloquear o gasto por turno.</small></div></section>`;
   }
   if (levelUpState.step === 1) {
     const before = calculateDerived(character);
@@ -2245,7 +2276,17 @@ function renderPeritoChoices(preview) {
 }
 
 function renderTrailChoice(plan) {
-  return `<fieldset class="level-up-choice-block"><legend>Escolha uma trilha</legend><p class="muted small">A habilidade de NEX 10% entra automaticamente.</p><div class="class-choice-grid">${(CLASSES[plan.className]?.trails ?? []).map((name) => { const entry = TRAIL_ABILITIES.find((item) => item.category === plan.className && item.group === name && item.unlockNex === 10); const selected = levelUpState.targetTrail === name; return `<label class="level-choice-card ${selected ? "selected" : ""}"><input type="radio" name="level-up-trail" value="${escapeAttribute(name)}" data-level-up-trail ${selected ? "checked" : ""}/><strong>${escapeHtml(name)}</strong><small>${escapeHtml(entry?.summary ?? "Habilidade inicial da trilha.")}</small></label>`; }).join("")}</div></fieldset>`;
+  const trails = CLASSES[plan.className]?.trails ?? [];
+  const sources = [...new Set(trails.map((name) => trailSource(plan.className, name)))];
+  return `<fieldset class="level-up-choice-block"><legend>Escolha uma trilha</legend><p class="muted small">A habilidade de NEX 10% entra automaticamente. As trilhas do suplemento são opções das classes normais.</p><div class="trail-source-stack">${sources.map((source) => `<section class="trail-source-group"><h4>${escapeHtml(source)}</h4><div class="class-choice-grid">${trails.filter((name) => trailSource(plan.className, name) === source).map((name) => { const entry = trailFirstAbility(plan.className, name); const selected = levelUpState.targetTrail === name; return `<label class="level-choice-card ${selected ? "selected" : ""}"><input type="radio" name="level-up-trail" value="${escapeAttribute(name)}" data-level-up-trail ${selected ? "checked" : ""}/><strong>${escapeHtml(name)}</strong><small>${escapeHtml(entry?.summary ?? "Habilidade inicial da trilha.")}</small><em>${escapeHtml(source)}</em></label>`; }).join("")}</div></section>`).join("")}</div></fieldset>`;
+}
+
+function trailFirstAbility(className, trailName) {
+  return TRAIL_ABILITIES.find((item) => item.category === className && item.group === trailName && (item.unlockNex === 10 || item.unlockStage === 2));
+}
+
+function trailSource(className, trailName) {
+  return trailFirstAbility(className, trailName)?.source ?? "Livro base";
 }
 
 function attributeIncreaseOptions(character) {
@@ -2283,7 +2324,7 @@ function renderTrainingUpgradeChoices(character, plan) {
 
 function availableClassPowers(character, plan) {
   const selected = new Set(character.habilidadesSelecionadas ?? []);
-  return [...CLASS_POWERS, ...GENERAL_POWERS]
+  const entries = [...CLASS_POWERS, ...GENERAL_POWERS]
     .filter((entry) =>
       (entry.category === plan.className || entry.category === "Gerais") &&
       entry.unlockNex <= plan.targetProgressNex &&
@@ -2295,10 +2336,14 @@ function availableClassPowers(character, plan) {
       if (entry.name === "Treinamento em Perícia") return powerTrainingEligible(character, plan).length > 0;
       return true;
     });
+  const targetTrail = levelUpState?.targetTrail || character.trilha;
+  return plan.className === "Ocultista" && targetTrail === "Possuído"
+    ? entries.filter((entry) => entry.category === "Ocultista" && entry.name === "Transcender")
+    : entries;
 }
 
 function renderAbilityRadioBlock(title, description, entries, selectedId, dataAttribute, blockId = "") {
-  return `<fieldset class="level-up-choice-block" ${blockId ? `id="${escapeAttribute(blockId)}"` : ""}><legend>${escapeHtml(title)}</legend><p class="muted small">${escapeHtml(description)}</p><div class="level-up-option-list">${entries.map((entry) => `<label class="ability-choice-card ${selectedId === entry.id ? "selected" : ""}"><input type="radio" name="${dataAttribute.replace("data-", "")}" value="${escapeAttribute(entry.id)}" ${dataAttribute} ${selectedId === entry.id ? "checked" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em><small>Requisito: ${escapeHtml(entry.requirement)}</small></span></label>`).join("") || `<p class="muted small">Nenhuma opção disponível para esta ficha.</p>`}</div></fieldset>`;
+  return `<fieldset class="level-up-choice-block" ${blockId ? `id="${escapeAttribute(blockId)}"` : ""}><legend>${escapeHtml(title)}</legend><p class="muted small">${escapeHtml(description)}</p><div class="level-up-option-list">${entries.map((entry) => `<label class="ability-choice-card ${selectedId === entry.id ? "selected" : ""}"><input type="radio" name="${dataAttribute.replace("data-", "")}" value="${escapeAttribute(entry.id)}" ${dataAttribute} ${selectedId === entry.id ? "checked" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em><small>Requisito: ${escapeHtml(entry.requirement)}</small><small class="ability-choice-source">Fonte: ${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</small></span></label>`).join("") || `<p class="muted small">Nenhuma opção disponível para esta ficha.</p>`}</div></fieldset>`;
 }
 
 function renderClassPowerChoice(character, plan) {
@@ -2616,6 +2661,27 @@ function buildLevelUpPreview(character, { includePowerTraining = true } = {}) {
     if (owner?.name === "Dominar Habilidade Ritualística" && choice.type === "habilidade") {
       preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), choice.valueId])];
     }
+    if (["Especialista Diletante", "Ele Me Ensina"].includes(owner?.name) && ["poder", "habilidade"].includes(choice.type)) {
+      preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), choice.valueId])];
+    }
+    if (owner?.name === "Carteirada" && choice.type === "pericia") {
+      const previous = numberOr(preview.grausPericia?.[choice.valueId], 0);
+      if (previous === 0) {
+        preview.grausPericia[choice.valueId] = 5;
+        preview.periciasAdicionais = [...new Set([...(preview.periciasAdicionais ?? []), choice.valueId])];
+      } else {
+        preview.outrosBonusPericia[choice.valueId] = numberOr(preview.outrosBonusPericia?.[choice.valueId], 0) + 2;
+      }
+    }
+    if (["Mascate", "Laboratório de Campo"].includes(owner?.name) && choice.type === "profissao") {
+      const previous = numberOr(preview.grausPericia?.Profissão, 0);
+      if (previous === 0) {
+        preview.grausPericia.Profissão = 5;
+        preview.periciasAdicionais = [...new Set([...(preview.periciasAdicionais ?? []), "Profissão"] )];
+      } else if (owner.name === "Laboratório de Campo") {
+        preview.outrosBonusPericia.Profissão = numberOr(preview.outrosBonusPericia?.Profissão, 0) + 5;
+      }
+    }
   }
   if (selectedPowerNamed("Transcender")) {
     preview.transcenderNiveis = [...new Set([...(preview.transcenderNiveis ?? []), plan.toLevel])].sort((a, b) => a - b);
@@ -2890,10 +2956,10 @@ function bindSheetInteractions(character) {
       const action = button.dataset.sessionAction;
       if (action === "turn") {
         startNextTurn(character);
-        showToast("Novo turno: o limite de gasto foi renovado.");
+        showToast("Novo turno iniciado.");
       } else if (action === "scene") {
         startNextScene(character);
-        showToast("Nova cena: usos por cena e limite do turno foram renovados.");
+        showToast("Nova cena: usos por cena foram renovados.");
       } else if (action === "session") {
         startNewSession(character);
         showToast("Nova sessão: limites de uso foram renovados.");
@@ -3511,14 +3577,31 @@ function originSkillSummary(origin) {
 function renderTrailField() {
   if (!creatorState.classe || characterLevel(creatorState) < 2) return "";
   const trails = CLASSES[creatorState.classe]?.trails ?? [];
+  const sources = [...new Set(trails.map((name) => trailSource(creatorState.classe, name)))];
   return `
     <div class="field full">
       <label for="trilha">Trilha disponível no nível atual</label>
       <select id="trilha" name="trilha">
-        ${selectOptions(["", ...trails], creatorState.trilha, "Escolha uma trilha")}
+        <option value="">Escolha uma trilha</option>
+        ${sources.map((source) => `<optgroup label="${escapeAttribute(source)}">${trails.filter((name) => trailSource(creatorState.classe, name) === source).map((name) => `<option value="${escapeAttribute(name)}" ${creatorState.trilha === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}</optgroup>`).join("")}
       </select>
+      <small class="field-help">As opções de Sobrevivendo ao Horror pertencem à classe selecionada; não são classes separadas.</small>
     </div>
   `;
+}
+
+function renderClassRulesPreview() {
+  const className = creatorState.classe;
+  if (!className) return "";
+  if (className === "Mundano") {
+    return `<section class="class-rules-preview"><div><span class="badge">NEX 0%</span><h3>Mundano</h3><p>Representa uma pessoa comum antes de entrar na progressão das classes de agente.</p></div></section>`;
+  }
+  if (className === "Sobrevivente") {
+    return `<section class="class-rules-preview sah"><div><span class="badge red">Sobrevivendo ao Horror</span><h3>Classe Sobrevivente</h3><p>Esta é a classe própria de NEX 0%: avança do estágio 1 ao 5 pelas trilhas Durão, Esperto e Esotérico.</p></div><div class="class-rule-tags">${CLASSES.Sobrevivente.trails.map((name) => `<span>${escapeHtml(name)}</span>`).join("")}</div></section>`;
+  }
+  const supplementTrails = (CLASSES[className]?.trails ?? []).filter((name) => trailSource(className, name) === "Sobrevivendo ao Horror");
+  const supplementPowers = CLASS_POWERS.filter((entry) => entry.category === className && entry.source === "Sobrevivendo ao Horror").length;
+  return `<section class="class-rules-preview sah"><div><span class="badge red">Opções do suplemento</span><h3>${escapeHtml(className)} Sobrevivente</h3><p>No livro, este título reúne novos poderes e trilhas para ${escapeHtml(className)}. A classe continua sendo ${escapeHtml(className)}.</p></div><div class="class-rule-stats"><span><strong>${supplementPowers}</strong> poderes novos</span><span><strong>${supplementTrails.length}</strong> trilhas novas</span></div><div class="class-rule-tags">${supplementTrails.map((name) => `<span>${escapeHtml(name)}</span>`).join("")}</div></section>`;
 }
 
 function readAttributeInputs() {

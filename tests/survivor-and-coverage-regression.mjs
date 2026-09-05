@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { choiceSpecsForAbility } from "../choices.js";
-import { CORE_CLASS_ABILITIES, GENERAL_POWERS, PARANORMAL_POWERS, TRAIL_ABILITIES } from "../content.js";
+import { CLASS_POWERS, CORE_CLASS_ABILITIES, GENERAL_POWERS, PARANORMAL_POWERS, TRAIL_ABILITIES } from "../content.js";
 import { ITEMS, inventoryUsage } from "../items.js";
 import { calculateDerived, survivorStage } from "../rules.js";
 import { turnSpendLimit } from "../session.js";
@@ -61,6 +61,38 @@ hasNames(PARANORMAL_POWERS, [
   "Conexão Empática", "Espreitar da Besta", "Instintos Sanguinários", "Valer-se do Caos",
 ], "Poderes paranormais de Sobrevivendo ao Horror");
 
+const sahClassPowers = CLASS_POWERS.filter((entry) => entry.source === "Sobrevivendo ao Horror");
+hasNames(sahClassPowers, [
+  "Instinto de Fuga", "Apego Angustiado", "Caminho para Forca", "Ciente das Cicatrizes",
+  "Correria Desesperada", "Engolir o Choro", "Paranoia Defensiva", "Sacrificar os Joelhos",
+  "Sem Tempo, Irmão", "Valentão", "Mochileiro", "Acolher o Terror", "Especialista Diletante",
+  "Flashback", "Contatos Oportunos", "Mãos Firmes", "Disfarce Sutil", "Esconderijo Desesperado",
+  "Leitura Fria", "Plano de Fuga", "Remoer Memórias", "Resistir à Pressão", "Nos Olhos do Monstro",
+  "Olhar Sinistro", "Deixe os Sussurros Guiarem", "Domínio Esotérico", "Estalos Macabros",
+  "Minha Dor me Impulsiona", "Sentido Premonitório", "Sincronia Paranormal", "Traçado Conjuratório",
+], "Poderes de classe de Sobrevivendo ao Horror");
+assert.equal(sahClassPowers.length, 31);
+
+const sahAgentTrails = {
+  Combatente: ["Agente Secreto", "Caçador", "Monstruoso"],
+  Especialista: ["Bibliotecário", "Perseverante", "Muambeiro"],
+  Ocultista: ["Exorcista", "Possuído", "Parapsicólogo"],
+};
+for (const [className, trails] of Object.entries(sahAgentTrails)) {
+  for (const trail of trails) {
+    const entries = TRAIL_ABILITIES.filter((entry) => entry.category === className && entry.group === trail && entry.source === "Sobrevivendo ao Horror");
+    assert.equal(entries.length, 4, `${className}/${trail} deve ter quatro habilidades`);
+    assert.deepEqual(entries.map((entry) => entry.unlockNex), [10, 40, 65, 99]);
+    assert.ok(entries.every((entry) => entry.page), `${className}/${trail} deve informar páginas`);
+  }
+}
+
+const choiceNames = ["Carteirada", "A Força do Saber", "Mascate", "Laboratório de Campo", "Especialista Diletante", "Flashback", "Contatos Oportunos", "Ele Me Ensina"];
+for (const name of choiceNames) {
+  const entry = [...CLASS_POWERS, ...TRAIL_ABILITIES].find((ability) => ability.name === name);
+  assert.ok(choiceSpecsForAbility(entry, { ...survivor(5), classe: entry.category, origem: "Acadêmico", trilha: entry.group, nex: 100, nivel: 20, grausPericia: {}, periciasTreinadas: [], habilidadeEscolhas: [] }, [], { abilityById: new Map([...CLASS_POWERS, ...TRAIL_ABILITIES].map((ability) => [ability.id, ability])) }).length, `${name} deve exigir escolha estruturada`);
+}
+
 hasNames(ITEMS, [
   "Ampulheta do Tempo Sofrido", "Arreio Neural", "Câmera Obscura", "Centrifugador Existencial",
   "Conector de Membros", "Dose d’A Praga", "Enxame Fantasmagórico", "Espelho Refletor", "Fuzil Alheio",
@@ -74,5 +106,12 @@ const organizedPower = GENERAL_POWERS.find((entry) => entry.name === "Inventári
 const organized = { ...survivor(1), habilidadesSelecionadas: [organizedPower.id], inventarioItens: [{ itemId: compactItem.id, quantity: 2 }] };
 assert.equal(inventoryUsage(organized).spaces, 0.5);
 assert.equal(inventoryUsage(organized).capacity, 7);
+
+const mochileiro = CLASS_POWERS.find((entry) => entry.name === "Mochileiro");
+assert.equal(inventoryUsage({ ...survivor(1), atributos: { ...survivor(1).atributos, forca: 1 }, habilidadesSelecionadas: [mochileiro.id] }).capacity, 10);
+assert.equal(inventoryUsage({ ...survivor(1), classe: "Especialista", trilha: "Muambeiro", nex: 10, atributos: { ...survivor(1).atributos, forca: 1 } }).capacity, 10);
+
+const possessed = { ...survivor(5), classe: "Ocultista", trilha: "Possuído", nex: 40, nivel: 8, transcenderNiveis: [3, 5, 7] };
+assert.equal(calculateDerived(possessed).ppMax, 9);
 
 console.log("Sobrevivente e cobertura mecânica do suplemento passaram.");

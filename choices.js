@@ -5,9 +5,9 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=11";
-import { ITEMS } from "./items.js?v=11";
-import { SKILLS } from "./rules.js?v=11";
+} from "./content.js?v=13";
+import { ITEMS } from "./items.js?v=13";
+import { ORIGINS, SKILLS } from "./rules.js?v=13";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",
@@ -17,7 +17,9 @@ export const CHOICE_TYPE_LABELS = {
   habilidade: "Habilidade",
   item: "Item",
   numero: "Número da sorte",
+  origem: "Origem adicional",
   pericia: "Perícia",
+  profissao: "Especialidade profissional",
   poder: "Poder recebido",
   ritual: "Ritual",
 };
@@ -113,6 +115,37 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
   if (name === "Entendido") {
     const trained = (character.periciasTreinadas ?? []).filter((skill) => !["Luta", "Pontaria"].includes(skill));
     return [spec(entry.id, "pericia", "Escolha duas perícias para Entendido", trained.map((skill) => option(skill, skill)), { count: Math.min(2, trained.length) })];
+  }
+  if (name === "Carteirada") {
+    return [spec(entry.id, "pericia", "Escolha a perícia da Carteirada", ["Diplomacia", "Enganação"].map((skill) => option(skill, skill)), {
+      help: "Se já for treinado na perícia escolhida, a ficha aplicará +2 em Outros bônus.",
+    })];
+  }
+  if (name === "A Força do Saber") {
+    return [spec(entry.id, "pericia", "Escolha a perícia que passará a usar Intelecto", SKILLS.map((skill) => option(skill, skill)))];
+  }
+  if (name === "Mascate" || name === "Laboratório de Campo") {
+    const professions = ["Armeiro", "Engenheiro", "Químico"];
+    return [spec(entry.id, "profissao", "Escolha a especialidade de Profissão", professions.map((profession) => option(profession, `Profissão (${profession.toLowerCase()})`)))];
+  }
+  if (name === "Especialista Diletante") {
+    const powers = CLASS_POWERS.filter((power) => power.category !== character.classe && power.name !== "Transcender" && power.unlockNex <= levelNex);
+    return [spec(entry.id, "poder", "Escolha um poder de outra classe", abilityOptions(powers), {
+      help: "Poderes de trilha e poderes paranormais não entram nesta lista.",
+    })];
+  }
+  if (name === "Flashback") {
+    return [spec(entry.id, "origem", "Escolha a segunda origem", ORIGINS.filter((origin) => origin.name !== character.origem).map((origin) => option(origin.name, origin.name, `${origin.power} · ${origin.source}`)))];
+  }
+  if (name === "Contatos Oportunos") {
+    return [spec(entry.id, "aliado", "Escolha o tipo de aliado do contato", ALLY_TYPES.map((type) => option(type, type)), {
+      help: "Apenas um contato pode permanecer ativo por vez.",
+    })];
+  }
+  if (name === "Ele Me Ensina") {
+    const firstTrailAbilities = TRAIL_ABILITIES.filter((ability) => ability.category === "Ocultista" && ability.unlockNex === 10 && ability.group !== character.trilha);
+    const transcender = CLASS_POWERS.filter((ability) => ability.category === "Ocultista" && ability.name === "Transcender");
+    return [spec(entry.id, "habilidade", "Escolha Transcender ou uma habilidade inicial de outra trilha", abilityOptions([...transcender, ...firstTrailAbilities]))];
   }
   if (name === "Cicatrizado") {
     return [spec(entry.id, "elemento", "Escolha o elemento do perigo paranormal", PARANORMAL_DANGERS.map((element) => option(element, element)))];

@@ -263,6 +263,9 @@ export function calculateDerived(character) {
   const transcenderSanPenalty = !usesDetermination && !usesSeparateLevel(character)
     ? transcenderLevels.length * (classData?.gain?.san ?? 0)
     : 0;
+  const possessionMax = character.trilha === "Possuído" && level >= 2
+    ? 3 + transcenderLevels.length * 2
+    : 0;
 
   if (!classData) {
     return {
@@ -279,6 +282,7 @@ export function calculateDerived(character) {
       stage,
       usesDetermination: false,
       pdMax: 0,
+      ppMax: 0,
       transcenderSanPenalty: 0,
     };
   }
@@ -305,6 +309,7 @@ export function calculateDerived(character) {
       pdMax: usesDetermination
         ? classData.determination.initial + effortAttribute + advances * classData.determination.gain
         : 0,
+      ppMax: 0,
     };
   }
 
@@ -325,6 +330,7 @@ export function calculateDerived(character) {
     pdMax: usesDetermination
       ? classData.determination.initial + effortAttribute + advances * (classData.determination.gain + effortAttribute)
       : 0,
+    ppMax: possessionMax,
   };
 }
 
@@ -362,9 +368,14 @@ const POWER_SKILL_GRANTS = [
 
 function powerGrantedSkills(character) {
   const selected = (character?.habilidadesSelecionadas ?? []).map(String);
-  return uniqueSkills(POWER_SKILL_GRANTS
+  const progressNex = usesSeparateLevel(character) ? characterLevel(character) * 5 : Number(character?.nex) || 0;
+  const trailSkills = [];
+  if (progressNex >= 10 && character?.trilha === "Caçador") trailSkills.push("Sobrevivência");
+  if (progressNex >= 10 && character?.trilha === "Monstruoso") trailSkills.push("Ocultismo");
+  if (progressNex >= 10 && character?.trilha === "Exorcista") trailSkills.push("Religião");
+  return uniqueSkills([...POWER_SKILL_GRANTS
     .filter(([suffix]) => selected.some((id) => id.endsWith(suffix)))
-    .map(([, skill]) => skill));
+    .map(([, skill]) => skill), ...trailSkills]);
 }
 
 export function getSkillConfiguration(character) {
@@ -490,6 +501,14 @@ export function applyDerived(character, resetCurrent = false) {
       Number(character.recursos.pdAtual) || 0,
       derived.pdMax,
     );
+  }
+
+  const oldPpMax = Number(character.recursos.ppMax) || 0;
+  character.recursos.ppMax = derived.ppMax;
+  if (resetCurrent || character.recursos.ppAtual == null || character.recursos.ppAtual === oldPpMax) {
+    character.recursos.ppAtual = derived.ppMax;
+  } else {
+    character.recursos.ppAtual = Math.min(Number(character.recursos.ppAtual) || 0, derived.ppMax);
   }
 
   character.defesa = derived.defesa;
