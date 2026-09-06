@@ -71,6 +71,14 @@ const ATTRIBUTE_LABELS = {
   vigor: "VIG",
 };
 
+const ATTRIBUTE_NAMES = {
+  agilidade: "Agilidade",
+  forca: "Força",
+  intelecto: "Intelecto",
+  presenca: "Presença",
+  vigor: "Vigor",
+};
+
 const PARANORMAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
 
 const NON_USABLE_ABILITY_NAMES = new Set([
@@ -584,22 +592,7 @@ function renderCreatorStep() {
       <h1>Atributos</h1>
       <p class="muted">Todos começam com 1 em cada atributo. Neste NEX, você distribui ${pointsToDistribute} pontos. É possível reduzir um atributo para 0 e aproveitar esse ponto em outro.</p>
       ${renderAttributeBudget()}
-      <div class="attribute-grid">
-        ${Object.entries(ATTRIBUTE_LABELS)
-          .map(
-            ([key, label]) => `
-              <div class="attribute-control">
-                <strong>${label}</strong>
-                <input class="attribute-number" id="attr-${key}" inputmode="numeric" type="number" min="0" max="${ATTRIBUTE_MAX_AT_CREATION}" value="${numberOr(creatorState.atributos[key], 1)}" aria-label="${label}" readonly />
-                <div class="stepper">
-                  <button type="button" data-attribute="${key}" data-delta="-1" aria-label="Diminuir ${label}">−</button>
-                  <button type="button" data-attribute="${key}" data-delta="1" aria-label="Aumentar ${label}">+</button>
-                </div>
-              </div>
-            `,
-          )
-          .join("")}
-      </div>
+      ${renderAttributeConstellation(creatorState.atributos, { editable: true })}
     `;
   }
 
@@ -887,6 +880,7 @@ function renderSheet(id) {
             <span class="badge">${escapeHtml(character.origem || "Sem origem")}</span>
             ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
           </div>
+          <div class="element-spectrum" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         </div>
 
         <div class="sheet-resources">
@@ -950,13 +944,7 @@ function renderSummaryTab(character) {
   return `
     <div class="sheet-section">
       <div class="section-heading"><h2>Atributos</h2><span class="muted small">Valores atuais</span></div>
-      <div class="sheet-attributes">
-        ${Object.entries(ATTRIBUTE_LABELS)
-          .map(
-            ([key, label]) => `<div class="sheet-attribute"><span>${label}</span><strong>${numberOr(character.atributos[key], 1)}</strong></div>`,
-          )
-          .join("")}
-      </div>
+      ${renderAttributeConstellation(character.atributos)}
     </div>
 
     <div class="sheet-section">
@@ -3698,17 +3686,48 @@ function renderTrainedSkills(character) {
 }
 
 function liveResource(label, key, current, max) {
+  const percentage = numberOr(max, 0) > 0
+    ? clamp((numberOr(current, 0) / numberOr(max, 1)) * 100, 0, 100)
+    : 0;
   return `
-    <div class="live-resource">
+    <div class="live-resource resource-${escapeAttribute(key)}" style="--resource-level: ${percentage}%">
       <div class="live-resource-head">
         <strong>${label}</strong>
         <span class="muted small">máx. ${numberOr(max, 0)}</span>
       </div>
+      <div class="resource-meter" aria-hidden="true"><span></span></div>
       <div class="live-resource-controls">
         <button type="button" data-resource-action="${key}:decrease" aria-label="Diminuir ${label}">−</button>
         <div class="live-resource-value"><strong>${numberOr(current, 0)}</strong> / ${numberOr(max, 0)}</div>
         <button type="button" data-resource-action="${key}:increase" aria-label="Aumentar ${label}">+</button>
       </div>
+    </div>
+  `;
+}
+
+function renderAttributeConstellation(attributes, { editable = false } = {}) {
+  const nodes = Object.entries(ATTRIBUTE_LABELS).map(([key, abbreviation]) => {
+    const name = ATTRIBUTE_NAMES[key];
+    const value = numberOr(attributes?.[key], 1);
+    const valueMarkup = editable
+      ? `<input class="attribute-number" id="attr-${key}" inputmode="numeric" type="number" min="0" max="${ATTRIBUTE_MAX_AT_CREATION}" value="${value}" aria-label="${name}" readonly />`
+      : `<strong class="attribute-number" aria-label="${name}: ${value}">${value}</strong>`;
+    const controls = editable
+      ? `<div class="stepper attribute-stepper"><button type="button" data-attribute="${key}" data-delta="-1" aria-label="Diminuir ${name}">−</button><button type="button" data-attribute="${key}" data-delta="1" aria-label="Aumentar ${name}">+</button></div>`
+      : "";
+    return `<div class="attribute-node attribute-${key}" data-attribute-name="${escapeAttribute(name)}"><div class="attribute-ring">${valueMarkup}<span>${escapeHtml(name)}</span><small>${abbreviation}</small></div>${controls}</div>`;
+  }).join("");
+
+  return `
+    <div class="attribute-constellation ${editable ? "is-editable" : "is-readonly"}" aria-label="Atributos do personagem">
+      <svg class="attribute-geometry" viewBox="0 0 520 420" preserveAspectRatio="none" aria-hidden="true">
+        <path class="attribute-pentagon" d="M260 58 425 174 360 349 160 349 95 174Z" />
+        <path d="M260 58 260 214M425 174 260 214M360 349 260 214M160 349 260 214M95 174 260 214" />
+        <circle cx="260" cy="214" r="79" />
+        <circle cx="260" cy="214" r="61" />
+      </svg>
+      <div class="attribute-core" aria-hidden="true"><span>⌖</span><strong>ATRIBUTOS</strong><small>ARQUIVO FOP</small></div>
+      ${nodes}
     </div>
   `;
 }
