@@ -1,14 +1,26 @@
-const GROUP_VISUALS = {
-  Armas: { mark: "⌖", className: "weapons" },
-  "Munições": { mark: "▥", className: "ammo" },
-  "Proteções": { mark: "◫", className: "armor" },
-  "Acessórios": { mark: "◇", className: "accessories" },
-  "Modificações": { mark: "⌁", className: "mods" },
-  Explosivos: { mark: "✦", className: "explosives" },
-  Operacionais: { mark: "⬡", className: "operational" },
-  Medicamentos: { mark: "+", className: "medicine" },
-  Paranormais: { mark: "◉", className: "paranormal" },
-};
+import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentIcon } from "./equipment-visuals.js?v=19";
+
+const memoryPreferences = new Map();
+
+function preferenceKey() {
+  const [page, id] = window.location.hash.slice(1).split("/");
+  return page === "ficha" && id ? `fop_visual_equipment_v1:${id}` : "";
+}
+
+function readPreferences(key) {
+  if (memoryPreferences.has(key)) return memoryPreferences.get(key);
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) || "{}");
+    return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePreferences(key, preferences) {
+  memoryPreferences.set(key, preferences);
+  try { localStorage.setItem(key, JSON.stringify(preferences)); } catch { /* Session remains usable. */ }
+}
 
 const REPAINTING_CONTROLS = [
   "[data-ability-toggle]",
@@ -31,20 +43,6 @@ const REPAINTING_CONTROLS = [
 let tabAnimationPending = false;
 let dialogResume = null;
 let suppressTimer = 0;
-
-function numberFrom(text) {
-  const value = Number(String(text ?? "").replace(/\./g, "").replace(",", ".").match(/-?\d+(?:\.\d+)?/)?.[0]);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function initials(name) {
-  return String(name || "Agente")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "AG";
-}
 
 function dialogScroller(dialog) {
   if (!dialog) return null;
@@ -101,11 +99,9 @@ function readInventoryCard(card) {
   const name = card.querySelector("summary strong")?.textContent?.trim() || "Item";
   const context = card.querySelector("summary small")?.textContent?.trim() || "Equipamento";
   const group = context.split("·")[0]?.trim() || "Equipamento";
-  const quantity = Math.max(1, numberFrom(card.querySelector(".quantity-stepper output")?.textContent) || 1);
-  const spaceBadge = [...card.querySelectorAll("summary .badge")]
-    .find((badge) => /espaço/i.test(badge.textContent || ""));
-  const spaces = numberFrom(spaceBadge?.textContent);
-  return { card, name, group, quantity, totalSpaces: spaces * quantity };
+  const id = card.querySelector("[data-item-remove]")?.dataset.itemRemove;
+  const quantity = Math.max(1, Number(card.querySelector(".quantity-stepper output")?.textContent) || 1);
+  return { card, id, name, group, quantity };
 }
 
 function makeText(tag, className, text) {
@@ -115,117 +111,153 @@ function makeText(tag, className, text) {
   return element;
 }
 
-function makeLoadoutTile(entry) {
-  const visual = GROUP_VISUALS[entry.group] ?? { mark: "◆", className: "other" };
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = `loadout-slot loadout-${visual.className}`;
-  if (entry.group === "Armas" || entry.group === "Proteções" || entry.totalSpaces >= 2) {
-    button.classList.add("is-wide");
-  }
-  button.setAttribute("aria-label", `Ver detalhes de ${entry.name}`);
-
-  const mark = makeText("span", "loadout-slot-mark", visual.mark);
-  mark.setAttribute("aria-hidden", "true");
-  const copy = document.createElement("span");
-  copy.className = "loadout-slot-copy";
-  copy.append(makeText("strong", "", entry.name), makeText("small", "", entry.group));
-  const meta = document.createElement("span");
-  meta.className = "loadout-slot-meta";
-  meta.append(
-    makeText("b", "", `${entry.quantity}×`),
-    makeText("small", "", `${entry.totalSpaces.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} esp.`),
-  );
-  button.append(mark, copy, meta);
-  button.addEventListener("click", () => {
-    entry.card.open = true;
-    entry.card.classList.remove("selection-revealed");
-    void entry.card.offsetWidth;
-    entry.card.classList.add("selection-revealed");
-    entry.card.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-  return button;
+function revealInventoryCard(card) {
+  card.open = true;
+  card.classList.remove("selection-revealed");
+  void card.offsetWidth;
+  card.classList.add("selection-revealed");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
 }
 
-function makeAddTile(openButton) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "loadout-slot loadout-add-slot";
-  button.setAttribute("aria-label", "Adicionar item ao inventário");
-  const mark = makeText("span", "loadout-slot-mark", "＋");
+function makeEquipmentSlot(definition, entries, controls, changeSelection) {
+  const element = document.createElement("div");
+  element.className = `paperdoll-slot slot-${definition.id}`;
+  const mark = makeText("span", "paperdoll-slot-mark", definition.mark);
   mark.setAttribute("aria-hidden", "true");
-  const copy = document.createElement("span");
-  copy.className = "loadout-slot-copy";
-  copy.append(makeText("strong", "", "Adicionar item"), makeText("small", "", "Abrir catálogo"));
-  button.append(mark, copy);
-  button.addEventListener("click", () => openButton?.click());
-  return button;
+  const label = makeText("label", "", definition.label);
+  const select = document.createElement("select");
+  select.id = `paperdoll-select-${definition.id}`;
+  label.htmlFor = select.id;
+  select.append(makeText("option", "", "Vazio"));
+  select.options[0].value = "";
+  for (const entry of candidatesFor(definition.id, entries)) {
+    const option = makeText("option", "", entry.name);
+    option.value = entry.id;
+    select.append(option);
+  }
+  select.disabled = select.options.length === 1;
+  select.addEventListener("change", () => changeSelection(definition.id, select.value));
+  const details = makeText("button", "paperdoll-details", "Ver item");
+  details.type = "button";
+  details.addEventListener("click", () => {
+    const selected = entries.find((entry) => entry.id === select.value);
+    if (selected) revealInventoryCard(selected.card);
+  });
+  controls.set(definition.id, { element, select, details, mark, definition });
+  element.append(mark, label, select, details);
+  return element;
+}
+
+function createDollLayer(className) {
+  const layer = document.createElement("span");
+  layer.className = className;
+  const image = document.createElement("img");
+  image.src = "assets/agent-paperdoll-sprite.png";
+  image.alt = "";
+  image.width = 1321;
+  image.height = 1191;
+  image.draggable = false;
+  layer.append(image);
+  return layer;
 }
 
 function enhanceInventory() {
   const section = document.querySelector(".inventory-section");
-  if (!section || section.querySelector(".loadout-board")) return;
+  if (!section || section.querySelector(".paperdoll-panel")) return;
   const list = section.querySelector(".inventory-list");
   const overview = section.querySelector(".inventory-overview");
   if (!list || !overview) return;
 
-  const entries = [...list.querySelectorAll(":scope > .item-card")].map(readInventoryCard);
-  const capacityText = section.querySelector(".inventory-capacity strong")?.textContent || "0 / 0";
-  const [occupiedText = "0", capacityValueText = "0"] = capacityText.split("/");
-  const occupied = numberFrom(occupiedText);
-  const capacity = numberFrom(capacityValueText);
-  const fill = capacity > 0 ? Math.min(100, Math.round((occupied / capacity) * 100)) : 0;
-  const state = section.querySelector(".inventory-capacity small")?.textContent?.trim() || "Carga operacional";
-  const overloaded = section.querySelector(".inventory-capacity")?.classList.contains("warning")
-    || section.querySelector(".inventory-capacity")?.classList.contains("blocked");
-  const agentName = document.querySelector(".agent-identity h1")?.textContent?.trim() || "Agente";
-
-  const board = document.createElement("section");
-  board.className = "loadout-board";
-  board.setAttribute("aria-labelledby", "loadout-title");
+  const key = preferenceKey();
+  if (!key) return;
+  const entries = [...list.querySelectorAll(":scope > .item-card")].map(readInventoryCard).filter((entry) => entry.id);
+  const preferences = { ...readPreferences(key) };
+  const controls = new Map();
+  const panel = document.createElement("section");
+  panel.className = "paperdoll-panel";
+  panel.setAttribute("aria-labelledby", "paperdoll-title");
 
   const heading = document.createElement("header");
-  heading.className = "loadout-board-heading";
   const titleWrap = document.createElement("div");
-  titleWrap.append(makeText("span", "loadout-kicker", "Mapa de carga"));
-  const title = makeText("h3", "", "Equipamento preparado");
-  title.id = "loadout-title";
+  titleWrap.append(makeText("span", "paperdoll-kicker", "Visual do agente"));
+  const title = makeText("h3", "", "Equipamento no personagem");
+  title.id = "paperdoll-title";
   titleWrap.append(title);
-  const stateBadge = makeText("span", `loadout-state${overloaded ? " warning" : ""}`, state);
-  heading.append(titleWrap, stateBadge);
+  const status = makeText("span", "paperdoll-state", "");
+  status.setAttribute("role", "status");
+  heading.append(titleWrap, status);
 
-  const field = document.createElement("div");
-  field.className = "loadout-field";
-  const agent = document.createElement("aside");
-  agent.className = "loadout-agent-panel";
-  const agentMark = makeText("div", "loadout-agent-mark", "");
-  agentMark.style.setProperty("--loadout-fill", `${fill}%`);
-  agentMark.setAttribute("aria-label", `${fill}% da capacidade comum ocupada`);
-  agentMark.append(makeText("span", "", initials(agentName)));
-  const capacityBar = document.createElement("div");
-  capacityBar.className = "loadout-capacity-bar";
-  capacityBar.setAttribute("aria-hidden", "true");
-  const capacityFill = document.createElement("span");
-  capacityFill.style.width = `${fill}%`;
-  capacityBar.append(capacityFill);
-  agent.append(
-    agentMark,
-    makeText("strong", "", agentName),
-    makeText("small", "", `${occupiedText.trim()} de ${capacityValueText.trim()} espaços`),
-    capacityBar,
-  );
+  const layout = document.createElement("div");
+  layout.className = "paperdoll-layout";
+  const sprite = document.createElement("div");
+  sprite.className = "paperdoll-sprite";
+  sprite.setAttribute("role", "img");
+  sprite.append(createDollLayer("paperdoll-layer doll-base"));
+  const bodyLayers = new Map(["armor", "head"].map((slot) => {
+    const layer = createDollLayer(`paperdoll-layer doll-${slot}`);
+    sprite.append(layer);
+    return [slot, layer];
+  }));
+  const itemLayers = new Map(["weapon", "secondary", "utility", "ammo", "paranormal"].map((slot) => {
+    const layer = document.createElement("span");
+    sprite.append(layer);
+    return [slot, layer];
+  }));
 
-  const grid = document.createElement("div");
-  grid.className = "loadout-grid";
-  entries.forEach((entry) => grid.append(makeLoadoutTile(entry)));
-  grid.append(makeAddTile(section.querySelector("#open-item-picker")));
-  field.append(agent, grid);
-  board.append(
-    heading,
-    field,
-    makeText("p", "loadout-help", "Clique em um item para abrir sua descrição e controles logo abaixo."),
-  );
-  list.before(board);
+  function updateEquipment(changedSlot) {
+    const equipped = resolveEquipment(entries, preferences);
+    sprite.classList.toggle("has-backpack", Boolean(equipped.back));
+    for (const [slot, layer] of bodyLayers) layer.hidden = !equipped[slot];
+    for (const [slot, layer] of itemLayers) {
+      layer.className = `doll-item doll-item-${slot} pixel-icon icon-${equipmentIcon(equipped[slot]) || "pouch"}`;
+      layer.hidden = !equipped[slot];
+    }
+    for (const [slot, control] of controls) {
+      const entry = equipped[slot];
+      control.element.classList.toggle("has-item", Boolean(entry));
+      control.select.value = entry?.id ?? "";
+      control.select.title = entry?.name ?? "Vazio";
+      control.details.hidden = !entry;
+      control.details.setAttribute("aria-label", entry ? `Ver detalhes de ${entry.name}` : "Ver item");
+      const icon = equipmentIcon(entry);
+      const showsIcon = entry && !["armor", "head", "back"].includes(slot);
+      control.mark.className = `paperdoll-slot-mark${showsIcon ? ` pixel-icon icon-${icon}` : ""}`;
+      control.mark.textContent = showsIcon ? "" : control.definition.mark;
+      for (const option of control.select.options) {
+        const candidate = entries.find((item) => item.id === option.value);
+        const usedElsewhere = Object.entries(equipped).filter(([other, item]) => other !== slot && item?.id === option.value).length;
+        option.disabled = Boolean(candidate && usedElsewhere >= candidate.quantity);
+      }
+    }
+    const worn = Object.values(equipped).filter(Boolean);
+    const label = worn.length ? `${worn.length} equipamento${worn.length === 1 ? "" : "s"} no visual` : "Sem equipamento";
+    if (status.textContent !== label) status.textContent = label;
+    sprite.setAttribute("aria-label", worn.length ? `Agente em pixel art com ${worn.map((entry) => entry.name).join(", ")}` : "Agente em pixel art sem equipamento");
+    if (changedSlot) {
+      sprite.classList.remove("equipment-changed");
+      void sprite.offsetWidth;
+      sprite.classList.add("equipment-changed");
+    }
+  }
+
+  function changeSelection(slot, id) {
+    preferences[slot] = id;
+    savePreferences(key, preferences);
+    updateEquipment(slot);
+  }
+
+  layout.append(sprite, ...EQUIPMENT_SLOTS.map((slot) => makeEquipmentSlot(slot, entries, controls, changeSelection)));
+  updateEquipment();
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "paperdoll-add";
+  addButton.textContent = "+ Adicionar item ao inventário";
+  addButton.addEventListener("click", () => section.querySelector("#open-item-picker")?.click());
+
+  panel.append(heading, layout, addButton);
+  overview.after(panel);
 }
 
 function refreshInterface() {
