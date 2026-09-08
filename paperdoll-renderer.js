@@ -1,3 +1,4 @@
+import { REGIONS } from './paperdoll-rig.js?v=21';
 // The same compositor is used by the page and the offline rendering checks.
 // Coordinates are in the character's original 420 × 600 sprite space.
 export const DOLL_SIZE = Object.freeze({ width: 420, height: 600 });
@@ -71,42 +72,214 @@ function paintItem(ctx, images, placement) {
   ctx.restore();
 }
 
-export function paintPaperdoll(ctx, images, placements, { backpack = false, armor = false } = {}) {
-  ctx.clearRect(0, 0, DOLL_SIZE.width, DOLL_SIZE.height);
-  ctx.imageSmoothingEnabled = false;
-  const body = images.get(BODY_ATLAS);
-  if (!body) return;
-  const ordered = [...placements].sort((a, b) => a.z - b.z);
-  for (const p of ordered.filter(p => p.z < 10)) paintItem(ctx, images, p);
-  const fullBody = placements.find(p => p.art.fullBody);
-  const replacesHead = placements.some(p => p.art.replaceHead);
-  const wearsBoots = placements.some(p => p.art.attachment === "feet");
-  if (!fullBody) {
-    const cut = replacesHead ? 200 : 0;
-    const bottom = wearsBoots ? 460 : 600;
-    ctx.drawImage(body, backpack ? 712 : 180, cut, 420, bottom - cut, 0, cut, 420, bottom - cut);
+// Triangulated texture patches let shoulders, sleeves and torso bend independently.
+function path(ctx, points) {
+  ctx.beginPath(); points.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath();
+}
+function clipped(ctx, points, draw) { ctx.save(); path(ctx,points); ctx.clip(); draw(); ctx.restore(); }
+function surface(ctx) {
+  const c = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(420,600)
+    : typeof document !== 'undefined' ? Object.assign(document.createElement('canvas'), {width:420,height:600})
+    : new ctx.canvas.constructor(420,600);
+  c.getContext('2d').imageSmoothingEnabled=false;
+  return c;
+}
+function triangle(ctx, picture, src, dst) {
+  const [s0,s1,s2]=src, [d0,d1,d2]=dst;
+  const u=s1[0]-s0[0], v=s1[1]-s0[1], w=s2[0]-s0[0], z=s2[1]-s0[1], det=u*z-v*w;
+  if (Math.abs(det)<.0001) return;
+  const a=((d1[0]-d0[0])*z-(d2[0]-d0[0])*v)/det;
+  const c=((d2[0]-d0[0])*u-(d1[0]-d0[0])*w)/det;
+  const b=((d1[1]-d0[1])*z-(d2[1]-d0[1])*v)/det;
+  const d=((d2[1]-d0[1])*u-(d1[1]-d0[1])*w)/det;
+  clipped(ctx,dst,()=>{ctx.transform(a,b,c,d,d0[0]-a*s0[0]-c*s0[1],d0[1]-b*s0[0]-d*s0[1]);ctx.drawImage(picture,0,0);});
+}
+function patch(ctx, images, p, uv, corners, sourceMask = null) {
+  let picture=images.get(p.art.atlas); if(!picture)return;
+  let r=p.rect;
+  if(sourceMask) {
+    const mask=surface(ctx),g=mask.getContext('2d');
+    clipped(g,sourceMask.map(([x,y])=>[x*r.width,y*r.height]),()=>g.drawImage(picture,r.x,r.y,r.width,r.height,0,0,r.width,r.height));
+    picture=mask;r={...r,x:0,y:0};
   }
-  // Keep the fitted vest that players already use. The helmet remains independent.
-  if (armor) ctx.drawImage(body, 180, 771, 420, 396, 0, 204, 420, 396);
-  for (const p of ordered.filter(p => p.z >= 10 && p.z < 100)) {
-    if (p.art.fullBody && wearsBoots) {
-      ctx.save();ctx.beginPath();ctx.rect(0,0,420,460);ctx.clip();paintItem(ctx, images, p);ctx.restore();
-    } else paintItem(ctx, images, p);
+  const [x0,y0,x1,y1]=uv;
+  const src=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]].map(([x,y])=>[r.x+x*r.width,r.y+y*r.height]);
+  for(const ids of [[0,1,2],[0,2,3]])triangle(ctx,picture,ids.map(i=>src[i]),ids.map(i=>corners[i]));
+}
+function copyRegion(ctx, source, points) { clipped(ctx,points,()=>ctx.drawImage(source,0,0)); }
+function eraseRegion(ctx, points) { ctx.save();ctx.globalCompositeOperation='destination-out';path(ctx,points);ctx.fill();ctx.restore(); }
+function baseRegion(ctx, body, points) { clipped(ctx,points,()=>ctx.drawImage(body,180,0,420,600,0,0,420,600)); }
+function rigFor(placements) {
+  const suit=placements.find(p=>p.art.fullBody);
+  if(!suit)return {regions:REGIONS, map:p=>p, suit:null};
+  const anchors=suit.art.bodyAnchors;
+  const point=key=>[suit.target[0]+(anchors[key][0]-suit.anchor[0])*suit.width,suit.target[1]+(anchors[key][1]-suit.anchor[1])*suit.height];
+  // Local part transforms keep a suit's own hand/head/foot positions, including its proportions.
+  const hand=point('hand'),left=point('leftHand'),torso=point('torso'),head=point('head');
+  function around(p,from,to,sx,sy=sx){return [to[0]+(p[0]-from[0])*sx,to[1]+(p[1]-from[1])*sy];}
+  const map=p=>around(p,[200,275],torso,1.16,.94);
+  const regions=Object.fromEntries(Object.entries(REGIONS).map(([key,points])=>{
+    let transform=map;
+    if(/leftHand|leftFingers/.test(key))transform=p=>around(p,BODY_POINTS.leftHand,left,.82);
+    if(/rightHand|rightFingers/.test(key))transform=p=>around(p,BODY_POINTS.hand,hand,.82);
+    if(/head|hair|cap/.test(key))transform=p=>around(p,BODY_POINTS.head,head,1.08,1.2);
+    return [key,points.map(transform)];
+  }));
+  return {regions,map,suit,point};
+}
+
+function fittedClothing(ctx,images,p,rig) {
+  const kind=p.art.composition;
+  const m=points=>points.map(rig.map);
+  if(kind==='garment') {
+    const layer=surface(ctx),g=layer.getContext('2d');
+    clipped(g,rig.regions.coat,()=>{
+      // Opaque material replaces the old jacket, including its lapels and pockets.
+      g.fillStyle='#4b5033';g.fillRect(0,0,420,600);
+      patch(g,images,p,[.22,.04,.80,.98],m([[144,198],[252,216],[272,367],[122,367]]));
+      patch(g,images,p,[.02,.20,.29,.90],m([[124,212],[155,228],[124,322],[76,322]]));
+      patch(g,images,p,[.76,.20,.98,.9],m([[251,221],[271,238],[292,318],[264,323]]));
+    });
+    g.globalCompositeOperation='destination-in';g.drawImage(ctx.canvas,0,0);g.globalCompositeOperation='source-over';
+    eraseRegion(ctx,rig.regions.coat);ctx.drawImage(layer,0,0);
+  } else if(kind==='vest'||kind==='heavyVest') {
+    // Torso and shoulder plates have different perspective and depth.
+    const uv=kind==='heavyVest'?[.16,.03,.85,.97]:[.04,.02,.97,.98];
+    clipped(ctx,rig.regions.torso,()=>patch(ctx,images,p,uv,m([[143,211],[253,218],[270,357],[131,365]])));
+    if(kind==='heavyVest') {
+      patch(ctx,images,p,[.0,.04,.28,.32],m([[126,207],[154,215],[153,248],[114,245]]));
+      patch(ctx,images,p,[.78,.03,1,.34],m([[250,218],[271,229],[280,257],[257,250]]));
+    }
+  } else if(kind==='harness') {
+    clipped(ctx,rig.regions.torso,()=>patch(ctx,images,p,[0,0,1,1],m([[142,214],[254,222],[269,354],[131,356]])));
+  } else if(kind==='sling') {
+    patch(ctx,images,p,[0,0,1,1],m([[133,208],[264,215],[268,351],[129,354]]));
+  } else if(kind==='cape') {
+    // The mantle overlaps the shoulder seam; the long panels stay behind the actor.
+    patch(ctx,images,p,[.14,.40,.42,.64],m([[127,203],[157,215],[152,253],[111,247]]));
+    patch(ctx,images,p,[.59,.40,.87,.64],m([[245,214],[269,226],[280,256],[252,251]]));
+  } else if(kind==='collar') {
+    patch(ctx,images,p,[0,0,1,1],m([[151,204],[252,217],[265,276],[147,275]]));
   }
-  // Foreground fingers close around the item instead of leaving it floating nearby.
-  for (const slot of ["weapon", "secondary"]) {
-    if (!placements.some(p => p.slot === slot && p.art.attachment === "hand")) continue;
-    if (fullBody) {
-      const held = placements.find(p => p.slot === slot);
-      ctx.save();
-      ctx.beginPath();ctx.rect(held.target[0] - 17, held.target[1] - 16, 34, 34);ctx.clip();
-      paintItem(ctx, images, fullBody);ctx.restore();
+}
+
+function drawBoots(ctx,images,p,rig) {
+  const suit=rig.suit;
+  let left=[[86,450],[181,450],[181,545],[86,545]],right=[[206,450],[311,450],[311,543],[206,543]];
+  if(suit) {
+    const x=suit.target[0]-suit.anchor[0]*suit.width,y=suit.target[1]-suit.anchor[1]*suit.height;
+    const fy=y+suit.height*.79, bootTop=fy-21;
+    left=[[x+suit.width*.25,bootTop],[x+suit.width*.43,bootTop],[x+suit.width*.44,540],[x+suit.width*.19,540]];
+    right=[[x+suit.width*.58,bootTop],[x+suit.width*.76,bootTop],[x+suit.width*.83,540],[x+suit.width*.56,540]];
+    eraseRegion(ctx,[[0,fy],[420,fy],[420,600],[0,600]]);
+  } else { eraseRegion(ctx,REGIONS.feet);eraseRegion(ctx,REGIONS.rightFoot); }
+  const bootOutline=[[0,0],[.40,0],[.40,.42],[.43,.56],[.53,.63],[.60,.69],[.64,.78],[.64,.94],[.52,1],[.18,1],[0,.9]];
+  // Isolate a complete boot (including its toe) from the overlapping pair in the catalog.
+  patch(ctx,images,p,[0,0,.64,1],left,bootOutline);patch(ctx,images,p,[0,0,.64,1],right,bootOutline);
+  if(!suit) {
+    const body=images.get(BODY_ATLAS);
+    baseRegion(ctx,body,[[107,448],[166,448],[161,465],[107,465]]);
+    baseRegion(ctx,body,[[216,448],[268,448],[269,465],[218,465]]);
+  }
+}
+
+function drawWrist(ctx,images,p,rig) {
+  const side=p.art.side==='screenRight'?'right':'left';
+  const region=rig.regions[side+'Hand'];
+  if(p.art.composition==='gauntlets') {
+    eraseRegion(ctx,region); paintItem(ctx,images,p);
+  } else {
+    const center=rig.suit ? rig.point('wrist') : [102,330];
+    const [x,y]=center;
+    // Bracelet texture wraps a tapered forearm instead of a freestanding bracelet icon.
+    patch(ctx,images,p,[.16,.09,.86,.9],[[x-22,y-23],[x+19,y-19],[x+17,y+23],[x-22,y+22]]);
+  }
+}
+
+function tether(ctx,body,p,rig,pocket=false) {
+  const [x,y]=p.target;
+  if(pocket) {
+    // An opaque pocket front covers the lower item; its opening holds the visible top.
+    const r=p.rect,h=p.width*r.height/r.width;
+    const top=y+Math.min(20,h*.37),bottom=Math.min(y+h*.88+4,431);
+    ctx.drawImage(body,289,395,43,44,x-27,top,54,Math.max(28,bottom-top));
+    ctx.drawImage(body,377,330,38,10,x-27,top-3,54,6);
+  } else {
+    // Small loop crosses the item's clasp, not the full object.
+    ctx.drawImage(body,377,330,38,10,x-10,y-3,20,7);
+    ctx.drawImage(body,380,337,8,9,x-4,y-7,7,16);
+  }
+}
+
+export function paintPaperdoll(ctx, images, placements, { backpack = false } = {}) {
+  ctx.clearRect(0,0,420,600);ctx.imageSmoothingEnabled=false;
+  const body=images.get(BODY_ATLAS);if(!body)return;
+  // Failed textures must never erase the corresponding body part.
+  const visible=placements.filter(p=>images.has(p.art.atlas));
+  const rig=rigFor(visible),kind=p=>p.art.composition;
+  const actor=surface(ctx),a=actor.getContext('2d');
+  if(rig.suit)paintItem(a,images,rig.suit);
+  else a.drawImage(body,180,0,420,600,0,0,420,600);
+
+  // 1. Back layer: bags, cloak and arrows are hidden by the body silhouette.
+  for(const p of visible.filter(p=>['backpack','cape','quiver'].includes(kind(p))))paintItem(ctx,images,p);
+  if(backpack&&!visible.some(p=>kind(p)==='backpack')) {
+    // Existing custom backpack entries reuse only the pack region from the supplied base atlas.
+    ctx.drawImage(body,755,173,132,169,43,173,132,169);
+  }
+  // 2. Replace cloth regions; 3. integrate fitted material with the body's contours.
+  for(const k of ['garment','vest','heavyVest','cape','harness','sling','collar'])
+    for(const p of visible.filter(p=>kind(p)===k))fittedClothing(a,images,p,rig);
+  for(const p of visible.filter(p=>kind(p)==='boots'))drawBoots(a,images,p,rig);
+  for(const p of visible.filter(p=>['wrist','gauntlets'].includes(kind(p))))drawWrist(a,images,p,rig);
+  const helmet=visible.find(p=>kind(p)==='helmet');
+  if(helmet) {eraseRegion(a,rig.regions.head);paintItem(a,images,helmet);}
+  for(const p of visible.filter(p=>kind(p)==='headband')) {
+    eraseRegion(a,rig.regions.cap);paintItem(a,images,p);
+    if(!rig.suit)baseRegion(a,body,REGIONS.hair);
+  }
+  for(const p of visible.filter(p=>kind(p)==='necklace')) {
+    // Items without a drawn chain receive a narrow clasp/chain cut from the original belt texture.
+    const [x,y]=p.target;
+    a.save();a.strokeStyle='#5c4931';a.lineWidth=3;a.beginPath();a.moveTo(x-25,y-18);a.lineTo(x-12,y+6);a.lineTo(x,y+12);a.lineTo(x+14,y+3);a.lineTo(x+25,y-18);a.stroke();a.restore();
+    paintItem(a,images,p);
+  }
+  // 4. The neck/scarf conceals collar backs and the upper part of chains.
+  if(!rig.suit&&!helmet)baseRegion(a,body,REGIONS.scarf);
+  for(const p of visible.filter(p=>['glasses','mask'].includes(kind(p)))) {
+    if(rig.suit||helmet) {
+      // A sealed helmet keeps face accessories inside its visor, never on its outer shell.
+      const center=helmet?[helmet.target[0],helmet.target[1]+2]:rig.point('eyes');
+      const inner=placementFor({...p.art,target:center,widthOnDoll:helmet?70:96},p.slot);
+      clipped(a,[[center[0]-38,center[1]-12],[center[0]+40,center[1]-12],[center[0]+38,center[1]+47],[center[0]-38,center[1]+47]],()=>paintItem(a,images,inner));
+      if(helmet) {
+        // Restore the central cage bar in front of the eyewear.
+        clipped(a,[[center[0]-5,center[1]-29],[center[0]+3,center[1]-29],[center[0]+3,center[1]+25],[center[0]-5,center[1]+25]],()=>paintItem(a,images,helmet));
+      }
     } else {
-      const glove = slot === "weapon" ? [445, 335, 43, 57] : [250, 337, 63, 57];
-      ctx.drawImage(body, ...glove, glove[0] - 180, glove[1], glove[2], glove[3]);
+      clipped(a,[[157,141],[268,141],[268,204],[173,204]],()=>paintItem(a,images,p));
+      baseRegion(a,body,REGIONS.hair);
     }
   }
-  for (const p of ordered.filter(p => p.z >= 100)) paintItem(ctx, images, p);
+  // Backpack's front shoulder straps use the supplied worn variant, preserving fit.
+  if(backpack||visible.some(p=>kind(p)==='backpack')) {
+    const straps=[[[151,204],[167,214],[150,282],[139,289],[132,277]],[[249,215],[259,225],[266,286],[255,285]]];
+    for(const pts of straps)clipped(a,pts.map(rig.map),()=>a.drawImage(body,712,0,420,600,0,0,420,600));
+  }
+  for(const p of visible.filter(p=>['belt','pocket'].includes(kind(p)))) {paintItem(a,images,p);tether(a,body,p,rig,kind(p)==='pocket');}
+  ctx.drawImage(actor,0,0);
+  // Palm is behind the handle. Only articulated finger masks come back in front.
+  for(const p of visible.filter(p=>['held','knuckles'].includes(kind(p)))) {
+    paintItem(ctx,images,p);
+    const side=p.slot==='secondary'?'left':'right';
+    const gauntlet=visible.find(g=>kind(g)==='gauntlets'&&(g.art.side==='screenRight'?'right':'left')===side);
+    if(gauntlet) {
+      const [x,y]=p.target;
+      copyRegion(ctx,actor,[[x-13,y-5],[x+10,y-5],[x+14,y+5],[x+6,y+13],[x-13,y+10]]);
+    } else if(kind(p)!=='knuckles')copyRegion(ctx,actor,rig.regions[side+'Fingers']);
+  }
+  // 5. External details are drawn last and must have a real parent or ground contact.
+  for(const p of visible.filter(p=>['adjustment','companion'].includes(kind(p))))paintItem(ctx,images,p);
 }
 
 const imageCache = new Map();

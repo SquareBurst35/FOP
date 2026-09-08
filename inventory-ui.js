@@ -1,6 +1,6 @@
-import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=20";
+import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=21";
 import { artForItem } from "./item-art.js?v=20";
-import { createPaperdoll, drawItemIcon } from "./paperdoll-renderer.js?v=20";
+import { createPaperdoll, drawItemIcon } from "./paperdoll-renderer.js?v=21";
 
 const memoryPreferences = new Map();
 
@@ -214,7 +214,8 @@ function enhanceInventory() {
 
   function updateEquipment(changedSlot) {
     const equipped = resolveEquipment(entries, preferences);
-    drawDoll(equipmentPlacements(equipped), { backpack: /mochila/i.test(equipped.back?.name ?? "") });
+    const placements = equipmentPlacements(equipped);
+    drawDoll(placements, { backpack: /mochila/i.test(equipped.back?.name ?? "") });
     for (const [slot, control] of controls) {
       const entry = equipped[slot];
       control.element.classList.toggle("has-item", Boolean(entry));
@@ -235,9 +236,13 @@ function enhanceInventory() {
         option.disabled = Boolean(candidate && usedElsewhere >= candidate.quantity);
       }
     }
-    const worn = Object.values(equipped).filter(Boolean);
+    const visibleIds = new Set(placements.map(p => p.art.id));
+    const selected = Object.values(equipped).filter(Boolean);
+    const worn = selected.filter(entry => visibleIds.has(artForItem(entry)?.id) || (entry === equipped.back && /mochila/i.test(entry.name)));
+    const stored = selected.length - worn.length;
     const label = worn.length ? `${worn.length} equipamento${worn.length === 1 ? "" : "s"} no visual` : "Sem equipamento";
-    if (status.textContent !== label) status.textContent = label;
+    const statusLabel = stored ? `${label} · ${stored} guardado${stored === 1 ? "" : "s"}` : label;
+    if (status.textContent !== statusLabel) status.textContent = statusLabel;
     sprite.setAttribute("aria-label", worn.length ? `Agente em pixel art com ${worn.map((entry) => entry.name).join(", ")}` : "Agente em pixel art sem equipamento");
     if (changedSlot) {
       sprite.classList.remove("equipment-changed");

@@ -31,7 +31,7 @@ assert.equal(visualSlot(owned('Pé de morto')),'feet');
 assert.equal(visualSlot(owned('Fuzil Alheio')),'weapon');
 assert.equal(visualSlot(owned('Manoplas do Colosso')),'arms');
 assert.equal(visualSlot(owned('Crânio espiral')),'weapon');
-assert.equal(visualSlot(owned('Óculos de visão térmica')),'head');
+assert.equal(visualSlot(owned('Óculos de visão térmica')),'eyes');
 assert.equal(equipmentPlacements(resolveEquipment([owned('Carregador rápido')])).length,0,'Ajuste guardado não fica flutuando');
 const armed=resolveEquipment([owned('Fuzil de assalto'),owned('Carregador rápido')]);
 assert.ok(equipmentPlacements(armed).some(p=>p.slot==='adjustment'));

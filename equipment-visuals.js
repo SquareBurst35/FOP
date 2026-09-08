@@ -1,5 +1,6 @@
+import { compositionFor, fittedArt } from './equipment-composition.js?v=21';
 import { artForItem } from "./item-art.js?v=20";
-import { placementFor, BODY_POINTS } from "./paperdoll-renderer.js?v=20";
+import { placementFor, BODY_POINTS } from "./paperdoll-renderer.js?v=21";
 
 // Presentation preferences only. No character resources or rule calculations change here.
 export const EQUIPMENT_SLOTS = [
@@ -11,6 +12,10 @@ export const EQUIPMENT_SLOTS = [
   { id: "secondary", label: "Mão esquerda", mark: "⌖" },
   { id: "ammo", label: "Munição e ajustes", mark: "▥" },
   { id: "paranormal", label: "Paranormal", mark: "◉" },
+  { id: "eyes", label: "Óculos", mark: "◇", optional: true },
+  { id: "face", label: "Rosto", mark: "◇", optional: true },
+  { id: "sling", label: "Bandoleira", mark: "◇", optional: true },
+  { id: "harness", label: "Arnês", mark: "◇", optional: true },
   { id: "neck", label: "Pescoço", mark: "◇", optional: true },
   { id: "arms", label: "Braços e mãos", mark: "◇", optional: true },
   { id: "feet", label: "Pés", mark: "◇", optional: true },
@@ -26,7 +31,7 @@ function plain(value) {
 
 export function visualSlot(entry) {
   const art = artForItem(entry);
-  if (art) return art.slot;
+  if (art) return compositionFor(art)?.slot ?? art.slot;
   const name = plain(entry.name);
   if (/capacete|elmo|oculos|mascara|viseira|chapeu|\bbone\b/.test(name)) return "head";
   if (/mochila/.test(name)) return "back";
@@ -47,39 +52,44 @@ export function equipmentPlacements(equipped) {
     }
   }
   function place(art, slot) {
-    let attachment = art.attachment === "hand" && slot === "secondary" ? "leftHand" : art.attachment;
+    const rendered = fittedArt(art, slot);
+    let attachment = rendered.attachment === "hand" && slot === "secondary" ? "leftHand" : rendered.attachment;
     if (attachment === "belt" && slot === "paranormal") attachment = "relic";
-    return placementFor(art, slot, { target: points[attachment] });
-  }
-  return Object.entries(equipped).flatMap(([slot, entry]) => {
-    const art = artForItem(entry);
-    if (!art) return [];
-    // Vehicle components stay in their inventory position, not on the agent's body.
-    if (slot === "vehicle") return [];
-    if (slot === "adjustment") {
-      const accepted = art.modification === "loader"
-        ? /pistola|revólver|fuzil|espingarda|metralhadora|besta|balestra|sniper/i
-        : /lanterna|taser|óculos|celular|rádio|notebook|câmera/i;
-      const owner = Object.entries(equipped).find(([key, value]) => key !== slot && value && accepted.test(value.name));
-      if (!owner) return [];
-      const parentArt = artForItem(owner[1]);
-      if (!parentArt) return [];
-      const parent = place(parentArt, owner[0]);
-      const theta = parent.angle * Math.PI / 180;
-      const offset = parent.width * 0.1;
-      const target = [parent.target[0] + Math.cos(theta) * offset, parent.target[1] + Math.sin(theta) * offset];
-      return [placementFor({ ...art, widthOnDoll: art.modification === "loader" ? 24 : 19, angle: parent.angle, z: parent.z + 1 }, slot, { target })];
+    let target = points[attachment];
+    if (['belt','pocket'].includes(rendered.composition)) {
+      target = slot === 'ammo' ? [145,353] : slot === 'paranormal' ? [250,351] : [172,351];
+      if (outfit?.fullBody) target = points[attachment];
     }
-    let renderedArt = art;
+    // Explicit fit corrections are in base-body space, not in a replacement suit's space.
+    if (outfit?.fullBody && rendered.target && !['companion','backpack','cape'].includes(rendered.composition)) delete rendered.target;
+    return placementFor(rendered, slot, { target });
+  }
+  const result = Object.entries(equipped).flatMap(([slot, entry]) => {
+    const art = artForItem(entry), recipe=compositionFor(art);
+    if (!art || !recipe || recipe.visibility==='inventory' || recipe.kind==='adjustment') return [];
     if (art.parts?.length) return art.parts.map(part => {
-      const right = part.side === "screenRight";
-      return placementFor({ ...art, ...part, parts: undefined, bounds: [0,0,1,1], anchor: [.5,.8], angle: 180, z: 110 }, slot,
-        { target: [points[right ? "hand" : "leftHand"][0], points[right ? "hand" : "leftHand"][1] - 30] });
+      const right = part.side === "screenRight", hand=points[right ? 'hand' : 'leftHand'];
+      return placementFor({ ...fittedArt(art,slot), ...part, parts: undefined,
+        bounds: [0,0,1,1], anchor: [.5,.40], angle: 180, z: 65 }, slot,
+        { target: hand });
     });
-    // A paired gauntlet is drawn after the fingers; its solid palms still grip the object.
-    if (slot === "arms") renderedArt = { ...art, z: 110 };
-    return [place(renderedArt, slot)];
+    return [place(art,slot)];
   });
+  for (const [slot,entry] of Object.entries(equipped)) {
+    const art=artForItem(entry);
+    if(compositionFor(art)?.kind!=='adjustment')continue;
+    const accepted=art.modification==='loader'
+      ? /pistola|revólver|fuzil|espingarda|metralhadora|besta|balestra|sniper/i
+      : /lanterna|taser|óculos|celular|rádio|notebook|câmera/i;
+    const parent=result.find(p=>accepted.test(p.art.name));
+    if(!parent)continue;
+    const theta=parent.angle*Math.PI/180;
+    const local=art.modification==='loader'?[.1,.06]:[.06,.10];
+    const dx=parent.width*local[0]*parent.scaleX,dy=parent.height*local[1];
+    const target=[parent.target[0]+dx*Math.cos(theta)-dy*Math.sin(theta),parent.target[1]+dx*Math.sin(theta)+dy*Math.cos(theta)];
+    result.push(placementFor({...fittedArt(art,slot),widthOnDoll:art.modification==='loader'?19:12,angle:parent.angle,flip:parent.scaleX<0,z:parent.z+1},slot,{target}));
+  }
+  return result;
 }
 
 export function candidatesFor(slotId, entries) {
@@ -87,6 +97,14 @@ export function candidatesFor(slotId, entries) {
 }
 
 export function resolveEquipment(entries, preferences = {}) {
+  preferences = { ...preferences };
+  for (const oldSlot of ['head','outfit','weapon']) {
+    const selected=entries.find(e=>e.id===preferences[oldSlot]);
+    const currentSlot=selected&&visualSlot(selected);
+    if(currentSlot && artForItem(selected)?.slot===oldSlot && currentSlot!==oldSlot && !Object.hasOwn(preferences,currentSlot)) {
+      preferences[currentSlot]=selected.id; delete preferences[oldSlot];
+    }
+  }
   const equipped = {};
   const used = new Map();
   for (const slot of EQUIPMENT_SLOTS) {
