@@ -1,4 +1,6 @@
-import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentIcon } from "./equipment-visuals.js?v=19";
+import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=20";
+import { artForItem } from "./item-art.js?v=20";
+import { createPaperdoll, drawItemIcon } from "./paperdoll-renderer.js?v=20";
 
 const memoryPreferences = new Map();
 
@@ -149,17 +151,29 @@ function makeEquipmentSlot(definition, entries, controls, changeSelection) {
   return element;
 }
 
-function createDollLayer(className) {
-  const layer = document.createElement("span");
-  layer.className = className;
-  const image = document.createElement("img");
-  image.src = "assets/agent-paperdoll-sprite.png";
-  image.alt = "";
-  image.width = 1321;
-  image.height = 1191;
-  image.draggable = false;
-  layer.append(image);
-  return layer;
+function setItemIcon(element, art) {
+  element.replaceChildren();
+  if (!art) return;
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  element.append(canvas);
+  drawItemIcon(canvas, art);
+}
+
+function enhanceItemIcons() {
+  for (const card of document.querySelectorAll(".item-card:not([data-pixel-art])")) {
+    card.dataset.pixelArt = "true";
+    const title = card.querySelector("summary strong");
+    const art = artForItem({ name: title?.textContent?.trim() });
+    if (!art || !title?.parentElement) continue;
+    const icon = document.createElement("span");
+    icon.className = "item-art-icon inventory-art-icon";
+    icon.setAttribute("aria-hidden", "true");
+    setItemIcon(icon, art);
+    title.parentElement.classList.add("inventory-art-title");
+    title.parentElement.prepend(icon);
+  }
 }
 
 function enhanceInventory() {
@@ -193,26 +207,14 @@ function enhanceInventory() {
   const sprite = document.createElement("div");
   sprite.className = "paperdoll-sprite";
   sprite.setAttribute("role", "img");
-  sprite.append(createDollLayer("paperdoll-layer doll-base"));
-  const bodyLayers = new Map(["armor", "head"].map((slot) => {
-    const layer = createDollLayer(`paperdoll-layer doll-${slot}`);
-    sprite.append(layer);
-    return [slot, layer];
-  }));
-  const itemLayers = new Map(["weapon", "secondary", "utility", "ammo", "paranormal"].map((slot) => {
-    const layer = document.createElement("span");
-    sprite.append(layer);
-    return [slot, layer];
-  }));
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
+  sprite.append(canvas);
+  const drawDoll = createPaperdoll(canvas);
 
   function updateEquipment(changedSlot) {
     const equipped = resolveEquipment(entries, preferences);
-    sprite.classList.toggle("has-backpack", Boolean(equipped.back));
-    for (const [slot, layer] of bodyLayers) layer.hidden = !equipped[slot];
-    for (const [slot, layer] of itemLayers) {
-      layer.className = `doll-item doll-item-${slot} pixel-icon icon-${equipmentIcon(equipped[slot]) || "pouch"}`;
-      layer.hidden = !equipped[slot];
-    }
+    drawDoll(equipmentPlacements(equipped), { backpack: /mochila/i.test(equipped.back?.name ?? "") });
     for (const [slot, control] of controls) {
       const entry = equipped[slot];
       control.element.classList.toggle("has-item", Boolean(entry));
@@ -220,10 +222,13 @@ function enhanceInventory() {
       control.select.title = entry?.name ?? "Vazio";
       control.details.hidden = !entry;
       control.details.setAttribute("aria-label", entry ? `Ver detalhes de ${entry.name}` : "Ver item");
-      const icon = equipmentIcon(entry);
-      const showsIcon = entry && !["armor", "head", "back"].includes(slot);
-      control.mark.className = `paperdoll-slot-mark${showsIcon ? ` pixel-icon icon-${icon}` : ""}`;
-      control.mark.textContent = showsIcon ? "" : control.definition.mark;
+      const art = artForItem(entry);
+      control.mark.className = `paperdoll-slot-mark${art ? " item-art-icon" : ""}`;
+      if (control.mark.dataset.item !== (entry?.id ?? "")) {
+        control.mark.dataset.item = entry?.id ?? "";
+        setItemIcon(control.mark, art);
+        if (!art) control.mark.textContent = control.definition.mark;
+      }
       for (const option of control.select.options) {
         const candidate = entries.find((item) => item.id === option.value);
         const usedElsewhere = Object.entries(equipped).filter(([other, item]) => other !== slot && item?.id === option.value).length;
@@ -247,7 +252,16 @@ function enhanceInventory() {
     updateEquipment(slot);
   }
 
-  layout.append(sprite, ...EQUIPMENT_SLOTS.map((slot) => makeEquipmentSlot(slot, entries, controls, changeSelection)));
+  const visibleSlots = EQUIPMENT_SLOTS.filter(slot => !slot.optional || candidatesFor(slot.id, entries).length);
+  layout.append(sprite, ...visibleSlots.map((slot, index) => {
+    const control = makeEquipmentSlot(slot, entries, controls, changeSelection);
+    if (slot.optional) {
+      control.classList.add("slot-extra");
+      control.style.setProperty("--slot-column", index % 2 === 0 ? "1" : "3");
+      control.style.setProperty("--slot-row", String(5 + Math.floor((index - 8) / 2)));
+    }
+    return control;
+  }));
   updateEquipment();
 
   const addButton = document.createElement("button");
@@ -263,6 +277,7 @@ function enhanceInventory() {
 function refreshInterface() {
   restoreInteractionState();
   enhanceInventory();
+  enhanceItemIcons();
 }
 
 document.addEventListener("click", handleInteraction, true);

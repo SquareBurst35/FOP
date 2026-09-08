@@ -6,7 +6,7 @@ const pistol = { id: "pistol", name: "Pistola", group: "Armas", quantity: 1 };
 const armor = { id: "armor", name: "Proteção leve", group: "Proteções", quantity: 1 };
 const backpack = { id: "backpack", name: "Mochila", group: "Operacionais", quantity: 1 };
 const goggles = { id: "goggles", name: "Óculos", group: "Acessórios", quantity: 1 };
-const flashlight = { id: "flashlight", name: "Lanterna", group: "Operacionais", quantity: 1 };
+const flashlight = { id: "flashlight", name: "Kit de perícia", group: "Acessórios", quantity: 1 };
 const ammo = { id: "ammo", name: "Balas curtas", group: "Munições", quantity: 1 };
 const charm = { id: "charm", name: "Amuleto", group: "Paranormais", quantity: 1 };
 const entries = [knife, pistol, armor, backpack, goggles, flashlight, ammo, charm];
@@ -23,7 +23,7 @@ assert.equal(equipmentIcon(pistol), "pistol");
 assert.equal(equipmentIcon({ name: "Fuzil de caça", group: "Armas" }), "rifle");
 
 const equipped = resolveEquipment(entries);
-assert.deepEqual(Object.fromEntries(Object.entries(equipped).map(([slot, entry]) => [slot, entry?.id])), {
+assert.deepEqual(Object.fromEntries(Object.entries(equipped).filter(([,entry]) => entry).map(([slot, entry]) => [slot, entry?.id])), {
   head: "goggles", armor: "armor", weapon: "knife", utility: "flashlight", back: "backpack",
   secondary: "pistol", ammo: "ammo", paranormal: "charm",
 });

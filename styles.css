@@ -2126,6 +2126,40 @@ fieldset.skill-choice-block {
   pointer-events: none;
 }
 
+.paperdoll-sprite canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.item-art-icon {
+  position: relative;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+.item-art-icon canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.entry-card summary > .inventory-art-title {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  column-gap: 10px;
+}
+.inventory-art-title > strong, .inventory-art-title > small { grid-column: 2; }
+.inventory-art-icon {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  width: 42px;
+  height: 42px;
+  align-self: center;
+}
+
 .paperdoll-layer {
   position: absolute;
   inset: 0;
@@ -2283,6 +2317,7 @@ fieldset.skill-choice-block {
 .slot-secondary { grid-column: 3; grid-row: 2; }
 .slot-ammo { grid-column: 3; grid-row: 3; }
 .slot-paranormal { grid-column: 3; grid-row: 4; }
+.slot-extra { grid-column: var(--slot-column); grid-row: var(--slot-row); }
 
 .paperdoll-add {
   display: block;
