@@ -106,7 +106,7 @@ const NON_USABLE_ABILITY_NAMES = new Set([
   "Treinamento Especial",
 ]);
 
-const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Recursos", "Revisão"];
+const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Habilidades e rituais", "Recursos", "Revisão"];
 
 const app = document.querySelector("#app");
 const headerActions = document.querySelector("#header-actions");
@@ -115,6 +115,7 @@ const toastElement = document.querySelector("#toast");
 
 let toastTimer;
 let creatorState = null;
+let creatorProgress = null;
 let currentStep = 0;
 let activeSheetTab = "resumo";
 let activeAbilityCategory = "Combatente";
@@ -388,6 +389,7 @@ function renderRoute() {
     renderSheet(route.id);
   } else {
     creatorState = null;
+    creatorProgress = null;
     levelUpState = null;
     abilityChoiceState = null;
     spendState = null;
@@ -492,6 +494,8 @@ function renderCharacterGrid(characters) {
 
 function startCreator() {
   creatorState = createBlankCharacter();
+  creatorProgress = null;
+  levelUpState = null;
   currentStep = 0;
   navigate("criar");
 }
@@ -600,10 +604,12 @@ function renderCreatorStep() {
     return renderSkillStep();
   }
 
-  if (currentStep === 4) {
-    const derived = calculateDerived(creatorState);
+  if (currentStep === 4) return renderCreatorChoices();
+
+  if (currentStep === 5) {
+    const derived = calculateDerived(creatorOutput());
     return `
-      <p class="eyebrow">Etapa 5 de ${STEPS.length}</p>
+      <p class="eyebrow">Etapa 6 de ${STEPS.length}</p>
       <h1>Recursos principais</h1>
       <p class="muted">Estes valores foram calculados usando classe, NEX e atributos. Na ficha, apenas os valores atuais mudam durante a sessão.</p>
       <div class="resource-grid">
@@ -615,13 +621,13 @@ function renderCreatorStep() {
         }
       </div>
       <div class="calculation-box">
-        ${renderCalculationBreakdown()}
+        ${renderCalculationBreakdown(creatorOutput())}
       </div>
     `;
   }
 
   return `
-    <p class="eyebrow">Etapa 6 de ${STEPS.length}</p>
+    <p class="eyebrow">Etapa 7 de ${STEPS.length}</p>
     <h1>Revisar arquivo</h1>
     <p class="muted">Confira as informações principais. Depois de salvar, todos os campos de sessão continuarão editáveis.</p>
     <div class="review-list">
@@ -629,13 +635,16 @@ function renderCreatorStep() {
       ${reviewRow("Jogador", creatorState.jogador || "Não informado")}
       ${reviewRow("Formação", `${creatorState.origem || "Origem pendente"} · ${creatorState.classe || "Classe pendente"}${creatorState.trilha ? ` · ${creatorState.trilha}` : ""}`)}
       ${reviewRow("Progressão", `${isSurvivorCharacter(creatorState) ? `Estágio ${survivorStage(creatorState)}` : `Nível ${characterLevel(creatorState)}`} · NEX ${numberOr(creatorState.nex, 0)}% · ${creatorState.patente || "Sem patente"}`)}
-      ${reviewRow("Perícias treinadas", creatorState.periciasTreinadas?.join(", ") || "Nenhuma")}
-      ${reviewRow("Recursos", resourceSummary(creatorState))}
+      ${reviewRow("Perícias treinadas", creatorOutput().periciasTreinadas?.join(", ") || "Nenhuma")}
+      ${reviewRow("Habilidades", automaticAbilitiesFor(creatorOutput()).concat((creatorOutput().habilidadesSelecionadas ?? []).map(id => ABILITY_BY_ID.get(id)).filter(Boolean)).map(entry => entry.name).join(", ") || "Nenhuma")}
+      ${reviewRow("Rituais", (creatorOutput().rituaisSelecionados ?? []).map(id => RITUAL_BY_ID.get(id)?.name).filter(Boolean).join(", ") || "Nenhum")}
+      ${reviewRow("Recursos", resourceSummary(creatorOutput()))}
     </div>
   `;
 }
 
 function bindCreatorStep() {
+  if (currentStep === 4) bindCreatorChoices();
   document.querySelectorAll("[data-attribute]").forEach((button) => {
     button.addEventListener("click", () => {
       const input = document.querySelector(`#attr-${button.dataset.attribute}`);
@@ -760,6 +769,11 @@ function advanceCreator() {
     return;
   }
 
+  if (currentStep === 1 && characterLevel(creatorState) >= 2 && !isSurvivorCharacter(creatorState) && !(CLASSES[creatorState.classe]?.trails ?? []).includes(creatorState.trilha)) {
+    showToast("Escolha a trilha do agente para continuar.");
+    return;
+  }
+
   if (
     currentStep === 2 &&
     !attributeBudget(
@@ -777,6 +791,17 @@ function advanceCreator() {
     return;
   }
 
+  if (currentStep >= 4) {
+    ensureCreatorProgress();
+    if (!creatorProgress.complete) {
+      if (currentStep === 4) return confirmCreatorChoices();
+      currentStep = 4;
+      renderCreator();
+      showToast("Complete as habilidades e rituais antes de salvar.");
+      return;
+    }
+  }
+
   if (currentStep < STEPS.length - 1) {
     currentStep += 1;
     renderCreator();
@@ -784,12 +809,121 @@ function advanceCreator() {
     return;
   }
 
-  setInitialTrainingGrades(creatorState);
-  const saved = upsertCharacter(creatorState);
+  const finished = creatorOutput();
+  setInitialTrainingGrades(finished);
+  applyDerived(finished, true);
+  const saved = upsertCharacter(finished);
+  creatorProgress = null;
+  levelUpState = null;
   showToast("Ficha criada e salva neste dispositivo.");
   creatorState = null;
   currentStep = 0;
   navigate(`ficha/${saved.id}`);
+}
+
+// The original form remains the base build. Progression choices are replayed into
+// a separate draft, so Back/Cancel never saves a partially created character.
+function creatorFingerprint() {
+  return JSON.stringify([creatorState.classe, creatorState.origem, creatorState.trilha,
+    creatorState.nex, creatorState.nivel, creatorState.optionalRules, creatorState.atributos,
+    creatorState.periciasOrigemEscolhidas, creatorState.periciasClasseObrigatorias, creatorState.periciasEscolhidas]);
+}
+
+function ensureCreatorProgress() {
+  const key = creatorFingerprint();
+  if (creatorProgress?.key === key) return;
+  const targetLevel = isMundaneCharacter(creatorState) || isSurvivorCharacter(creatorState) ? 0 : characterLevel(creatorState);
+  const draft = structuredClone(creatorState);
+  draft.nex = usesSeparateLevel(creatorState) ? creatorState.nex : 0;
+  draft.nivel = 0;
+  draft.trilha = "";
+  draft.habilidadesSelecionadas = [];
+  draft.rituaisSelecionados = [];
+  draft.habilidadeEscolhas = [];
+  draft.peritoPericias = [];
+  draft.transcenderNiveis = [];
+  draft.levelUpHistory = [];
+  setInitialTrainingGrades(draft);
+  creatorProgress = { key, targetLevel, draft, completed: [], complete: targetLevel === 0 };
+  if (targetLevel === 0) creatorProgress.draft = structuredClone(creatorState);
+  prepareCreatorLevel();
+}
+
+function prepareCreatorLevel() {
+  if (creatorProgress.complete) { levelUpState = null; return; }
+  const draft = creatorProgress.draft;
+  levelUpState = {
+    mode: "creation", characterId: draft.id, step: 2,
+    targetClass: creatorState.classe,
+    targetTrail: creatorProgress.completed.length >= 1 ? creatorState.trilha || "" : "",
+    attribute: "", intellectSkill: "", gradeUpgrades: [], classPowerId: "",
+    paranormalPowerId: "", paranormalRitualId: "", paranormalElement: "",
+    expandedClassPowerId: "", affinityElement: "", powerTrainingSkills: [],
+    versatilityId: "", ritualIds: [], structuredChoices: [],
+    classGroupSkills: [...(draft.periciasClasseObrigatorias ?? [])],
+    classFreeSkills: [...(draft.periciasEscolhidas ?? [])],
+    peritoSkills: [...(draft.peritoPericias ?? [])],
+  };
+}
+
+function creatorOutput() {
+  if (!creatorProgress?.complete || creatorProgress.key !== creatorFingerprint()) return creatorState;
+  return { ...creatorProgress.draft, nome: creatorState.nome, jogador: creatorState.jogador,
+    nex: creatorState.nex, nivel: creatorState.nivel, patente: creatorState.patente, trilha: creatorState.trilha };
+}
+
+function renderCreatorChoices() {
+  ensureCreatorProgress();
+  const p = creatorProgress;
+  const title = `<p class="eyebrow">Etapa 5 de ${STEPS.length}</p><h1>Habilidades e rituais</h1>`;
+  const back = p.completed.length ? `<button class="button ghost" id="creator-undo-choice" type="button">Rever escolhas anteriores</button>` : "";
+  if (p.complete) {
+    const result = creatorOutput();
+    const abilities = uniqueById([...automaticAbilitiesFor(result), ...(result.habilidadesSelecionadas ?? []).map(id => ABILITY_BY_ID.get(id)).filter(Boolean)]);
+    return `${title}<div class="level-up-complete-box"><strong>Escolhas concluídas</strong><small>Confira os benefícios antes de continuar. A ficha será salva apenas na última etapa.</small></div><div class="review-list">${reviewRow("Habilidades", abilities.map(a => a.name).join(", ") || "Nenhuma")}${reviewRow("Rituais", (result.rituaisSelecionados ?? []).map(id => RITUAL_BY_ID.get(id)?.name).filter(Boolean).join(", ") || "Nenhum")}</div>${back}`;
+  }
+  if (!levelUpState || levelUpState.mode !== "creation") prepareCreatorLevel();
+  const plan = currentLevelUpPlan(p.draft);
+  const preview = buildLevelUpPreview(p.draft);
+  const previous = new Set(automaticAbilitiesFor(p.draft).map(a => a.id));
+  const gained = automaticAbilitiesFor(preview).filter(a => plan.firstAgentLevel || !previous.has(a.id));
+  return `${title}<p class="muted">Escolha os benefícios acumulados até ${usesSeparateLevel(creatorState) ? `o nível ${p.targetLevel}` : `NEX ${creatorState.nex}%`}. As opções aparecem na ordem em que são liberadas.</p>
+    <div class="skill-choice-head"><h2>${usesSeparateLevel(creatorState) ? `Nível ${plan.toLevel}` : `NEX ${plan.targetProgressNex}%`}</h2><strong class="skill-counter">${p.completed.length}/${p.targetLevel} concluídos</strong></div>
+    ${gained.length ? `<details class="level-up-catalog-group" open><summary>Habilidades recebidas automaticamente</summary><div class="creator-automatic-list">${gained.map(entry => `<p><strong>${escapeHtml(entry.name)}</strong><br><span class="muted">${escapeHtml(entry.summary)}</span></p>`).join("")}</div></details>` : ""}
+    ${renderLevelUpChoices(p.draft, plan)}${back}`;
+}
+
+function bindCreatorChoices() {
+  if (!creatorProgress?.complete) bindLevelUpDialog(creatorProgress.draft);
+  document.querySelector("#creator-undo-choice")?.addEventListener("click", rewindCreatorChoices);
+  const next = document.querySelector("#next-step");
+  if (next && !creatorProgress.complete) next.textContent = "Confirmar escolhas";
+}
+
+function rewindCreatorChoices() {
+  const checkpoint = creatorProgress.completed.pop();
+  if (!checkpoint) return;
+  creatorProgress.complete = false;
+  creatorProgress.draft = checkpoint.before;
+  levelUpState = checkpoint.choices;
+  renderCreator();
+}
+
+function confirmCreatorChoices() {
+  const draft = creatorProgress.draft;
+  const plan = currentLevelUpPlan(draft);
+  const error = validateLevelUpStep(draft, 2);
+  if (error) return showToast(error);
+  const preview = buildLevelUpPreview(draft);
+  creatorProgress.completed.push({ before: structuredClone(draft), choices: structuredClone(levelUpState) });
+  creatorProgress.draft = preview;
+  // The plan must be resolved before advancing the completed-level counter.
+  creatorProgress.draft.nivel = plan.toLevel;
+  creatorProgress.draft.nex = plan.targetNex;
+  creatorProgress.complete = creatorProgress.completed.length >= creatorProgress.targetLevel;
+  prepareCreatorLevel();
+  renderCreator();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function saveCreatorFields() {
@@ -834,8 +968,8 @@ function saveCreatorFields() {
     applyDerived(creatorState, true);
   }
 
-  if (currentStep === 4) {
-    applyDerived(creatorState, true);
+  if (currentStep === 5) {
+    applyDerived(creatorOutput(), true);
   }
 }
 
@@ -1916,6 +2050,13 @@ function startLevelUp(character) {
 }
 
 function currentLevelUpPlan(character) {
+  if (levelUpState?.mode === "creation") {
+    const from = creatorProgress.completed.length;
+    const base = { ...character, nex: from * 5, optionalRules: { ...character.optionalRules, separateLevelNex: false } };
+    const plan = createLevelUpPlan(base, creatorState.classe);
+    return plan ? { ...plan, needsClass: false, needsTrail: false,
+      targetNex: usesSeparateLevel(creatorState) ? creatorState.nex : plan.targetNex } : null;
+  }
   return createLevelUpPlan(character, levelUpState?.targetClass || character.classe);
 }
 
@@ -2200,7 +2341,7 @@ function renderLevelUpChoices(character, plan) {
   if (!plan.className) return levelUpPendingClass();
   const preview = buildLevelUpPreview(character);
   const sections = [];
-  if (plan.firstAgentLevel) sections.push(renderFirstAgentSkillChoices(character, plan));
+  if (plan.firstAgentLevel && levelUpState.mode !== "creation") sections.push(renderFirstAgentSkillChoices(character, plan));
   if (plan.firstAgentLevel && plan.className === "Especialista") sections.push(renderPeritoChoices(preview));
   if (plan.needsTrail) sections.push(renderTrailChoice(plan));
   if (plan.needsAttribute && attributeIncreaseOptions(character).length) sections.push(renderAttributeIncrease(character));
@@ -2221,7 +2362,7 @@ function renderLevelUpChoices(character, plan) {
   const structuredChoices = renderStructuredLevelUpChoices(character, plan);
   if (structuredChoices) sections.push(structuredChoices);
   if (plan.ritualPicks) sections.push(renderLevelUpRitualChoices(character, plan));
-  return `<section class="level-up-section"><p class="eyebrow">Etapa 3 de 4</p><h3>Escolhas do nível</h3><p class="muted">Complete tudo que o sistema liberar neste avanço.</p><div class="level-up-choice-stack">${sections.length ? sections.join("") : `<div class="level-up-complete-box">✓ Este nível não exige escolhas adicionais.</div>`}</div></section>`;
+  return `<section class="level-up-section">${levelUpState.mode === "creation" ? "" : `<p class="eyebrow">Etapa 3 de 4</p><h3>Escolhas do nível</h3><p class="muted">Complete tudo que o sistema liberar neste avanço.</p>`}<div class="level-up-choice-stack">${sections.length ? sections.join("") : `<div class="level-up-complete-box">✓ Este nível não exige escolhas adicionais.</div>`}</div></section>`;
 }
 
 function renderUnavailableChoice(title, description) {
@@ -2488,7 +2629,7 @@ function powerTrainingEligible(character, plan) {
 
 function renderPowerTrainingChoices(_preview, plan) {
   const route = currentRoute();
-  const character = route.page === "ficha" ? getCharacter(route.id) : null;
+  const character = levelUpState?.mode === "creation" ? creatorProgress.draft : route.page === "ficha" ? getCharacter(route.id) : null;
   const skills = character ? powerTrainingEligible(character, plan) : [];
   return renderSkillCheckboxBlock({ title: "Treinamento em Perícia — escolha duas", description: "Cada escolha avança um grau permitido pelo seu NEX.", skills, selected: levelUpState.powerTrainingSkills, dataAttribute: "data-level-up-power-training", required: Math.min(2, skills.length), blockId: "level-up-power-training-choice" });
 }
@@ -2496,13 +2637,14 @@ function renderPowerTrainingChoices(_preview, plan) {
 function structuredLevelUpChoiceAbilities(character, plan) {
   const preview = buildLevelUpPreview(character);
   const previousAutomatic = new Set(automaticAbilitiesFor(character).map((entry) => entry.id));
-  const newAutomatic = automaticAbilitiesFor(preview).filter((entry) => !previousAutomatic.has(entry.id));
+  const newAutomatic = automaticAbilitiesFor(preview).filter((entry) => (levelUpState.mode === "creation" && plan.firstAgentLevel) || !previousAutomatic.has(entry.id));
   const candidates = uniqueById([
     ...selectedGrantedPowers(),
     selectedExpandedClassPower(),
     ...newAutomatic,
   ].filter(Boolean));
   const handledElsewhere = new Set(["Transcender", "Treinamento em Perícia", "Aprender Ritual", "Resistir a Elemento", "Expansão de Conhecimento"]);
+  if (plan.firstAgentLevel) handledElsewhere.add("Perito");
   return candidates.filter((entry) => !handledElsewhere.has(entry.name) && choiceSpecsForAbility(entry, preview, levelUpState.structuredChoices, choiceContext(preview)).length);
 }
 
@@ -2899,6 +3041,13 @@ function applyLevelUp(character) {
 }
 
 function reopenLevelUp(character, { scrollTop = 0, focusSelector = "" } = {}) {
+  if (levelUpState?.mode === "creation") {
+    const top = window.scrollY ?? 0;
+    renderCreator();
+    window.scrollTo({ top, behavior: "instant" });
+    if (focusSelector) document.querySelector(focusSelector)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
   renderSheet(character.id);
   const dialog = document.querySelector("#level-up-dialog");
   dialog?.showModal();
@@ -3627,11 +3776,11 @@ function updateAttributeBudget() {
   element.querySelector("strong").textContent = String(budget.remaining);
 }
 
-function renderCalculationBreakdown() {
-  const derived = calculateDerived(creatorState);
+function renderCalculationBreakdown(character = creatorState) {
+  const derived = calculateDerived(character);
   const fixedSkills = [
     ...derived.fixedSkills,
-    ...(creatorState.periciasClasseObrigatorias ?? []),
+    ...(character.periciasClasseObrigatorias ?? []),
   ].filter(Boolean);
   return `
     <strong>Como o FOP calculou</strong>
@@ -3640,7 +3789,7 @@ function renderCalculationBreakdown() {
       <span>Nível usado nos cálculos</span><b>${derived.level}</b>
       <span>Avanços após o nível 1</span><b>${derived.advances}</b>
       <span>Perícias fixas da classe</span><b>${escapeHtml(fixedSkills.join(", ") || "Nenhuma")}</b>
-      <span>Perícias escolhidas</span><b>${escapeHtml(creatorState.periciasEscolhidas?.join(", ") || "Nenhuma")}</b>
+      <span>Perícias escolhidas</span><b>${escapeHtml(character.periciasEscolhidas?.join(", ") || "Nenhuma")}</b>
       <span>Deslocamento</span><b>${derived.deslocamento} m</b>
     </div>
   `;

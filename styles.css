@@ -615,6 +615,10 @@ h3 {
   font-size: 0.72rem;
 }
 
+.creator-automatic-list { padding: 0 16px 8px; }
+.creator-automatic-list p { line-height: 1.5; overflow-wrap: anywhere; }
+.wizard-content .level-up-choice-stack { margin-bottom: 20px; }
+
 .wizard-nav {
   display: flex;
   justify-content: space-between;
