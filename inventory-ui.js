@@ -215,7 +215,7 @@ function enhanceInventory() {
   function updateEquipment(changedSlot) {
     const equipped = resolveEquipment(entries, preferences);
     const placements = equipmentPlacements(equipped);
-    drawDoll(placements, { backpack: /mochila/i.test(equipped.back?.name ?? "") });
+    drawDoll(placements, { appearance:section.dataset.appearance, backpack: /mochila/i.test(equipped.back?.name ?? "") });
     for (const [slot, control] of controls) {
       const entry = equipped[slot];
       control.element.classList.toggle("has-item", Boolean(entry));
@@ -294,3 +294,12 @@ new MutationObserver(refreshInterface).observe(document.querySelector("#app"), {
   subtree: true,
 });
 refreshInterface();
+
+function enhanceAppearancePreview(){
+ const canvas=document.querySelector('#creator-appearance-preview'),select=document.querySelector('#aparencia');
+ if(!canvas||!select||canvas.dataset.bound)return;
+ canvas.dataset.bound='true';const draw=createPaperdoll(canvas),update=()=>draw([],{appearance:select.value});
+ select.addEventListener('change',update);update();
+}
+new MutationObserver(enhanceAppearancePreview).observe(document.querySelector('#app'),{childList:true,subtree:true});
+enhanceAppearancePreview();

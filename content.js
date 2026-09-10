@@ -1,3 +1,4 @@
+import { ritualVariantData } from "./ritual-variants.js?v=24";
 export const PATENTS = [
   "Recruta",
   "Operador",
@@ -542,19 +543,21 @@ export const ORIGIN_BACKGROUNDS = {
 };
 
 const RITUAL_COSTS = { 1: 1, 2: 3, 3: 6, 4: 10 };
-const ritual = (name, element, circle, summary, source = "Livro base", mechanics = {}) => ({
-  id: slug(`ritual-${source}-${Array.isArray(element) ? element.join("-") : element}-${circle}-${name}`),
-  name,
-  element: Array.isArray(element) ? element[0] : element,
-  elements: Array.isArray(element) ? element : [element],
-  circle,
-  cost: `${RITUAL_COSTS[circle]} PE/PD`,
-  summary,
-  source,
-  ...mechanics,
-});
+const ritual = (name, element, circle, summary, source = "Livro base", mechanics = {}) => {
+  const useVariants=ritualVariantData(name,source), currentCircle=useVariants?.circle??circle, currentName=useVariants?.name??name;
+  return {
+    id: slug(`ritual-${source}-${Array.isArray(element)?element.join("-"):element}-${circle}-${name}`),
+    name:currentName, element:Array.isArray(element)?element[0]:element, elements:Array.isArray(element)?element:[element],
+    circle:currentCircle,cost:`${RITUAL_COSTS[currentCircle]} PE/PD`,summary,source,...mechanics,
+    aliases:[...new Set([...(mechanics.aliases??[]),...(currentName!==name?[name]:[])])],useVariants,
+    ...(useVariants?.page?{page:String(useVariants.page)}:{}),
+  };
+};
 
 export const RITUALS = [
+  ritual("Flagelo de Sangue", "Sangue", 2, "Cria uma ligação paranormal com um alvo marcado."),
+  ritual("Inexistir", "Conhecimento", 4, "Manifesta Conhecimento contra um alvo, causando dano paranormal elevado."),
+  ritual("Invadir Mente", "Conhecimento", 2, "Permite comunicação telepática ou um efeito mental contra um alvo."),
   // 1º círculo
   ritual("Compreensão Paranormal", "Conhecimento", 1, "Permite compreender uma mensagem, escrita ou idioma que normalmente seria inacessível."),
   ritual("Enfeitiçar", "Conhecimento", 1, "Torna um alvo mais receptivo à sua presença e às suas palavras por um período curto."),

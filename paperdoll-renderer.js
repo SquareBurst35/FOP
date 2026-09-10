@@ -4,6 +4,8 @@ import { statesForPlacements } from './equipment-variants.js?v=23';
 // Coordinates are in the character's original 420 × 600 sprite space.
 export const DOLL_SIZE = Object.freeze({ width: 420, height: 600 });
 export const BODY_ATLAS = "assets/agent-paperdoll-sprite.png";
+export const FEMALE_BODY = "assets/agent-female-base.png";
+export const characterBodyPath=appearance=>appearance==='feminino'?FEMALE_BODY:BODY_ATLAS;
 export const BODY_POINTS = Object.freeze({
   hand: [287, 368], leftHand: [104, 368],
   head: [206, 134], eyes: [218, 159], mask: [223, 183],
@@ -62,12 +64,12 @@ export function anchorOnDoll(placement) {
 
 // Resolve complete agent variants before painting. Item icon rendering below
 // remains independent and continues to use the original 165 catalog images.
-export function paperdollImagePaths(placements, {backpack=false}={}) {
+export function paperdollImagePaths(placements, {backpack=false,appearance='masculino'}={}) {
   const states=statesForPlacements(placements);
-  return [...new Set([BODY_ATLAS,...states.filter(s=>!['inventory','adjustment'].includes(s.region)).map(s=>variantPath(s.key)),...(backpack?[variantPath('backpack')]:[])])];
+  return [...new Set([characterBodyPath(appearance),...states.filter(s=>!['inventory','adjustment'].includes(s.region)).map(s=>variantPath(s.key)),...(backpack?[variantPath('backpack')]:[])])];
 }
 export function paintPaperdoll(ctx,images,placements,options={}) {
-  return paintAgentRegions(ctx,images,statesForPlacements(placements),{...options,base:images.get(BODY_ATLAS)});
+  return paintAgentRegions(ctx,images,statesForPlacements(placements),{...options,base:images.get(characterBodyPath(options.appearance))});
 }
 export function paperdollVisibleStates(placements) {return visibleAgentStates(statesForPlacements(placements));}
 
