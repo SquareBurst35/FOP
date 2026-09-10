@@ -5,11 +5,15 @@ import path from 'node:path';
 import { ITEMS } from '../items.js';
 import { ITEM_ART, artForItem } from '../item-art.js';
 import { resolveEquipment, equipmentPlacements } from '../equipment-visuals.js';
-import { BODY_ATLAS, paintPaperdoll } from '../paperdoll-renderer.js';
+import { BODY_ATLAS, paintPaperdoll, paperdollImagePaths } from '../paperdoll-renderer.js';
+import { variantFor } from '../equipment-variants.js';
+import assert from 'node:assert/strict';
 import { compositionFor } from '../equipment-composition.js';
-const {createCanvas,loadImage}=createRequire(import.meta.url)('@napi-rs/canvas');
+const require=createRequire(import.meta.url);
+let canvas;try{canvas=require('@napi-rs/canvas');}catch{canvas=require(path.join(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES||'/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules','@napi-rs/canvas'));}
+const {createCanvas,loadImage}=canvas;
 const output=path.resolve(process.argv[2]??'/tmp/fop-equipment-qa');fs.mkdirSync(output,{recursive:true});
-const images=new Map(await Promise.all([...new Set([BODY_ATLAS,...ITEM_ART.map(a=>a.atlas)])].map(async p=>[p,await loadImage(new URL('../'+p,import.meta.url).pathname)])));
+const images=new Map(await Promise.all([...new Set([BODY_ATLAS,...ITEMS.flatMap(item=>paperdollImagePaths(equipmentPlacements(resolveEquipment([{...item,quantity:1}])))), 'assets/agent-variants/backpack.png'])].map(async p=>[p,await loadImage(new URL('../'+p,import.meta.url).pathname)])));
 const own=name=>{const item=ITEMS.find(i=>i.name===name);if(!item)throw Error('Unknown QA item: '+name);return {...item,quantity:1};};
 const sets=[
  ['Vestimenta'],['Proteção leve'],['Proteção pesada'],['Vestimenta','Proteção leve','Bastão'],
@@ -36,12 +40,16 @@ function sheet(cases,file,columns=5) {
  fs.writeFileSync(path.join(output,file+'.png'),s.toBuffer('image/png'));
 }
 const report=[];
+const bare=render([]).c.getContext('2d').getImageData(0,0,420,600).data;
 for(let start=0;start<ITEMS.length;start+=15) {
  const cases=ITEMS.slice(start,start+15).map((item,i)=>{
   const {c,placements}=render([{...item,quantity:1}]);
   const art=artForItem(item),recipe=compositionFor(art);
   fs.writeFileSync(path.join(output,`${String(start+i).padStart(3,'0')}.png`),c.toBuffer('image/png'));
-  report.push({index:start+i,id:item.id,name:item.name,kind:recipe.kind,visibility:recipe.visibility,placements:placements.length});
+  const pixels=c.getContext('2d').getImageData(0,0,420,600).data;
+  let changedPixels=0;for(let j=0;j<pixels.length;j+=4)if(pixels[j]!==bare[j]||pixels[j+1]!==bare[j+1]||pixels[j+2]!==bare[j+2]||pixels[j+3]!==bare[j+3])changedPixels++;
+  if(recipe.visibility==='body')assert.ok(changedPixels>30,`No visible body change: ${item.name}`);else assert.equal(changedPixels,0,`Stored item must not float: ${item.name}`);
+  report.push({index:start+i,id:item.id,name:item.name,kind:recipe.kind,variant:variantFor(art).key,visibility:recipe.visibility,placements:placements.length,changedPixels});
   return {canvas:c,label:`${start+i}. ${item.name}`,note:recipe.visibility==='inventory'?'Guardado no inventário':recipe.visibility==='parent'?'Precisa de equipamento compatível':recipe.kind};
  });sheet(cases,'items-'+String(start/15).padStart(2,'0'));
 }

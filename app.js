@@ -34,7 +34,7 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=13";
+} from "./content.js?v=23";
 import {
   INVENTORY_GROUPS,
   ITEMS,
@@ -48,7 +48,7 @@ import {
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=13";
+} from "./choices.js?v=23";
 import {
   effortResource,
   normalizeSession,
@@ -1394,7 +1394,7 @@ function renderRitualsTab(character) {
   return `
     <section class="sheet-section">
       <div class="section-heading stacked-mobile">
-        <div><h2>Rituais</h2><p class="muted small">Catálogo oficial do 1º ao 4º círculo, separado por elemento.</p></div>
+        <div><h2>Rituais</h2><p class="muted small">Rituais do 1º ao 4º círculo, separados por elemento e fonte.</p></div>
         <button class="button primary compact" id="open-ritual-picker" type="button">+ Adicionar ritual</button>
       </div>
       <div class="entry-list ritual-selected-list">
@@ -1471,7 +1471,7 @@ function renderRitualPickerResults() {
     (entry) =>
       entry.circle === activeRitualCircle &&
       (entry.elements ?? [entry.element]).includes(activeRitualElement) &&
-      (!query || normalizeSearch(`${entry.name} ${entry.summary}`).includes(query)),
+      (!query || normalizeSearch(`${entry.name} ${(entry.aliases ?? []).join(" ")} ${entry.summary}`).includes(query)),
   );
   return entries.length
     ? entries.map((entry) => renderRitualCard(entry, { picker: true })).join("")

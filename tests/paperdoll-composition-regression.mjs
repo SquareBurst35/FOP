@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { ITEMS } from '../items.js';
 import { ITEM_ART, artForItem } from '../item-art.js';
+import { variantFor, AGENT_VARIANT_KEYS } from '../equipment-variants.js';
+import { variantPath } from '../agent-variants.js';
 import { ITEM_COMPOSITION, compositionFor } from '../equipment-composition.js';
 import { resolveEquipment, equipmentPlacements, EQUIPMENT_SLOTS } from '../equipment-visuals.js';
-import { BODY_ATLAS, paintPaperdoll, placementFor } from '../paperdoll-renderer.js';
+import { BODY_ATLAS, paintPaperdoll, placementFor, paperdollImagePaths } from '../paperdoll-renderer.js';
 
 const own=name=>({...ITEMS.find(i=>i.name===name),quantity:1});
 assert.equal(ITEMS.length,165);
@@ -34,7 +36,7 @@ class Canvas {
   }
   getContext(){return this.context;}
 }
-const images=new Map([...new Set([BODY_ATLAS,...ITEM_ART.map(a=>a.atlas)])].map(path=>[path,{path}]));
+const images=new Map([...new Set([BODY_ATLAS,...AGENT_VARIANT_KEYS.map(variantPath)])].map(path=>[path,{path}]));
 const render=(placements,imgs=images)=>{
   contexts.length=0;const c=new Canvas();paintPaperdoll(c.getContext('2d'),imgs,placements);
   for(const ctx of contexts)assert.equal(ctx.depth,0,'Canvas state leaked');
@@ -52,8 +54,9 @@ for(const item of ITEMS) {
   else assert.equal(placements.length,recipe.kind==='gauntlets'?2:1,item.name);
   for(const p of placements)assert.equal(p.art.composition,recipe.kind,item.name);
   render(placements);
+  assert.ok(paperdollImagePaths(placements).every(path=>path===BODY_ATLAS||path.startsWith('assets/agent-variants/')), 'Catalog art cannot be sampled on the body');
   for(const p of placements) {
-    const missing=new Map(images);missing.delete(p.art.atlas);
+    const missing=new Map(images);missing.delete(variantPath(variantFor(p.art).key));
     assert.deepEqual(render([p],missing),bare,`Missing texture must preserve body: ${item.name}`);
   }
   if(recipe.kind==='held') {

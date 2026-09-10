@@ -580,6 +580,15 @@ export const RITUALS = [
   ritual("Distorcer Aparência", "Sangue", 1, "Altera temporariamente traços físicos para criar outra aparência."),
   ritual("Corpo Adaptado", "Sangue", 1, "Adapta o corpo do alvo a uma condição ambiental hostil escolhida."),
   ritual("Cinerária", "Medo", 1, "Cria uma área que fortalece conjurações e interage com a Névoa paranormal."),
+  ...["Conhecimento", "Energia", "Morte", "Sangue"].map((element) =>
+    ritual(`Amaldiçoar Arma (${element})`, element, 1,
+      `Imbui uma arma corpo a corpo ou munição com ${element}, acrescentando 1d6 de dano desse elemento durante a cena.`, "Livro base", {
+        family: "Amaldiçoar Arma", execution: "Padrão", range: "Toque",
+        target: "1 arma corpo a corpo ou pacote de munição", duration: "Cena",
+        details: ["O elemento é definido ao aprender o ritual. Cada opção registra apenas o elemento escolhido."],
+        enhancements: ["Discente (+2 PE): o dano adicional passa a 2d6; requer 2º círculo.", "Verdadeiro (+5 PE): o dano adicional passa a 4d6; requer 3º círculo e afinidade."],
+      })),
+  ritual("Criar Ilusão", "Energia", 1, "Produz uma imagem ou som ilusório simples dentro da área escolhida.", "Livro base", { page: "121", execution: "Padrão", range: "Médio", target: "Ilusão em até 4 cubos de 1,5 m", duration: "Cena", resistance: "Vontade desacredita" }),
 
   // 2º círculo
   ritual("Aprimoramento Mental", "Conhecimento", 2, "Aumenta temporariamente Intelecto, Presença ou ambos, conforme a versão usada."),
@@ -603,6 +612,7 @@ export const RITUALS = [
   ritual("Físico Aprimorado", "Sangue", 2, "Aumenta temporariamente Força, Agilidade ou Vigor."),
   ritual("Hemofagia", "Sangue", 2, "Um ataque corporal fortalecido causa dano e recupera parte da vitalidade do conjurador."),
   ritual("Rejeitar Névoa", "Medo", 2, "Afasta temporariamente manifestações da Névoa em uma área."),
+  ritual("Proteção contra Rituais", "Medo", 2, "Concede +2 nos testes de resistência do alvo contra rituais e habilidades de criaturas paranormais.", "Livro base", { page: "132", execution: "Padrão", range: "Toque", target: "1 criatura", duration: "Cena" }),
 
   // 3º círculo
   ritual("Alterar Memória", "Conhecimento", 3, "Edita uma lembrança recente de um alvo que falhe em resistir."),
@@ -631,7 +641,7 @@ export const RITUALS = [
   ritual("Deflagração de Energia", "Energia", 4, "Libera uma grande descarga de Energia que causa dano em uma área ampla."),
   ritual("Teletransporte", "Energia", 4, "Transporta o grupo por uma grande distância até um destino definido."),
   ritual("Convocar o Algoz", "Morte", 4, "Invoca uma manifestação que persegue e enfraquece um alvo marcado."),
-  ritual("Distorcer o Tempo", "Morte", 4, "Cria uma zona temporal alterada que concede ações adicionais ao conjurador."),
+  ritual("Distorcer o Tempo", "Morte", 4, "Cria uma zona temporal alterada que concede ações adicionais ao conjurador.", "Livro base", { aliases: ["Distorção Temporal"], page: "124" }),
   ritual("Fim Inevitável", "Morte", 4, "Forma uma anomalia que atrai criaturas e causa dano crescente na área."),
   ritual("Capturar o Coração", "Sangue", 4, "Cria um vínculo extremo com um alvo e permite afetar sua vitalidade à distância."),
   ritual("Invólucro de Carne", "Sangue", 4, "Cria uma duplicata corporal temporária obediente ao conjurador."),

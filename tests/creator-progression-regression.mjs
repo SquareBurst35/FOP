@@ -116,3 +116,14 @@ const training=boot('Combatente',15,'Guerreiro');fillLevel(training);fillLevel(t
 training.run("levelUpState.classPowerId=CLASS_POWERS.find(p=>p.category==='Combatente'&&p.name==='Treinamento em Perícia').id");
 assert.match(training.run('renderCreatorChoices()'),/data-level-up-power-training/,'Training options exist inside the creator, without a saved sheet');
 console.log('Creation: initial ritual quotas, NEX 0–100, specialist, combatant, draft-only saves, class reset, cancel and review gate passed.');
+for(const ritual of content.RITUALS.filter(r=>r.family==='Amaldiçoar Arma')) {
+ const creation=boot('Ocultista',5);
+ assert.ok(creation.run('renderCreatorChoices()').includes(ritual.name),`Missing initial choice: ${ritual.name}`);
+ creation.run(`levelUpState.ritualIds=[${JSON.stringify(ritual.id)},...RITUALS.filter(r=>r.circle===1&&!r.family).slice(0,2).map(r=>r.id)];confirmCreatorChoices()`);
+ assert.equal(creation.run('creatorProgress.complete'),true);
+ assert.ok(creation.run('creatorOutput().rituaisSelecionados').includes(ritual.id));
+ assert.equal(creation.run('creatorOutput().rituaisSelecionados.length'),3,'The selected element consumes exactly one initial ritual choice');
+}
+const aliases=boot('Ocultista',5);
+aliases.run("ritualSearch='distorcao temporal';activeRitualCircle=4;activeRitualElement='Morte'");
+assert.match(aliases.run('renderRitualPickerResults()'),/Distorcer o Tempo/);

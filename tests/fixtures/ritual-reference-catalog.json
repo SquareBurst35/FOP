@@ -1,0 +1,718 @@
+[
+  {
+    "name": "Alterar Destino",
+    "source": "Livro base",
+    "page": 117,
+    "circle": 4,
+    "element": "Energia"
+  },
+  {
+    "name": "Alterar Memória",
+    "source": "Livro base",
+    "page": 117,
+    "circle": 3,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Amaldiçoar Tecnologia",
+    "source": "Livro base",
+    "page": 117,
+    "circle": 1,
+    "element": "Energia"
+  },
+  {
+    "name": "Âncora Temporal",
+    "source": "Livro base",
+    "page": 117,
+    "circle": 3,
+    "element": "Morte"
+  },
+  {
+    "name": "Aprimoramento Mental",
+    "source": "Livro base",
+    "page": 117,
+    "circle": 2,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Arma Atroz",
+    "source": "Livro base",
+    "page": 117,
+    "circle": 1,
+    "element": "Sangue"
+  },
+  {
+    "name": "Armadura de Sangue",
+    "source": "Livro base",
+    "page": 118,
+    "circle": 1,
+    "element": "Sangue"
+  },
+  {
+    "name": "Canalizar o Medo",
+    "source": "Livro base",
+    "page": 118,
+    "circle": 4,
+    "element": "Medo"
+  },
+  {
+    "name": "Capturar o Coração",
+    "source": "Livro base",
+    "page": 118,
+    "circle": 4,
+    "element": "Sangue"
+  },
+  {
+    "name": "Chamas do Caos",
+    "source": "Livro base",
+    "page": 118,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "Cicatrização",
+    "source": "Livro base",
+    "page": 118,
+    "circle": 1,
+    "element": "Morte"
+  },
+  {
+    "name": "Cinerária",
+    "source": "Livro base",
+    "page": 119,
+    "circle": 1,
+    "element": "Medo"
+  },
+  {
+    "name": "Coincidência Forçada",
+    "source": "Livro base",
+    "page": 119,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "Compreensão Paranormal",
+    "source": "Livro base",
+    "page": 119,
+    "circle": 1,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Conhecendo o Medo",
+    "source": "Livro base",
+    "page": 119,
+    "circle": 4,
+    "element": "Medo"
+  },
+  {
+    "name": "Contenção Fantasmagórica",
+    "source": "Livro base",
+    "page": 119,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "Consumir Manancial",
+    "source": "Livro base",
+    "page": 120,
+    "circle": 1,
+    "element": "Morte"
+  },
+  {
+    "name": "Contato Paranormal",
+    "source": "Livro base",
+    "page": 120,
+    "circle": 3,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Controle Mental",
+    "source": "Livro base",
+    "page": 120,
+    "circle": 4,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Convocação Instantânea",
+    "source": "Livro base",
+    "page": 120,
+    "circle": 3,
+    "element": "Energia"
+  },
+  {
+    "name": "Convocar o Algoz",
+    "source": "Livro base",
+    "page": 121,
+    "circle": 4,
+    "element": "Morte"
+  },
+  {
+    "name": "Corpo Adaptado",
+    "source": "Livro base",
+    "page": 121,
+    "circle": 1,
+    "element": "Sangue"
+  },
+  {
+    "name": "Criar Ilusão",
+    "source": "Livro base",
+    "page": 121,
+    "circle": 1,
+    "element": "Energia"
+  },
+  {
+    "name": "Decadência",
+    "source": "Livro base",
+    "page": 122,
+    "circle": 1,
+    "element": "Morte"
+  },
+  {
+    "name": "Definhar",
+    "source": "Livro base",
+    "page": 122,
+    "circle": 1,
+    "element": "Morte"
+  },
+  {
+    "name": "Deflagração de Energia",
+    "source": "Livro base",
+    "page": 122,
+    "circle": 4,
+    "element": "Energia"
+  },
+  {
+    "name": "Desacelerar Impacto",
+    "source": "Livro base",
+    "page": 122,
+    "circle": 2,
+    "element": "Morte"
+  },
+  {
+    "name": "Descarnar",
+    "source": "Livro base",
+    "page": 123,
+    "circle": 2,
+    "element": "Sangue"
+  },
+  {
+    "name": "Detecção de Ameaças",
+    "source": "Livro base",
+    "page": 123,
+    "circle": 2,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Dissonância Acústica",
+    "source": "Livro base",
+    "page": 123,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "Distorcer Aparência",
+    "source": "Livro base",
+    "page": 123,
+    "circle": 1,
+    "element": "Sangue"
+  },
+  {
+    "name": "Distorção Temporal",
+    "source": "Livro base",
+    "page": 124,
+    "circle": 4,
+    "element": "Morte"
+  },
+  {
+    "name": "Eco Espiral",
+    "source": "Livro base",
+    "page": 124,
+    "circle": 2,
+    "element": "Morte"
+  },
+  {
+    "name": "Eletrocussão",
+    "source": "Livro base",
+    "page": 124,
+    "circle": 1,
+    "element": "Energia"
+  },
+  {
+    "name": "Embaralhar",
+    "source": "Livro base",
+    "page": 124,
+    "circle": 1,
+    "element": "Energia"
+  },
+  {
+    "name": "Enfeitiçar",
+    "source": "Livro base",
+    "page": 125,
+    "circle": 1,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Esconder dos Olhos",
+    "source": "Livro base",
+    "page": 125,
+    "circle": 2,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Espirais da Perdição",
+    "source": "Livro base",
+    "page": 125,
+    "circle": 1,
+    "element": "Morte"
+  },
+  {
+    "name": "Ferver Sangue",
+    "source": "Livro base",
+    "page": 125,
+    "circle": 3,
+    "element": "Sangue"
+  },
+  {
+    "name": "Fim Inevitável",
+    "source": "Livro base",
+    "page": 126,
+    "circle": 4,
+    "element": "Morte"
+  },
+  {
+    "name": "Físico Aprimorado",
+    "source": "Livro base",
+    "page": 126,
+    "circle": 2,
+    "element": "Sangue"
+  },
+  {
+    "name": "Forma Monstruosa",
+    "source": "Livro base",
+    "page": 126,
+    "circle": 2,
+    "element": "Sangue",
+    "catalogCircle": 3,
+    "note": "A descrição na p. 126 diz Sangue 2; a lista da p. 116 classifica no 3º círculo. Conservado o 3º círculo já utilizado pelo site."
+  },
+  {
+    "name": "Fortalecimento Sensorial",
+    "source": "Livro base",
+    "page": 126,
+    "circle": 1,
+    "element": "Sangue"
+  },
+  {
+    "name": "Hemofagia",
+    "source": "Livro base",
+    "page": 127,
+    "circle": 2,
+    "element": "Sangue"
+  },
+  {
+    "name": "Invólucro de Carne",
+    "source": "Livro base",
+    "page": 127,
+    "circle": 4,
+    "element": "Sangue"
+  },
+  {
+    "name": "Lâmina do Medo",
+    "source": "Livro base",
+    "page": 127,
+    "circle": 4,
+    "element": "Medo"
+  },
+  {
+    "name": "Ligação Telepática",
+    "source": "Livro base",
+    "page": 127,
+    "circle": 2,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Localização",
+    "source": "Livro base",
+    "page": 128,
+    "circle": 2,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Luz",
+    "source": "Livro base",
+    "page": 128,
+    "circle": 1,
+    "element": "Energia"
+  },
+  {
+    "name": "Medo Tangível",
+    "source": "Livro base",
+    "page": 128,
+    "circle": 4,
+    "element": "Medo"
+  },
+  {
+    "name": "Mergulho Mental",
+    "source": "Livro base",
+    "page": 128,
+    "circle": 3,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Miasma",
+    "source": "Livro base",
+    "page": 129,
+    "circle": 2,
+    "element": "Morte"
+  },
+  {
+    "name": "Neutralizar Ritual",
+    "source": "Livro base",
+    "page": 129,
+    "circle": 3,
+    "element": "Medo"
+  },
+  {
+    "name": "Nuvem de Cinzas",
+    "source": "Livro base",
+    "page": 129,
+    "circle": 1,
+    "element": "Morte"
+  },
+  {
+    "name": "Ódio Incontrolável",
+    "source": "Livro base",
+    "page": 129,
+    "circle": 1,
+    "element": "Sangue"
+  },
+  {
+    "name": "Ouvir os Sussurros",
+    "source": "Livro base",
+    "page": 130,
+    "circle": 1,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Paradoxo",
+    "source": "Livro base",
+    "page": 130,
+    "circle": 2,
+    "element": "Morte"
+  },
+  {
+    "name": "Perturbação",
+    "source": "Livro base",
+    "page": 130,
+    "circle": 1,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Poeira da Podridão",
+    "source": "Livro base",
+    "page": 131,
+    "circle": 3,
+    "element": "Morte"
+  },
+  {
+    "name": "Polarização Caótica",
+    "source": "Livro base",
+    "page": 131,
+    "circle": 1,
+    "element": "Energia"
+  },
+  {
+    "name": "Possessão",
+    "source": "Livro base",
+    "page": 131,
+    "circle": 4,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Presença do Medo",
+    "source": "Livro base",
+    "page": 132,
+    "circle": 4,
+    "element": "Medo"
+  },
+  {
+    "name": "Proteção contra Rituais",
+    "source": "Livro base",
+    "page": 132,
+    "circle": 2,
+    "element": "Medo"
+  },
+  {
+    "name": "Purgatório",
+    "source": "Livro base",
+    "page": 132,
+    "circle": 3,
+    "element": "Sangue"
+  },
+  {
+    "name": "Rejeitar Névoa",
+    "source": "Livro base",
+    "page": 132,
+    "circle": 2,
+    "element": "Medo"
+  },
+  {
+    "name": "Salto Fantasma",
+    "source": "Livro base",
+    "page": 132,
+    "circle": 3,
+    "element": "Energia"
+  },
+  {
+    "name": "Sopro do Caos",
+    "source": "Livro base",
+    "page": 133,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "Tela de Ruído",
+    "source": "Livro base",
+    "page": 133,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "Teletransporte",
+    "source": "Livro base",
+    "page": 133,
+    "circle": 4,
+    "element": "Energia"
+  },
+  {
+    "name": "Tentáculos de Lodo",
+    "source": "Livro base",
+    "page": 134,
+    "circle": 3,
+    "element": "Morte"
+  },
+  {
+    "name": "Terceiro olho",
+    "source": "Livro base",
+    "page": 134,
+    "circle": 1,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Transfigurar Água",
+    "source": "Livro base",
+    "page": 134,
+    "circle": 3,
+    "element": "Energia"
+  },
+  {
+    "name": "Transfigurar Terra",
+    "source": "Livro base",
+    "page": 134,
+    "circle": 3,
+    "element": "Energia"
+  },
+  {
+    "name": "Transfusão Vital",
+    "source": "Livro base",
+    "page": 135,
+    "circle": 2,
+    "element": "Sangue"
+  },
+  {
+    "name": "Velocidade Mortal",
+    "source": "Livro base",
+    "page": 135,
+    "circle": 2,
+    "element": "Morte"
+  },
+  {
+    "name": "Vínculo de Sangue",
+    "source": "Livro base",
+    "page": 135,
+    "circle": 4,
+    "element": "Sangue"
+  },
+  {
+    "name": "Vidência",
+    "source": "Livro base",
+    "page": 135,
+    "circle": 3,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Visão da Verdade",
+    "source": "Livro base",
+    "page": 135,
+    "circle": 4,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Vomitar Pestes",
+    "source": "Livro base",
+    "page": 136,
+    "circle": 3,
+    "element": "Sangue"
+  },
+  {
+    "name": "Zerar Entropia",
+    "source": "Livro base",
+    "page": 136,
+    "circle": 3,
+    "element": "Morte"
+  },
+  {
+    "name": "ESFOLAR",
+    "source": "Sobrevivendo ao Horror",
+    "page": 48,
+    "circle": 1,
+    "element": "Sangue"
+  },
+  {
+    "name": "SEDE DE ADRENALINA",
+    "source": "Sobrevivendo ao Horror",
+    "page": 49,
+    "circle": 2,
+    "element": "Sangue"
+  },
+  {
+    "name": "ODOR DA CAÇADA",
+    "source": "Sobrevivendo ao Horror",
+    "page": 49,
+    "circle": 3,
+    "element": "Sangue"
+  },
+  {
+    "name": "MARTÍRIO DE SANGUE",
+    "source": "Sobrevivendo ao Horror",
+    "page": 50,
+    "circle": 4,
+    "element": "Sangue"
+  },
+  {
+    "name": "APAGAR AS LUZES",
+    "source": "Sobrevivendo ao Horror",
+    "page": 50,
+    "circle": 1,
+    "element": "Morte"
+  },
+  {
+    "name": "LÍNGUA MORTA",
+    "source": "Sobrevivendo ao Horror",
+    "page": 51,
+    "circle": 2,
+    "element": "Morte"
+  },
+  {
+    "name": "FEDOR PÚTRIDO",
+    "source": "Sobrevivendo ao Horror",
+    "page": 52,
+    "circle": 3,
+    "element": "Morte"
+  },
+  {
+    "name": "SINGULARIDADE TEMPORAL",
+    "source": "Sobrevivendo ao Horror",
+    "page": 52,
+    "circle": 4,
+    "element": "Morte"
+  },
+  {
+    "name": "DESFAZER SINAPSES",
+    "source": "Sobrevivendo ao Horror",
+    "page": 53,
+    "circle": 1,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "AURORA DA VERDADE",
+    "source": "Sobrevivendo ao Horror",
+    "page": 53,
+    "circle": 2,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "RELEMBRAR FRAGMENTO",
+    "source": "Sobrevivendo ao Horror",
+    "page": 54,
+    "circle": 3,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "PRONUNCIAR SIGILO",
+    "source": "Sobrevivendo ao Horror",
+    "page": 54,
+    "circle": 4,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "OVERCLOCK",
+    "source": "Sobrevivendo ao Horror",
+    "page": 55,
+    "circle": 1,
+    "element": "Energia"
+  },
+  {
+    "name": "TREMELUZIR",
+    "source": "Sobrevivendo ao Horror",
+    "page": 55,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "MUTAR",
+    "source": "Sobrevivendo ao Horror",
+    "page": 56,
+    "circle": 3,
+    "element": "Energia"
+  },
+  {
+    "name": "MILAGRE IONIZANTE",
+    "source": "Sobrevivendo ao Horror",
+    "page": 56,
+    "circle": 3,
+    "element": "Energia"
+  },
+  {
+    "name": "Mapa Sanguíneo",
+    "source": "Arquivos Secretos #2",
+    "page": 65,
+    "circle": 2,
+    "element": "Sangue"
+  },
+  {
+    "name": "Labirinto Mental",
+    "source": "Arquivos Secretos #2",
+    "page": 66,
+    "circle": 2,
+    "element": "Conhecimento"
+  },
+  {
+    "name": "Capturar Momento",
+    "source": "Arquivos Secretos #2",
+    "page": 66,
+    "circle": 2,
+    "element": "Morte"
+  },
+  {
+    "name": "Rajada Caótica",
+    "source": "Arquivos Secretos #2",
+    "page": 67,
+    "circle": 2,
+    "element": "Energia"
+  },
+  {
+    "name": "Passagem de Conhecimento",
+    "source": "Arquivos Secretos #1",
+    "page": 48,
+    "circle": 2,
+    "element": "Sangue + Conhecimento"
+  },
+  {
+    "name": "Passagem de Conhecimento Expandido",
+    "source": "Arquivos Secretos #1",
+    "page": 50,
+    "circle": 4,
+    "element": "Sangue + Conhecimento"
+  }
+]

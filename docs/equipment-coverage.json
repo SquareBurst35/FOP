@@ -1,0 +1,1652 @@
+[
+  {
+    "index": 0,
+    "id": "livro-base-armas-faca",
+    "name": "Faca",
+    "kind": "held",
+    "variant": "knife",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8528
+  },
+  {
+    "index": 1,
+    "id": "livro-base-armas-martelo",
+    "name": "Martelo",
+    "kind": "held",
+    "variant": "hammer",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7405
+  },
+  {
+    "index": 2,
+    "id": "livro-base-armas-punhal",
+    "name": "Punhal",
+    "kind": "held",
+    "variant": "knife",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8528
+  },
+  {
+    "index": 3,
+    "id": "livro-base-armas-bastao",
+    "name": "Bastão",
+    "kind": "held",
+    "variant": "baton",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10507
+  },
+  {
+    "index": 4,
+    "id": "livro-base-armas-machete",
+    "name": "Machete",
+    "kind": "held",
+    "variant": "sword",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13207
+  },
+  {
+    "index": 5,
+    "id": "livro-base-armas-lanca",
+    "name": "Lança",
+    "kind": "held",
+    "variant": "spear",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 16391
+  },
+  {
+    "index": 6,
+    "id": "livro-base-armas-cajado",
+    "name": "Cajado",
+    "kind": "held",
+    "variant": "staff",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 19306
+  },
+  {
+    "index": 7,
+    "id": "livro-base-armas-arco",
+    "name": "Arco",
+    "kind": "held",
+    "variant": "bow",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12826
+  },
+  {
+    "index": 8,
+    "id": "livro-base-armas-besta",
+    "name": "Besta",
+    "kind": "held",
+    "variant": "crossbow",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 26412
+  },
+  {
+    "index": 9,
+    "id": "livro-base-armas-pistola",
+    "name": "Pistola",
+    "kind": "held",
+    "variant": "pistol",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9119
+  },
+  {
+    "index": 10,
+    "id": "livro-base-armas-revolver",
+    "name": "Revólver",
+    "kind": "held",
+    "variant": "revolver",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8784
+  },
+  {
+    "index": 11,
+    "id": "livro-base-armas-fuzil-de-caca",
+    "name": "Fuzil de caça",
+    "kind": "held",
+    "variant": "rifle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 28451
+  },
+  {
+    "index": 12,
+    "id": "livro-base-armas-machadinha",
+    "name": "Machadinha",
+    "kind": "held",
+    "variant": "axe",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12592
+  },
+  {
+    "index": 13,
+    "id": "livro-base-armas-nunchaku",
+    "name": "Nunchaku",
+    "kind": "held",
+    "variant": "nunchaku",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10837
+  },
+  {
+    "index": 14,
+    "id": "livro-base-armas-corrente",
+    "name": "Corrente",
+    "kind": "held",
+    "variant": "chain",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10977
+  },
+  {
+    "index": 15,
+    "id": "livro-base-armas-espada",
+    "name": "Espada",
+    "kind": "held",
+    "variant": "sword",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13207
+  },
+  {
+    "index": 16,
+    "id": "livro-base-armas-florete",
+    "name": "Florete",
+    "kind": "held",
+    "variant": "rapier",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 11444
+  },
+  {
+    "index": 17,
+    "id": "livro-base-armas-machado",
+    "name": "Machado",
+    "kind": "held",
+    "variant": "axe",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12592
+  },
+  {
+    "index": 18,
+    "id": "livro-base-armas-marreta",
+    "name": "Marreta",
+    "kind": "held",
+    "variant": "hammer",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7405
+  },
+  {
+    "index": 19,
+    "id": "livro-base-armas-acha",
+    "name": "Acha",
+    "kind": "held",
+    "variant": "axe",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12592
+  },
+  {
+    "index": 20,
+    "id": "livro-base-armas-gadanho",
+    "name": "Gadanho",
+    "kind": "held",
+    "variant": "scythe",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 15823
+  },
+  {
+    "index": 21,
+    "id": "livro-base-armas-katana",
+    "name": "Katana",
+    "kind": "held",
+    "variant": "sword",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13207
+  },
+  {
+    "index": 22,
+    "id": "livro-base-armas-montante",
+    "name": "Montante",
+    "kind": "held",
+    "variant": "sword",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13207
+  },
+  {
+    "index": 23,
+    "id": "livro-base-armas-moto-serra",
+    "name": "Moto-serra",
+    "kind": "held",
+    "variant": "chainsaw",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 18400
+  },
+  {
+    "index": 24,
+    "id": "livro-base-armas-arco-composto",
+    "name": "Arco composto",
+    "kind": "held",
+    "variant": "bow",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12826
+  },
+  {
+    "index": 25,
+    "id": "livro-base-armas-balestra",
+    "name": "Balestra",
+    "kind": "held",
+    "variant": "crossbow",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 26412
+  },
+  {
+    "index": 26,
+    "id": "livro-base-armas-submetralhadora",
+    "name": "Submetralhadora",
+    "kind": "held",
+    "variant": "rifle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 28451
+  },
+  {
+    "index": 27,
+    "id": "livro-base-armas-espingarda",
+    "name": "Espingarda",
+    "kind": "held",
+    "variant": "shotgun",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 23951
+  },
+  {
+    "index": 28,
+    "id": "livro-base-armas-fuzil-de-assalto",
+    "name": "Fuzil de assalto",
+    "kind": "held",
+    "variant": "rifle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 28451
+  },
+  {
+    "index": 29,
+    "id": "livro-base-armas-fuzil-de-precisao",
+    "name": "Fuzil de precisão",
+    "kind": "held",
+    "variant": "sniper",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 28926
+  },
+  {
+    "index": 30,
+    "id": "livro-base-armas-bazuca",
+    "name": "Bazuca",
+    "kind": "held",
+    "variant": "launcher",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 29082
+  },
+  {
+    "index": 31,
+    "id": "livro-base-armas-lanca-chamas",
+    "name": "Lança-chamas",
+    "kind": "held",
+    "variant": "flamethrower",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 25726
+  },
+  {
+    "index": 32,
+    "id": "livro-base-armas-metralhadora",
+    "name": "Metralhadora",
+    "kind": "held",
+    "variant": "rifle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 28451
+  },
+  {
+    "index": 33,
+    "id": "sobrevivendo-ao-horror-armas-pregador-pneumatico",
+    "name": "Pregador pneumático",
+    "kind": "held",
+    "variant": "pistol",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9119
+  },
+  {
+    "index": 34,
+    "id": "sobrevivendo-ao-horror-armas-estilingue",
+    "name": "Estilingue",
+    "kind": "held",
+    "variant": "slingshot",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 11870
+  },
+  {
+    "index": 35,
+    "id": "sobrevivendo-ao-horror-armas-revolver-compacto",
+    "name": "Revólver compacto",
+    "kind": "held",
+    "variant": "revolver",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8784
+  },
+  {
+    "index": 36,
+    "id": "sobrevivendo-ao-horror-armas-baioneta",
+    "name": "Baioneta",
+    "kind": "held",
+    "variant": "knife",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8528
+  },
+  {
+    "index": 37,
+    "id": "sobrevivendo-ao-horror-armas-faca-tatica",
+    "name": "Faca tática",
+    "kind": "held",
+    "variant": "knife",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8528
+  },
+  {
+    "index": 38,
+    "id": "sobrevivendo-ao-horror-armas-gancho-de-carne",
+    "name": "Gancho de carne",
+    "kind": "held",
+    "variant": "hook",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8770
+  },
+  {
+    "index": 39,
+    "id": "sobrevivendo-ao-horror-armas-bastao-policial",
+    "name": "Bastão policial",
+    "kind": "held",
+    "variant": "baton",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10507
+  },
+  {
+    "index": 40,
+    "id": "sobrevivendo-ao-horror-armas-picareta",
+    "name": "Picareta",
+    "kind": "held",
+    "variant": "pickaxe",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 16650
+  },
+  {
+    "index": 41,
+    "id": "sobrevivendo-ao-horror-armas-shuriken",
+    "name": "Shuriken",
+    "kind": "held",
+    "variant": "shuriken",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8589
+  },
+  {
+    "index": 42,
+    "id": "sobrevivendo-ao-horror-armas-pistola-pesada",
+    "name": "Pistola pesada",
+    "kind": "held",
+    "variant": "pistol",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9119
+  },
+  {
+    "index": 43,
+    "id": "sobrevivendo-ao-horror-armas-espingarda-de-cano-duplo",
+    "name": "Espingarda de cano duplo",
+    "kind": "held",
+    "variant": "shotgun",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 23951
+  },
+  {
+    "index": 44,
+    "id": "livro-base-municoes-flechas",
+    "name": "Flechas",
+    "kind": "quiver",
+    "variant": "quiver",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 18738
+  },
+  {
+    "index": 45,
+    "id": "livro-base-municoes-balas-leves",
+    "name": "Balas leves",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 46,
+    "id": "livro-base-municoes-balas-pesadas",
+    "name": "Balas pesadas",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 47,
+    "id": "livro-base-municoes-cartuchos",
+    "name": "Cartuchos",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 48,
+    "id": "livro-base-municoes-foguete",
+    "name": "Foguete",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 49,
+    "id": "livro-base-municoes-combustivel",
+    "name": "Combustível",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 50,
+    "id": "sobrevivendo-ao-horror-municoes-balas-curtas",
+    "name": "Balas curtas",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 51,
+    "id": "livro-base-protecoes-protecao-leve",
+    "name": "Proteção leve",
+    "kind": "vest",
+    "variant": "light-armor",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 23289
+  },
+  {
+    "index": 52,
+    "id": "livro-base-protecoes-protecao-pesada",
+    "name": "Proteção pesada",
+    "kind": "heavyVest",
+    "variant": "heavy-armor",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 43552
+  },
+  {
+    "index": 53,
+    "id": "livro-base-acessorios-kit-de-pericia",
+    "name": "Kit de perícia",
+    "kind": "belt",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 54,
+    "id": "livro-base-acessorios-utensilio",
+    "name": "Utensílio",
+    "kind": "held",
+    "variant": "hand-case",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 17198
+  },
+  {
+    "index": 55,
+    "id": "livro-base-acessorios-vestimenta",
+    "name": "Vestimenta",
+    "kind": "garment",
+    "variant": "garment",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 43083
+  },
+  {
+    "index": 56,
+    "id": "livro-base-explosivos-granada-de-atordoamento",
+    "name": "Granada de atordoamento",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 57,
+    "id": "livro-base-explosivos-granada-de-fragmentacao",
+    "name": "Granada de fragmentação",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 58,
+    "id": "livro-base-explosivos-granada-de-fumaca",
+    "name": "Granada de fumaça",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 59,
+    "id": "livro-base-explosivos-granada-incendiaria",
+    "name": "Granada incendiária",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 60,
+    "id": "livro-base-explosivos-mina-antipessoal",
+    "name": "Mina antipessoal",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 61,
+    "id": "livro-base-operacionais-algemas",
+    "name": "Algemas",
+    "kind": "belt",
+    "variant": "belt-cuffs",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7473
+  },
+  {
+    "index": 62,
+    "id": "livro-base-operacionais-bandoleira",
+    "name": "Bandoleira",
+    "kind": "sling",
+    "variant": "sling",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7798
+  },
+  {
+    "index": 63,
+    "id": "livro-base-operacionais-cicatrizante",
+    "name": "Cicatrizante",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 64,
+    "id": "livro-base-operacionais-lanterna",
+    "name": "Lanterna",
+    "kind": "held",
+    "variant": "flashlight",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7095
+  },
+  {
+    "index": 65,
+    "id": "livro-base-operacionais-oculos-de-visao-termica",
+    "name": "Óculos de visão térmica",
+    "kind": "glasses",
+    "variant": "night-goggles",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 6487
+  },
+  {
+    "index": 66,
+    "id": "livro-base-operacionais-pistola-de-dardos",
+    "name": "Pistola de dardos",
+    "kind": "held",
+    "variant": "pistol",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9119
+  },
+  {
+    "index": 67,
+    "id": "livro-base-operacionais-soqueira",
+    "name": "Soqueira",
+    "kind": "knuckles",
+    "variant": "knuckles",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5549
+  },
+  {
+    "index": 68,
+    "id": "livro-base-operacionais-spray-de-pimenta",
+    "name": "Spray de pimenta",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 69,
+    "id": "livro-base-operacionais-taser",
+    "name": "Taser",
+    "kind": "held",
+    "variant": "pistol",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9119
+  },
+  {
+    "index": 70,
+    "id": "sobrevivendo-ao-horror-acessorios-amuleto-sagrado",
+    "name": "Amuleto sagrado",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "index": 71,
+    "id": "sobrevivendo-ao-horror-acessorios-celular",
+    "name": "Celular",
+    "kind": "held",
+    "variant": "phone",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10565
+  },
+  {
+    "index": 72,
+    "id": "sobrevivendo-ao-horror-acessorios-chave-de-fenda-universal",
+    "name": "Chave de fenda universal",
+    "kind": "held",
+    "variant": "screwdriver",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7778
+  },
+  {
+    "index": 73,
+    "id": "sobrevivendo-ao-horror-acessorios-chaves",
+    "name": "Chaves",
+    "kind": "belt",
+    "variant": "belt-keys",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 3692
+  },
+  {
+    "index": 74,
+    "id": "sobrevivendo-ao-horror-acessorios-documentos-falsos",
+    "name": "Documentos falsos",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 75,
+    "id": "sobrevivendo-ao-horror-acessorios-manual-operacional",
+    "name": "Manual operacional",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 76,
+    "id": "sobrevivendo-ao-horror-acessorios-notebook",
+    "name": "Notebook",
+    "kind": "held",
+    "variant": "laptop",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 17897
+  },
+  {
+    "index": 77,
+    "id": "sobrevivendo-ao-horror-explosivos-dinamite",
+    "name": "Dinamite",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 78,
+    "id": "sobrevivendo-ao-horror-explosivos-explosivo-plastico",
+    "name": "Explosivo plástico",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 79,
+    "id": "sobrevivendo-ao-horror-explosivos-galao-vermelho",
+    "name": "Galão vermelho",
+    "kind": "held",
+    "variant": "red-can",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 18322
+  },
+  {
+    "index": 80,
+    "id": "sobrevivendo-ao-horror-explosivos-granada-de-gas-sonifero",
+    "name": "Granada de gás sonífero",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 81,
+    "id": "sobrevivendo-ao-horror-explosivos-granada-de-pem",
+    "name": "Granada de PEM",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 82,
+    "id": "sobrevivendo-ao-horror-operacionais-alarme-de-movimento",
+    "name": "Alarme de movimento",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 83,
+    "id": "sobrevivendo-ao-horror-operacionais-alimento-energetico",
+    "name": "Alimento energético",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 84,
+    "id": "sobrevivendo-ao-horror-operacionais-aplicador-de-medicamentos",
+    "name": "Aplicador de medicamentos",
+    "kind": "wrist",
+    "variant": "wrist-device",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 4862
+  },
+  {
+    "index": 85,
+    "id": "sobrevivendo-ao-horror-operacionais-bracadeira-reforcada",
+    "name": "Braçadeira reforçada",
+    "kind": "wrist",
+    "variant": "bracer",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9926
+  },
+  {
+    "index": 86,
+    "id": "sobrevivendo-ao-horror-operacionais-cao-adestrado",
+    "name": "Cão adestrado",
+    "kind": "companion",
+    "variant": "dog",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 30323
+  },
+  {
+    "index": 87,
+    "id": "sobrevivendo-ao-horror-operacionais-coldre-saque-rapido",
+    "name": "Coldre saque rápido",
+    "kind": "belt",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 88,
+    "id": "sobrevivendo-ao-horror-operacionais-equipamento-de-escuta",
+    "name": "Equipamento de escuta",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 89,
+    "id": "sobrevivendo-ao-horror-operacionais-estrepes",
+    "name": "Estrepes",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 90,
+    "id": "sobrevivendo-ao-horror-operacionais-faixa-de-pregos",
+    "name": "Faixa de pregos",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 91,
+    "id": "sobrevivendo-ao-horror-operacionais-isqueiro",
+    "name": "Isqueiro",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 92,
+    "id": "sobrevivendo-ao-horror-operacionais-oculos-de-visao-noturna",
+    "name": "Óculos de visão noturna",
+    "kind": "glasses",
+    "variant": "night-goggles",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 6487
+  },
+  {
+    "index": 93,
+    "id": "sobrevivendo-ao-horror-operacionais-oculos-escuros",
+    "name": "Óculos escuros",
+    "kind": "glasses",
+    "variant": "sunglasses",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5949
+  },
+  {
+    "index": 94,
+    "id": "sobrevivendo-ao-horror-operacionais-pa",
+    "name": "Pá",
+    "kind": "held",
+    "variant": "shovel",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 19787
+  },
+  {
+    "index": 95,
+    "id": "sobrevivendo-ao-horror-operacionais-paraquedas",
+    "name": "Paraquedas",
+    "kind": "backpack",
+    "variant": "backpack",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13739
+  },
+  {
+    "index": 96,
+    "id": "sobrevivendo-ao-horror-operacionais-traje-de-mergulho",
+    "name": "Traje de mergulho",
+    "kind": "suit",
+    "variant": "diving-suit",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 94959
+  },
+  {
+    "index": 97,
+    "id": "sobrevivendo-ao-horror-operacionais-traje-espacial",
+    "name": "Traje espacial",
+    "kind": "suit",
+    "variant": "space-suit",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 97401
+  },
+  {
+    "index": 98,
+    "id": "sobrevivendo-ao-horror-medicamentos-antibiotico",
+    "name": "Antibiótico",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 99,
+    "id": "sobrevivendo-ao-horror-medicamentos-antidoto",
+    "name": "Antídoto",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 100,
+    "id": "sobrevivendo-ao-horror-medicamentos-antiemetico",
+    "name": "Antiemético",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 101,
+    "id": "sobrevivendo-ao-horror-medicamentos-antihistaminico",
+    "name": "Antihistamínico",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 102,
+    "id": "sobrevivendo-ao-horror-medicamentos-anti-inflamatorio",
+    "name": "Anti-inflamatório",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 103,
+    "id": "sobrevivendo-ao-horror-medicamentos-antitermico",
+    "name": "Antitérmico",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 104,
+    "id": "sobrevivendo-ao-horror-medicamentos-broncodilatador",
+    "name": "Broncodilatador",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 105,
+    "id": "sobrevivendo-ao-horror-medicamentos-coagulante",
+    "name": "Coagulante",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 106,
+    "id": "livro-base-paranormais-selo-paranormal-de-1-circulo",
+    "name": "Selo paranormal de 1º círculo",
+    "kind": "held",
+    "variant": "scroll",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7006
+  },
+  {
+    "index": 107,
+    "id": "livro-base-paranormais-selo-paranormal-de-2-circulo",
+    "name": "Selo paranormal de 2º círculo",
+    "kind": "held",
+    "variant": "scroll",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7006
+  },
+  {
+    "index": 108,
+    "id": "livro-base-paranormais-selo-paranormal-de-3-circulo",
+    "name": "Selo paranormal de 3º círculo",
+    "kind": "held",
+    "variant": "scroll",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7006
+  },
+  {
+    "index": 109,
+    "id": "livro-base-paranormais-selo-paranormal-de-4-circulo",
+    "name": "Selo paranormal de 4º círculo",
+    "kind": "held",
+    "variant": "scroll",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7006
+  },
+  {
+    "index": 110,
+    "id": "livro-base-paranormais-coracao-pulsante",
+    "name": "Coração pulsante",
+    "kind": "necklace",
+    "variant": "heart-pendant",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "index": 111,
+    "id": "livro-base-paranormais-cranio-espiral",
+    "name": "Crânio espiral",
+    "kind": "held",
+    "variant": "skull-charm",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 11921
+  },
+  {
+    "index": 112,
+    "id": "livro-base-paranormais-frasco-de-lodo",
+    "name": "Frasco de lodo",
+    "kind": "held",
+    "variant": "bottle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10013
+  },
+  {
+    "index": 113,
+    "id": "livro-base-paranormais-pergaminho-da-pertinacia",
+    "name": "Pergaminho da pertinácia",
+    "kind": "held",
+    "variant": "scroll",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7006
+  },
+  {
+    "index": 114,
+    "id": "sobrevivendo-ao-horror-paranormais-catalisador-ampliador",
+    "name": "Catalisador ampliador",
+    "kind": "held",
+    "variant": "arcane-device",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7837
+  },
+  {
+    "index": 115,
+    "id": "sobrevivendo-ao-horror-paranormais-catalisador-perturbador",
+    "name": "Catalisador perturbador",
+    "kind": "held",
+    "variant": "arcane-device",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7837
+  },
+  {
+    "index": 116,
+    "id": "sobrevivendo-ao-horror-paranormais-catalisador-potencializador",
+    "name": "Catalisador potencializador",
+    "kind": "held",
+    "variant": "arcane-device",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7837
+  },
+  {
+    "index": 117,
+    "id": "sobrevivendo-ao-horror-paranormais-catalisador-prolongador",
+    "name": "Catalisador prolongador",
+    "kind": "necklace",
+    "variant": "crystal-pendant",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "index": 118,
+    "id": "sobrevivendo-ao-horror-paranormais-ligacao-direta-infernal",
+    "name": "Ligação direta infernal",
+    "kind": "vehicle",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 119,
+    "id": "sobrevivendo-ao-horror-paranormais-medidor-de-condicao-vertebral",
+    "name": "Medidor de condição vertebral",
+    "kind": "harness",
+    "variant": "harness",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13901
+  },
+  {
+    "index": 120,
+    "id": "sobrevivendo-ao-horror-paranormais-pe-de-morto",
+    "name": "Pé de morto",
+    "kind": "boots",
+    "variant": "dead-boots",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13643
+  },
+  {
+    "index": 121,
+    "id": "sobrevivendo-ao-horror-paranormais-pendrive-selado",
+    "name": "Pendrive selado",
+    "kind": "held",
+    "variant": "usb-drive",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 15774
+  },
+  {
+    "index": 122,
+    "id": "sobrevivendo-ao-horror-paranormais-valete-da-salvacao",
+    "name": "Valete da salvação",
+    "kind": "held",
+    "variant": "card",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9936
+  },
+  {
+    "index": 123,
+    "id": "sobrevivendo-ao-horror-modificacoes-carregador-rapido",
+    "name": "Carregador rápido",
+    "kind": "adjustment",
+    "variant": "adjustment",
+    "visibility": "parent",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 124,
+    "id": "sobrevivendo-ao-horror-modificacoes-bateria-potente",
+    "name": "Bateria potente",
+    "kind": "adjustment",
+    "variant": "adjustment",
+    "visibility": "parent",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 125,
+    "id": "sobrevivendo-ao-horror-paranormais-ampulheta-do-tempo-sofrido",
+    "name": "Ampulheta do Tempo Sofrido",
+    "kind": "held",
+    "variant": "hourglass",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 11705
+  },
+  {
+    "index": 126,
+    "id": "sobrevivendo-ao-horror-paranormais-arreio-neural",
+    "name": "Arreio Neural",
+    "kind": "headband",
+    "variant": "neural-headband",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 6535
+  },
+  {
+    "index": 127,
+    "id": "sobrevivendo-ao-horror-paranormais-camera-obscura",
+    "name": "Câmera Obscura",
+    "kind": "held",
+    "variant": "camera",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12846
+  },
+  {
+    "index": 128,
+    "id": "sobrevivendo-ao-horror-paranormais-centrifugador-existencial",
+    "name": "Centrifugador Existencial",
+    "kind": "held",
+    "variant": "hand-case",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 17198
+  },
+  {
+    "index": 129,
+    "id": "sobrevivendo-ao-horror-paranormais-conector-de-membros",
+    "name": "Conector de Membros",
+    "kind": "wrist",
+    "variant": "link-bracer",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 4887
+  },
+  {
+    "index": 130,
+    "id": "sobrevivendo-ao-horror-paranormais-dose-d-a-praga",
+    "name": "Dose d’A Praga",
+    "kind": "held",
+    "variant": "bottle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10013
+  },
+  {
+    "index": 131,
+    "id": "sobrevivendo-ao-horror-paranormais-enxame-fantasmagorico",
+    "name": "Enxame Fantasmagórico",
+    "kind": "cape",
+    "variant": "ghost-cape",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 83252
+  },
+  {
+    "index": 132,
+    "id": "sobrevivendo-ao-horror-paranormais-espelho-refletor",
+    "name": "Espelho Refletor",
+    "kind": "held",
+    "variant": "mirror",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 11205
+  },
+  {
+    "index": 133,
+    "id": "sobrevivendo-ao-horror-paranormais-fuzil-alheio",
+    "name": "Fuzil Alheio",
+    "kind": "held",
+    "variant": "rifle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 28451
+  },
+  {
+    "index": 134,
+    "id": "sobrevivendo-ao-horror-paranormais-injecao-de-lodo",
+    "name": "Injeção de Lodo",
+    "kind": "held",
+    "variant": "injector",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9220
+  },
+  {
+    "index": 135,
+    "id": "sobrevivendo-ao-horror-paranormais-instantaneo-mortal",
+    "name": "Instantâneo Mortal",
+    "kind": "held",
+    "variant": "card",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9936
+  },
+  {
+    "index": 136,
+    "id": "sobrevivendo-ao-horror-paranormais-mandibula-agonizante",
+    "name": "Mandíbula Agonizante",
+    "kind": "necklace",
+    "variant": "jaw-pendant",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "index": 137,
+    "id": "sobrevivendo-ao-horror-paranormais-a-primeira-adaga",
+    "name": "A Primeira Adaga",
+    "kind": "held",
+    "variant": "knife",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8528
+  },
+  {
+    "index": 138,
+    "id": "sobrevivendo-ao-horror-paranormais-projetil-de-lodo-curto",
+    "name": "Projétil de Lodo, curto",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 139,
+    "id": "sobrevivendo-ao-horror-paranormais-projetil-de-lodo-longo",
+    "name": "Projétil de Lodo, longo",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 140,
+    "id": "sobrevivendo-ao-horror-paranormais-radio-chiador",
+    "name": "Rádio Chiador",
+    "kind": "held",
+    "variant": "radio",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 6784
+  },
+  {
+    "index": 141,
+    "id": "sobrevivendo-ao-horror-paranormais-repositorio-do-fracasso",
+    "name": "Repositório do Fracasso",
+    "kind": "belt",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 142,
+    "id": "sobrevivendo-ao-horror-paranormais-retalho-tenebroso",
+    "name": "Retalho Tenebroso",
+    "kind": "mask",
+    "variant": "cloth-mask",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 6882
+  },
+  {
+    "index": 143,
+    "id": "sobrevivendo-ao-horror-paranormais-tabula-do-saber-custoso",
+    "name": "Tábula do Saber Custoso",
+    "kind": "held",
+    "variant": "book",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13871
+  },
+  {
+    "index": 144,
+    "id": "arquivos-secretos-1-paranormais-agrupador-ritualistico",
+    "name": "Agrupador ritualístico",
+    "kind": "held",
+    "variant": "component-holder",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 17799
+  },
+  {
+    "index": 145,
+    "id": "arquivos-secretos-1-paranormais-amuleto-sinalizador-de-elemento",
+    "name": "Amuleto sinalizador de <Elemento>",
+    "kind": "necklace",
+    "variant": "element-pendant",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "index": 146,
+    "id": "arquivos-secretos-1-paranormais-rubra",
+    "name": "Rubra",
+    "kind": "held",
+    "variant": "bottle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10013
+  },
+  {
+    "index": 147,
+    "id": "arquivos-secretos-1-paranormais-arpao-do-pescador",
+    "name": "Arpão do pescador",
+    "kind": "held",
+    "variant": "spear",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 16391
+  },
+  {
+    "index": 148,
+    "id": "arquivos-secretos-1-paranormais-combustivel-de-sangue",
+    "name": "Combustível de sangue",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 149,
+    "id": "arquivos-secretos-1-paranormais-marreta-transtornada",
+    "name": "Marreta transtornada",
+    "kind": "held",
+    "variant": "hammer",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 7405
+  },
+  {
+    "index": 150,
+    "id": "arquivos-secretos-2-medicamentos-bandagem",
+    "name": "Bandagem",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 151,
+    "id": "arquivos-secretos-2-acessorios-bussola",
+    "name": "Bússola",
+    "kind": "held",
+    "variant": "compass",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10670
+  },
+  {
+    "index": 152,
+    "id": "arquivos-secretos-2-acessorios-caixa-de-ferramentas",
+    "name": "Caixa de ferramentas",
+    "kind": "held",
+    "variant": "hand-case",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 17198
+  },
+  {
+    "index": 153,
+    "id": "arquivos-secretos-2-medicamentos-dose-de-alcool",
+    "name": "Dose de Álcool",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 154,
+    "id": "arquivos-secretos-2-acessorios-incenso",
+    "name": "Incenso",
+    "kind": "stored",
+    "variant": "inventory",
+    "visibility": "inventory",
+    "placements": 0,
+    "changedPixels": 0
+  },
+  {
+    "index": 155,
+    "id": "arquivos-secretos-2-acessorios-kit-de-escalada",
+    "name": "Kit de escalada",
+    "kind": "belt",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 156,
+    "id": "arquivos-secretos-2-acessorios-pedra-de-amolar",
+    "name": "Pedra de amolar",
+    "kind": "pocket",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "index": 157,
+    "id": "arquivos-secretos-2-paranormais-machado-do-mutilador",
+    "name": "Machado do Mutilador",
+    "kind": "held",
+    "variant": "axe",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12592
+  },
+  {
+    "index": 158,
+    "id": "arquivos-secretos-2-paranormais-elmo-do-colosso",
+    "name": "Elmo do Colosso",
+    "kind": "helmet",
+    "variant": "colossus-helmet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 26330
+  },
+  {
+    "index": 159,
+    "id": "arquivos-secretos-2-paranormais-manoplas-do-colosso",
+    "name": "Manoplas do Colosso",
+    "kind": "gauntlets",
+    "variant": "colossus-gloves",
+    "visibility": "body",
+    "placements": 2,
+    "changedPixels": 16207
+  },
+  {
+    "index": 160,
+    "id": "arquivos-secretos-2-paranormais-punhal-x",
+    "name": "Punhal X",
+    "kind": "held",
+    "variant": "knife",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8528
+  },
+  {
+    "index": 161,
+    "id": "arquivos-secretos-2-paranormais-sniper-fantasma",
+    "name": "Sniper Fantasma",
+    "kind": "held",
+    "variant": "sniper",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 28926
+  },
+  {
+    "index": 162,
+    "id": "arquivos-secretos-2-paranormais-a-antena",
+    "name": "A Antena",
+    "kind": "held",
+    "variant": "staff",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 19306
+  },
+  {
+    "index": 163,
+    "id": "arquivos-secretos-2-paranormais-catalisador-sofisticado-e-horrorizado",
+    "name": "Catalisador sofisticado e horrorizado",
+    "kind": "collar",
+    "variant": "neck-collar",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 6125
+  },
+  {
+    "index": 164,
+    "id": "arquivos-secretos-2-paranormais-faca-predadora",
+    "name": "Faca Predadora",
+    "kind": "held",
+    "variant": "knife",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 8528
+  }
+]

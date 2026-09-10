@@ -1,6 +1,6 @@
-import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=21";
+import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=23";
 import { artForItem } from "./item-art.js?v=20";
-import { createPaperdoll, drawItemIcon } from "./paperdoll-renderer.js?v=21";
+import { createPaperdoll, drawItemIcon, paperdollVisibleStates } from "./paperdoll-renderer.js?v=23";
 
 const memoryPreferences = new Map();
 
@@ -236,12 +236,14 @@ function enhanceInventory() {
         option.disabled = Boolean(candidate && usedElsewhere >= candidate.quantity);
       }
     }
-    const visibleIds = new Set(placements.map(p => p.art.id));
+    const visibleStates = paperdollVisibleStates(placements);
+    const visibleIds = new Set(visibleStates.map(state => `${state.slot}:${state.id}`));
     const selected = Object.values(equipped).filter(Boolean);
-    const worn = selected.filter(entry => visibleIds.has(artForItem(entry)?.id) || (entry === equipped.back && /mochila/i.test(entry.name)));
+    const worn = Object.entries(equipped).filter(([slot,entry]) => entry && (visibleIds.has(`${slot}:${artForItem(entry)?.id}`) || (slot === 'back' && /mochila/i.test(entry.name)))).map(([,entry]) => entry);
     const stored = selected.length - worn.length;
     const label = worn.length ? `${worn.length} equipamento${worn.length === 1 ? "" : "s"} no visual` : "Sem equipamento";
-    const statusLabel = stored ? `${label} · ${stored} guardado${stored === 1 ? "" : "s"}` : label;
+    const bothHands = placements.some(p => p.art.attachment === 'hand' && !visibleStates.some(s => s.id === p.art.id && s.slot === p.slot));
+    const statusLabel = (stored ? `${label} · ${stored} guardado${stored === 1 ? "" : "s"}` : label) + (bothHands ? ' · pose com as duas mãos' : '');
     if (status.textContent !== statusLabel) status.textContent = statusLabel;
     sprite.setAttribute("aria-label", worn.length ? `Agente em pixel art com ${worn.map((entry) => entry.name).join(", ")}` : "Agente em pixel art sem equipamento");
     if (changedSlot) {
