@@ -1,0 +1,1900 @@
+[
+  {
+    "name": "Alterar Destino",
+    "source": "Livro base",
+    "pdfPage": 134,
+    "circle": 4,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Alterar Memória",
+    "source": "Livro base",
+    "pdfPage": 134,
+    "circle": 3,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 4,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Amaldiçoar Arma",
+    "source": "Livro base",
+    "pdfPage": 134,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Amaldiçoar Tecnologia",
+    "source": "Livro base",
+    "pdfPage": 134,
+    "circle": 1,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Âncora Temporal",
+    "source": "Livro base",
+    "pdfPage": 134,
+    "circle": 3,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 4,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Aprimorar Físico",
+    "source": "Livro base",
+    "pdfPage": 135,
+    "circle": 2,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Aprimorar Mente",
+    "source": "Livro base",
+    "pdfPage": 135,
+    "circle": 2,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Arma Atroz",
+    "source": "Livro base",
+    "pdfPage": 135,
+    "circle": 1,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Armadura de Sangue",
+    "source": "Livro base",
+    "pdfPage": 135,
+    "circle": 1,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Canalizar o Medo",
+    "source": "Livro base",
+    "pdfPage": 135,
+    "circle": 4,
+    "element": "Medo",
+    "variants": []
+  },
+  {
+    "name": "Capturar o Coração",
+    "source": "Livro base",
+    "pdfPage": 135,
+    "circle": 4,
+    "element": "Sangue",
+    "variants": []
+  },
+  {
+    "name": "Chamas do Caos",
+    "source": "Livro base",
+    "pdfPage": 136,
+    "circle": 2,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Cicatrização",
+    "source": "Livro base",
+    "pdfPage": 136,
+    "circle": 1,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Cinerária",
+    "source": "Livro base",
+    "pdfPage": 136,
+    "circle": 1,
+    "element": "Medo",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Coincidência Forçada",
+    "source": "Livro base",
+    "pdfPage": 136,
+    "circle": 1,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Compreensão Paranormal",
+    "source": "Livro base",
+    "pdfPage": 136,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Conhecendo o Medo",
+    "source": "Livro base",
+    "pdfPage": 137,
+    "circle": 4,
+    "element": "Medo",
+    "variants": []
+  },
+  {
+    "name": "Consumir Manancial",
+    "source": "Livro base",
+    "pdfPage": 137,
+    "circle": 1,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Contato Paranormal",
+    "source": "Livro base",
+    "pdfPage": 137,
+    "circle": 3,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 4,
+        "minCircle": 4,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Contenção Fantasmagórica",
+    "source": "Livro base",
+    "pdfPage": 137,
+    "circle": 2,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Controle Mental",
+    "source": "Livro base",
+    "pdfPage": 138,
+    "circle": 4,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 10,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Convocação Instantânea",
+    "source": "Livro base",
+    "pdfPage": 138,
+    "circle": 3,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 4,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Convocar o Algoz",
+    "source": "Livro base",
+    "pdfPage": 138,
+    "circle": 4,
+    "element": "Morte",
+    "variants": []
+  },
+  {
+    "name": "Corpo Adaptado",
+    "source": "Livro base",
+    "pdfPage": 138,
+    "circle": 1,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Decadência",
+    "source": "Livro base",
+    "pdfPage": 139,
+    "circle": 1,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Definhar",
+    "source": "Livro base",
+    "pdfPage": 139,
+    "circle": 1,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Deflagração de Energia",
+    "source": "Livro base",
+    "pdfPage": 139,
+    "circle": 4,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Desacelerar Impacto",
+    "source": "Livro base",
+    "pdfPage": 139,
+    "circle": 2,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Descarnar",
+    "source": "Livro base",
+    "pdfPage": 139,
+    "circle": 2,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Detecção de Ameaças",
+    "source": "Livro base",
+    "pdfPage": 140,
+    "circle": 2,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Dissipar Ritual",
+    "source": "Livro base",
+    "pdfPage": 140,
+    "circle": 3,
+    "element": "Medo",
+    "variants": []
+  },
+  {
+    "name": "Dissonância Acústica",
+    "source": "Livro base",
+    "pdfPage": 140,
+    "circle": 2,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 1,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Distorção Temporal",
+    "source": "Livro base",
+    "pdfPage": 140,
+    "circle": 4,
+    "element": "Morte",
+    "variants": []
+  },
+  {
+    "name": "Distorcer Aparência",
+    "source": "Livro base",
+    "pdfPage": 140,
+    "circle": 1,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Eco Espiral",
+    "source": "Livro base",
+    "pdfPage": 141,
+    "circle": 2,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Eletrocussão",
+    "source": "Livro base",
+    "pdfPage": 141,
+    "circle": 1,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Embaralhar",
+    "source": "Livro base",
+    "pdfPage": 141,
+    "circle": 1,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Enfeitiçar",
+    "source": "Livro base",
+    "pdfPage": 141,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Esconder dos Olhos",
+    "source": "Livro base",
+    "pdfPage": 142,
+    "circle": 2,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Espirais da Perdição",
+    "source": "Livro base",
+    "pdfPage": 142,
+    "circle": 1,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 8,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Ferver Sangue",
+    "source": "Livro base",
+    "pdfPage": 142,
+    "circle": 3,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 4,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Fim Inevitável",
+    "source": "Livro base",
+    "pdfPage": 142,
+    "circle": 4,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": true
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 10,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Flagelo de Sangue",
+    "source": "Livro base",
+    "pdfPage": 143,
+    "circle": 2,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Forma Monstruosa",
+    "source": "Livro base",
+    "pdfPage": 143,
+    "circle": 3,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Fortalecimento Sensorial",
+    "source": "Livro base",
+    "pdfPage": 143,
+    "circle": 1,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Hemofagia",
+    "source": "Livro base",
+    "pdfPage": 143,
+    "circle": 2,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Inexistir",
+    "source": "Livro base",
+    "pdfPage": 144,
+    "circle": 4,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 10,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Invadir Mente",
+    "source": "Livro base",
+    "pdfPage": 144,
+    "circle": 2,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Invólucro de Carne",
+    "source": "Livro base",
+    "pdfPage": 144,
+    "circle": 4,
+    "element": "Sangue",
+    "variants": []
+  },
+  {
+    "name": "Lâmina do Medo",
+    "source": "Livro base",
+    "pdfPage": 145,
+    "circle": 4,
+    "element": "Medo",
+    "variants": []
+  },
+  {
+    "name": "Localização",
+    "source": "Livro base",
+    "pdfPage": 145,
+    "circle": 2,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Luz",
+    "source": "Livro base",
+    "pdfPage": 145,
+    "circle": 1,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Medo Tangível",
+    "source": "Livro base",
+    "pdfPage": 145,
+    "circle": 4,
+    "element": "Medo",
+    "variants": []
+  },
+  {
+    "name": "Mergulho Mental",
+    "source": "Livro base",
+    "pdfPage": 146,
+    "circle": 3,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 4,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Miasma Entrópico",
+    "source": "Livro base",
+    "pdfPage": 146,
+    "circle": 2,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Nuvem de Cinzas",
+    "source": "Livro base",
+    "pdfPage": 146,
+    "circle": 1,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Ódio Incontrolável",
+    "source": "Livro base",
+    "pdfPage": 146,
+    "circle": 1,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Ouvir os Sussurros",
+    "source": "Livro base",
+    "pdfPage": 147,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Paradoxo",
+    "source": "Livro base",
+    "pdfPage": 147,
+    "circle": 2,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Perturbação",
+    "source": "Livro base",
+    "pdfPage": 147,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Poeira da Podridão",
+    "source": "Livro base",
+    "pdfPage": 148,
+    "circle": 3,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 4,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Polarização Caótica",
+    "source": "Livro base",
+    "pdfPage": 148,
+    "circle": 1,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Possessão",
+    "source": "Livro base",
+    "pdfPage": 148,
+    "circle": 4,
+    "element": "Conhecimento",
+    "variants": []
+  },
+  {
+    "name": "Presença do Medo",
+    "source": "Livro base",
+    "pdfPage": 149,
+    "circle": 4,
+    "element": "Medo",
+    "variants": []
+  },
+  {
+    "name": "Proteção contra Rituais",
+    "source": "Livro base",
+    "pdfPage": 149,
+    "circle": 2,
+    "element": "Medo",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 6,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Purgatório",
+    "source": "Livro base",
+    "pdfPage": 149,
+    "circle": 3,
+    "element": "Sangue",
+    "variants": []
+  },
+  {
+    "name": "Rejeitar Névoa",
+    "source": "Livro base",
+    "pdfPage": 149,
+    "circle": 2,
+    "element": "Medo",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Salto Fantasma",
+    "source": "Livro base",
+    "pdfPage": 149,
+    "circle": 3,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 4,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Sopro do Caos",
+    "source": "Livro base",
+    "pdfPage": 150,
+    "circle": 2,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Tecer Ilusão",
+    "source": "Livro base",
+    "pdfPage": 150,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Tela de Ruído",
+    "source": "Livro base",
+    "pdfPage": 151,
+    "circle": 2,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Teletransporte",
+    "source": "Livro base",
+    "pdfPage": 151,
+    "circle": 4,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Tentáculos de Lodo",
+    "source": "Livro base",
+    "pdfPage": 151,
+    "circle": 3,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Terceiro Olho",
+    "source": "Livro base",
+    "pdfPage": 151,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Transfigurar Água",
+    "source": "Livro base",
+    "pdfPage": 152,
+    "circle": 3,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Transfigurar Terra",
+    "source": "Livro base",
+    "pdfPage": 152,
+    "circle": 3,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Transfusão Vital",
+    "source": "Livro base",
+    "pdfPage": 152,
+    "circle": 2,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 3,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Velocidade Mortal",
+    "source": "Livro base",
+    "pdfPage": 152,
+    "circle": 2,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Vidência",
+    "source": "Livro base",
+    "pdfPage": 153,
+    "circle": 3,
+    "element": "Conhecimento",
+    "variants": []
+  },
+  {
+    "name": "Vínculo de Sangue",
+    "source": "Livro base",
+    "pdfPage": 153,
+    "circle": 4,
+    "element": "Sangue",
+    "variants": []
+  },
+  {
+    "name": "Vomitar Pestes",
+    "source": "Livro base",
+    "pdfPage": 153,
+    "circle": 3,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Zerar Entropia",
+    "source": "Livro base",
+    "pdfPage": 153,
+    "circle": 3,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 4,
+        "minCircle": 4,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 11,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Esfolar",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 49,
+    "circle": 1,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Sede De Adrenalina",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 50,
+    "circle": 2,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Odor Da Caçada",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 50,
+    "circle": 3,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 4,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Martírio De Sangue",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 51,
+    "circle": 4,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Apagar As Luzes",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 51,
+    "circle": 1,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Língua Morta",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 52,
+    "circle": 2,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Fedor Pútrido",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 53,
+    "circle": 3,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 4,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Singularidade Temporal",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 53,
+    "circle": 4,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 10,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Desfazer Sinapses",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 54,
+    "circle": 1,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Aurora Da Verdade",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 54,
+    "circle": 2,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Relembrar Fragmento",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 55,
+    "circle": 3,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 4,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Pronunciar Sigilo",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 55,
+    "circle": 4,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 5,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 10,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Overclock",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 56,
+    "circle": 1,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Tremeluzir",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 56,
+    "circle": 2,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Mutar",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 57,
+    "circle": 3,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 4,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 9,
+        "minCircle": 0,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Milagre Ionizante",
+    "source": "Sobrevivendo ao Horror",
+    "pdfPage": 57,
+    "circle": 3,
+    "element": "Energia",
+    "variants": []
+  },
+  {
+    "name": "Passagem De Conhecimento",
+    "source": "Arquivos Secretos #1",
+    "pdfPage": 48,
+    "circle": 2,
+    "element": "Sangue + Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 4,
+        "affinity": true
+      }
+    ]
+  },
+  {
+    "name": "Passagem De Conhecimento Expandido",
+    "source": "Arquivos Secretos #1",
+    "pdfPage": 50,
+    "circle": 4,
+    "element": "Sangue + Conhecimento",
+    "variants": []
+  },
+  {
+    "name": "Mapa Sanguíneo",
+    "source": "Arquivos Secretos #2",
+    "pdfPage": 65,
+    "circle": 2,
+    "element": "Sangue",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Capturar Momento",
+    "source": "Arquivos Secretos #2",
+    "pdfPage": 66,
+    "circle": 2,
+    "element": "Morte",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Labirinto Mental",
+    "source": "Arquivos Secretos #2",
+    "pdfPage": 66,
+    "circle": 2,
+    "element": "Conhecimento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
+  {
+    "name": "Rajada Caótica",
+    "source": "Arquivos Secretos #2",
+    "pdfPage": 67,
+    "circle": 2,
+    "element": "Energia",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 3,
+        "minCircle": 0,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 7,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  }
+]

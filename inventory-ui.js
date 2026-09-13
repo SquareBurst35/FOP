@@ -1,6 +1,6 @@
-import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=23";
-import { artForItem } from "./item-art.js?v=20";
-import { createPaperdoll, drawItemIcon, paperdollVisibleStates } from "./paperdoll-renderer.js?v=23";
+import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=24";
+import { artForItem } from "./item-art.js?v=24";
+import { createPaperdoll, drawItemIcon, paperdollVisibleStates } from "./paperdoll-renderer.js?v=24";
 
 const memoryPreferences = new Map();
 
@@ -215,7 +215,7 @@ function enhanceInventory() {
   function updateEquipment(changedSlot) {
     const equipped = resolveEquipment(entries, preferences);
     const placements = equipmentPlacements(equipped);
-    drawDoll(placements, { backpack: /mochila/i.test(equipped.back?.name ?? "") });
+    drawDoll(placements, { appearance:section.dataset.appearance, backpack: /mochila/i.test(equipped.back?.name ?? "") });
     for (const [slot, control] of controls) {
       const entry = equipped[slot];
       control.element.classList.toggle("has-item", Boolean(entry));
@@ -294,3 +294,12 @@ new MutationObserver(refreshInterface).observe(document.querySelector("#app"), {
   subtree: true,
 });
 refreshInterface();
+
+function enhanceAppearancePreview(){
+ const canvas=document.querySelector('#creator-appearance-preview'),select=document.querySelector('#aparencia');
+ if(!canvas||!select||canvas.dataset.bound)return;
+ canvas.dataset.bound='true';const draw=createPaperdoll(canvas),update=()=>draw([],{appearance:select.value});
+ select.addEventListener('change',update);update();
+}
+new MutationObserver(enhanceAppearancePreview).observe(document.querySelector('#app'),{childList:true,subtree:true});
+enhanceAppearancePreview();

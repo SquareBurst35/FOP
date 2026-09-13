@@ -1,0 +1,19 @@
+import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=24';
+import { ORIGINS } from './rules.js?v=24';
+import { parseUseCost, progressLevel } from './session.js?v=24';
+const names=new Map([...CORE_CLASS_ABILITIES,...allSelectableAbilities(ORIGINS)].map(a=>[a.id,a.name]));
+export function ritualCircleAccess(c){const n=progressLevel(c)*5;return c.classe==='Ocultista'?(n>=85?4:n>=55?3:n>=25?2:1):(n>=75?3:n>=45?2:1);}
+export function ritualCostReduction(c,r){const choices=c.habilidadeEscolhas??[],out=[];if(choices.some(x=>names.get(x.abilityId)==='Ritual Predileto'&&x.type==='ritual'&&x.valueId===r.id))out.push('Ritual Predileto −1');if(choices.some(x=>names.get(x.abilityId)==='Mestre em Elemento'&&x.type==='elemento'&&r.elements.includes(x.valueId)))out.push('Mestre em Elemento −1');return out;}
+export function ritualUseOptions(c,r){const base=Number(r.cost.match(/\d+/)?.[0])||0,discount=ritualCostReduction(c,r).length;return ['Normal','Discente','Verdadeiro'].map((label,i)=>{const v=i?r.useVariants?.variants.find(v=>v.name===label):{extra:0,minCircle:0},reasons=[];if(!v)reasons.push('Esta forma não existe na referência consultada.');if(v?.minCircle>ritualCircleAccess(c))reasons.push(`Requer ${v.minCircle}º círculo.`);if(v?.affinity&&!r.elements.includes(c.afinidadeElemental))reasons.push(`Requer afinidade com ${r.elements.join(' ou ')}.`);return{id:label.toLowerCase(),label,cost:v?Math.max(1,base+v.extra-discount):null,disabled:reasons.length>0,reason:reasons.join(' '),description:i?(v?`Aprimoramento ${label.toLowerCase()}: +${v.extra} PE ao custo-base.`:''):r.summary,requirements:v?[v.minCircle?`${v.minCircle}º círculo`:'',v.affinity?'Afinidade elemental':''].filter(Boolean).join(' · '):''};});}
+function attack(c,step,min){const n=progressLevel(c)*5,tier=n>=85?4:n>=55?3:n>=25?2:1,out=[];if(n<min)return out;for(let t=1;t<=tier;t++)for(let a=t;a>=0;a--)out.push({id:`attack-${t}-${a}`,label:`+${a*step} ataque · +${(t-a)*step} dano`,cost:t+1});return out;}
+export function abilityUseOptions(c,e){const n=progressLevel(c)*5;
+ if(e.name==='Ataque Especial')return attack(c,5,5);
+ if(e.name==='Especialista em Matar')return attack(c,4,15);
+ if(e.name==='Perito'){const t=n>=85?4:n>=55?3:n>=25?2:1;return Array.from({length:t},(_,i)=>({id:`perito-${i}`,label:`+1d${6+i*2}`,cost:i+2,description:`Perícias: ${(c.peritoPericias??[]).join(', ')||'configure as escolhas da habilidade'}.`}));}
+ if(e.name==='Eclético')return[{id:'treinado',label:'Treinado (+5)',cost:2},...(n>=40?[{id:'veterano',label:'Veterano (+10)',cost:4}]:[]),...(n>=75?[{id:'expert',label:'Expert (+15)',cost:6}]:[])];
+ if(['Técnica Secreta','Técnica Sublime'].includes(e.name)){const effects=[['Amplo',1],['Destruidor',1],...(n>=65?[['Letal',1],['Letal aprimorado',2],['Perfurante',1]]:[])],out=[];for(let mask=1;mask<2**effects.length;mask++){const es=effects.filter((_,i)=>mask&(1<<i));if(es.some(e=>e[0]==='Letal')&&es.some(e=>e[0]==='Letal aprimorado'))continue;out.push({id:`tecnica-${mask}`,label:es.map(e=>e[0]).join(' + '),cost:es.reduce((v,e)=>v+2*e[1],0)});}return out.sort((a,b)=>a.cost-b.cost);}
+ if(e.name==='Força Opressora')return[{id:'empurrar',label:'Empurrar',cost:1},{id:'derrubar',label:'Derrubar',cost:1},{id:'derrubar-atacar',label:'Derrubar e ataque adicional',cost:2,description:'O ataque adicional depende de vencer a manobra.'}];
+ if(e.name==='Estrategista')return Array.from({length:Math.max(0,Number(c.atributos?.intelecto)||0)},(_,i)=>({id:`aliados-${i+1}`,label:`${i+1} aliado(s)`,cost:i+1}));
+ const m=parseUseCost(e.cost);return m.kind==='variable'&&/\d+\s*(?:a|até)\s*\d+\s*PE/i.test(e.cost)?Array.from({length:m.max-m.min+1},(_,i)=>({id:`custo-${m.min+i}`,label:`Custo ${m.min+i}`,cost:m.min+i})):[];
+}
+export function resolveUseOption(c,e,t,id){const option=(t==='ritual'?ritualUseOptions(c,e):abilityUseOptions(c,e)).find(o=>o.id===id);return option&&!option.disabled&&Number.isFinite(option.cost)?option:null;}

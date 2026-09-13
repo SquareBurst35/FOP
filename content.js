@@ -1,3 +1,4 @@
+import { ritualVariantData } from "./ritual-variants.js?v=24";
 export const PATENTS = [
   "Recruta",
   "Operador",
@@ -542,17 +543,16 @@ export const ORIGIN_BACKGROUNDS = {
 };
 
 const RITUAL_COSTS = { 1: 1, 2: 3, 3: 6, 4: 10 };
-const ritual = (name, element, circle, summary, source = "Livro base", mechanics = {}) => ({
-  id: slug(`ritual-${source}-${Array.isArray(element) ? element.join("-") : element}-${circle}-${name}`),
-  name,
-  element: Array.isArray(element) ? element[0] : element,
-  elements: Array.isArray(element) ? element : [element],
-  circle,
-  cost: `${RITUAL_COSTS[circle]} PE/PD`,
-  summary,
-  source,
-  ...mechanics,
-});
+const ritual = (name, element, circle, summary, source = "Livro base", mechanics = {}) => {
+  const useVariants=ritualVariantData(name,source), currentCircle=useVariants?.circle??circle, currentName=useVariants?.name??name;
+  return {
+    id: slug(`ritual-${source}-${Array.isArray(element)?element.join("-"):element}-${circle}-${name}`),
+    name:currentName, element:Array.isArray(element)?element[0]:element, elements:Array.isArray(element)?element:[element],
+    circle:currentCircle,cost:`${RITUAL_COSTS[currentCircle]} PE/PD`,summary,source,...mechanics,
+    aliases:[...new Set([...(mechanics.aliases??[]),...(currentName!==name?[name]:[])])],useVariants,
+    ...(useVariants?.page?{page:String(useVariants.page)}:{}),
+  };
+};
 
 export const RITUALS = [
   // 1º círculo
@@ -676,6 +676,11 @@ export const RITUALS = [
   ritual("Rajada Caótica", "Energia", 2, "Projeta uma descarga de Energia contra um alvo; Reflexos reduz o dano à metade.", "Arquivos Secretos #2", { page: "67", execution: "Padrão", range: "Médio", target: "1 ser", duration: "Instantânea", resistance: "Reflexos reduz à metade", enhancements: ["Discente (+3 PE): aumenta os dados de dano."] }),
   ritual("Passagem de Conhecimento", ["Sangue", "Conhecimento"], 2, "Transfere a consciência do conjurador para outra pessoa ou troca as consciências entre os dois corpos. Cada participante mantém sua ficha, mas usa os atributos físicos do corpo ocupado.", "Arquivos Secretos #1", { page: "48", execution: "Completa", range: "Toque", target: "1 pessoa", duration: "Cena", resistance: "Vontade evita", details: ["Na sobreposição, o corpo do conjurador fica inconsciente e o alvo pode repetir a resistência para recuperar o controle.", "Na troca completa, cada consciência permanece no outro corpo até o efeito terminar ou o ritual desfazer a troca."], enhancements: ["Discente (+3 PE): alcance curto, duração de 1 dia e menos tentativas de recuperar o controle.", "Verdadeiro (+7 PE): alcance médio e duração permanente; exige 4º círculo e afinidade."] }),
   ritual("Passagem de Conhecimento Expandido", ["Sangue", "Conhecimento"], 4, "Realiza uma troca permanente de consciências entre dois grupos, sempre com quantidade par de participantes. Os envolvidos passam a usar atributos e habilidades dos novos corpos.", "Arquivos Secretos #1", { page: "50", execution: "1 dia", range: "Curto", target: "2 a 10 pessoas, em número par", duration: "Permanente", resistance: "Não indicada", requirement: "Conhecer Passagem de Conhecimento", details: ["Os participantes são divididos em dois grupos e cada integrante do grupo principal é ligado a alguém do outro.", "Para recuperar os corpos originais, o ritual deve ser realizado novamente com os envolvidos presentes."] }),
+  // Adições conferidas no livro base v1.3.
+  ritual("Flagelo de Sangue", "Sangue", 2, "Cria uma ligação paranormal com um alvo marcado."),
+  ritual("Inexistir", "Conhecimento", 4, "Manifesta Conhecimento contra um alvo, causando dano paranormal elevado."),
+  ritual("Invadir Mente", "Conhecimento", 2, "Permite comunicação telepática ou um efeito mental contra um alvo."),
+
 ];
 
 export const ABILITY_CATEGORIES = ["Sobrevivente", "Combatente", "Especialista", "Ocultista", "Gerais", "Origens", "Poderes Paranormais"];

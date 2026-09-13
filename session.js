@@ -177,6 +177,7 @@ export function useAbility(character, use) {
     id: String(use.id),
     name: String(use.name),
     type: String(use.type ?? "habilidade"),
+    variant: String(use.variant ?? ""),
     cost,
     resource: resourceLabel,
     currentKey,

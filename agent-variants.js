@@ -1,7 +1,7 @@
 // Region replacement from complete, equipped agent sprites. Catalog item art is
 // never sampled by this compositor. The original head, body and outfits share a frame.
-import { REGIONS } from './paperdoll-rig.js?v=21';
-import { AGENT_POSES } from './agent-poses.js?v=23';
+import { REGIONS } from './paperdoll-rig.js?v=24';
+import { AGENT_POSES } from './agent-poses.js?v=24';
 export const VARIANT_ROOT='assets/agent-variants/';
 export const variantPath=key=>`${VARIANT_ROOT}${key}.png`;
 const rect=(x,y,w,h)=>[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
@@ -29,7 +29,8 @@ export function clipRegion(ctx,points,draw){ctx.save();path(ctx,points);ctx.clip
 function clipParts(ctx,parts,draw){ctx.save();ctx.beginPath();for(const points of parts){points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();}ctx.clip();draw();ctx.restore();}
 export function replaceVariantRegion(ctx,picture,points){clipRegion(ctx,points,()=>{ctx.clearRect(0,0,420,600);ctx.drawImage(picture,0,0,420,600);});}
 function surface(ctx){const c=typeof OffscreenCanvas!=='undefined'?new OffscreenCanvas(420,600):typeof document!=='undefined'?Object.assign(document.createElement('canvas'),{width:420,height:600}):new ctx.canvas.constructor(420,600);c.getContext('2d').imageSmoothingEnabled=false;return c;}
-function baseRegion(ctx,base,points){clipRegion(ctx,points,()=>ctx.drawImage(base,180,0,420,600,0,0,420,600));}
+function drawBase(ctx,base){ctx.drawImage(base,base.width===420?0:180,0,420,600,0,0,420,600);}
+function baseRegion(ctx,base,points){clipRegion(ctx,points,()=>drawBase(ctx,base));}
 const posedCache=new WeakMap();
 function equippedPose(ctx,picture,pose,states,flipped){
   const suit=states.find(s=>s.region==='body'),armor=states.find(s=>s.key==='heavy-armor'),garment=states.find(s=>s.region==='garment');
@@ -42,7 +43,7 @@ function equippedPose(ctx,picture,pose,states,flipped){
   // Palette changes on the posed arms preserve the generated fingers and grip.
   // They are restricted to sleeves/gloves; held-object pixels are not recolored.
   if(pixels?.data){
-    const data=pixels.data,palette=suit?(suit.key==='space-suit'?[207,202,175]:[34,44,47]):armor?[70,74,63]:garment?[51,69,82]:null;
+    const data=pixels.data,palette=suit?(suit.key==='space-suit'?[207,202,175]:suit.key==='hazmat-suit'?[217,166,34]:[34,44,47]):armor?[70,74,63]:garment?[51,69,82]:null;
     const inside=(x,y,[cx,cy,w,h])=>x>=cx-w/2&&x<cx+w/2&&y>=cy-h/2&&y<cy+h/2;
     for(let y=250;y<391;y++)for(let x=50;x<340;x++){
       const i=(y*420+x)*4;if(!data[i+3])continue;
@@ -90,7 +91,7 @@ export function visibleAgentStates(states){
   const active=two?states.filter(s=>s.region!=='pose'||s===two):states;
   return active.filter(s=>s.region!=='adjustment'||active.some(owner=>adjustmentOwner(s,owner)));
 }
-export function paintAgentRegions(ctx,images,states,{base,backpack=false}={}){
+export function paintAgentRegions(ctx,images,states,{base,backpack=false,appearance='masculino'}={}){
   ctx.clearRect(0,0,420,600);ctx.imageSmoothingEnabled=false;if(!base)return;
   // Replacement clears affect only the body. Backpacks/cloaks must survive a
   // foreground silhouette becoming smaller (for example a fitted wrist guard).
@@ -101,10 +102,12 @@ export function paintAgentRegions(ctx,images,states,{base,backpack=false}={}){
   const suit=valid.find(s=>s.region==='body'),pack=valid.find(s=>s.region==='backpack'),cape=valid.find(s=>s.region==='cape'),quiver=valid.find(s=>s.region==='quiver');
   for(const state of [cape,pack,quiver].filter(Boolean))clipRegion(destination,VARIANT_REGIONS[state.region],()=>destination.drawImage(source(state.key),0,0,420,600));
   if(backpack&&!pack&&source('backpack'))clipRegion(destination,VARIANT_REGIONS.backpack,()=>destination.drawImage(source('backpack'),0,0,420,600));
-  if(suit)ctx.drawImage(source(suit.key),0,0,420,600);else ctx.drawImage(base,180,0,420,600,0,0,420,600);
+  if(suit)ctx.drawImage(source(suit.key),0,0,420,600);else drawBase(ctx,base);
   const poseStates=valid.filter(s=>s.region==='pose'),occupied=new Set();
   for(const s of poseStates){const p=AGENT_POSES[s.key];if(p?.twoHands){occupied.add('left');occupied.add('right');}else occupied.add(s.slot==='secondary'?'left':'right');}
   const helmet=valid.find(s=>s.region==='head');
+  const female=appearance==='feminino';
+  if(female&&suit)baseRegion(ctx,base,VARIANT_REGIONS.helmetOpening);
   for(const state of valid.filter(s=>!['body','backpack','cape','quiver','pose','adjustment','companion'].includes(s.region))){
     const picture=source(state.key);
     if(state.region==='arms'){
@@ -118,19 +121,25 @@ export function paintAgentRegions(ctx,images,states,{base,backpack=false}={}){
       let points=state.key==='belt-cuffs'?rect(117,337,65,115):state.key==='belt-keys'?rect(155,340,43,86):rect(124,312,68,85);
       const shift=state.slot==='ammo'?-20:state.slot==='paranormal'?55:0;
       ctx.save();ctx.translate(shift,0);replaceVariantRegion(ctx,picture,points);ctx.restore();
+    }else if(state.region==='head'){
+      replaceVariantRegion(ctx,picture,VARIANT_REGIONS.head);
+      if(female)baseRegion(ctx,base,VARIANT_REGIONS.helmetOpening);
     }else if(state.region==='eyes'||state.region==='face'){
-      const draw=()=>replaceVariantRegion(ctx,picture,VARIANT_REGIONS[state.region]);
+      const draw=()=>replaceVariantRegion(ctx,picture,state.key==='gas-mask'?rect(155,147,132,69):VARIANT_REGIONS[state.region]);
       if(helmet)clipRegion(ctx,VARIANT_REGIONS.helmetOpening,draw);else draw();
     }else if(state.region==='neck'&&state.key==='neck-collar')replaceVariantRegion(ctx,picture,[[168,181],[253,181],[253,210],[227,210],[230,279],[195,279],[195,211],[168,211]]);
     else replaceVariantRegion(ctx,picture,VARIANT_REGIONS[state.region]);
-    if(!suit&&['garment','torso','armor','neck'].includes(state.region))baseRegion(ctx,base,REGIONS.scarf);
+    if(!suit&&['garment','torso','armor','neck'].includes(state.region)){
+      if(female&&!helmet)baseRegion(ctx,base,[[110,155],[175,155],[175,220],[110,240]]);
+      baseRegion(ctx,base,REGIONS.scarf);
+    }
   }
   // Shoulder seams and straps belong to equipped-character variants too.
   if(cape)replaceVariantRegion(ctx,source(cape.key),VARIANT_REGIONS.capeShoulders);
   if(pack||backpack){const p=source(pack?.key||'backpack');if(p)for(const side of ['strapLeft','strapRight'])replaceVariantRegion(ctx,p,VARIANT_REGIONS[side]);}
   if(quiver)replaceVariantRegion(ctx,source(quiver.key),VARIANT_REGIONS.quiverStrap);
   if(!suit&&!helmet&&valid.some(s=>['eyes','face','brow'].includes(s.region))){
-    for(const p of [rect(145,132,28,28),rect(183,134,8,23),rect(210,134,8,19)])baseRegion(ctx,base,p);
+    for(const p of female?[rect(130,126,40,52),rect(176,138,10,24),rect(242,124,12,42)]:[rect(145,132,28,28),rect(183,134,8,23),rect(210,134,8,19)])baseRegion(ctx,base,p);
   }
   for(const state of poseStates){const pose=AGENT_POSES[state.key];if(pose)paintPose(ctx,source(state.key),state,pose,valid);}
   for(const state of valid.filter(s=>s.region==='adjustment')){

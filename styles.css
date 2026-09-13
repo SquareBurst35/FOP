@@ -4133,3 +4133,22 @@ body:has(dialog[open]) {
     height: 29px;
   }
 }
+
+/* Ritual/ability choices and creation appearance */
+.spend-presets { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
+.spend-presets button { display:flex; flex-direction:column; align-items:flex-start; gap:7px; padding:14px; border:1px solid var(--border,#34363d); border-radius:10px; background:var(--surface,#17191e); color:inherit; text-align:left; cursor:pointer; }
+.spend-presets button.active { border-color:var(--accent,#d0ad65); background:#2b281f; outline:1px solid var(--accent,#d0ad65); }
+.spend-presets button:disabled { opacity:.48; cursor:not-allowed; }
+.spend-presets button small { line-height:1.45; }
+.spend-presets button:focus-visible { outline:3px solid #e0bf72; outline-offset:3px; }
+.use-option-description { min-height:2rem; margin:14px 0; line-height:1.5; }
+.creator-appearance-preview { display:flex; justify-content:center; max-height:250px; border:1px solid var(--border,#34363d); border-radius:12px; background:radial-gradient(ellipse at bottom,#262b26,#101211); }
+.creator-appearance-preview canvas { width:175px; height:250px; image-rendering:pixelated; object-fit:contain; }
+.item-upgrades { margin:16px 0; padding:12px; border:1px solid var(--border,#34363d); border-radius:8px; }
+.item-upgrades > summary { cursor:pointer; font-weight:600; }
+.upgrade-choices { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px; max-height:320px; overflow:auto; margin-top:12px; }
+.upgrade-choices label { display:flex; align-items:flex-start; gap:10px; padding:10px; background:#15171b; border-radius:6px; }
+.upgrade-choices input { width:18px; height:18px; flex-shrink:0; }
+.upgrade-choices small { display:block; margin-top:4px; line-height:1.4; color:var(--muted,#a4a6af); }
+.upgrade-reference { padding:16px; }
+@media(max-width:480px) { .spend-presets { grid-template-columns:1fr; } .creator-appearance-preview { grid-column:1/-1; } }

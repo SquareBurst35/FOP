@@ -10,7 +10,7 @@ import { equipmentPlacements, resolveEquipment } from '../equipment-visuals.js';
 import { BODY_ATLAS, paperdollImagePaths } from '../paperdoll-renderer.js';
 const own=name=>({...ITEMS.find(item=>item.name===name),quantity:1});
 const placements=names=>equipmentPlacements(resolveEquipment(names.map(own)));
-assert.equal(Object.keys(ITEM_VARIANTS).length,165);
+assert.equal(Object.keys(ITEM_VARIANTS).length,ITEMS.length);
 assert.deepEqual(new Set(Object.keys(ITEM_VARIANTS)),new Set(ITEMS.map(i=>i.id)));
 function decodePng(file) {
  const b=fs.readFileSync(file);assert.equal(b.subarray(1,4).toString(),'PNG');
@@ -50,4 +50,4 @@ const two=statesForPlacements(placements(['Fuzil de assalto','Lanterna','Paraque
 const visible=visibleAgentStates(two);assert.equal(visible.filter(s=>s.region==='pose').length,1);assert.ok(visible.some(s=>s.key==='rifle'));assert.ok(visible.some(s=>s.key==='backpack'));assert.ok(visible.some(s=>s.key==='sling'));
 const one=statesForPlacements(placements(['Faca','Pistola']));assert.equal(visibleAgentStates(one).filter(s=>s.region==='pose').length,2,'One-handed props can occupy both hands');
 assert.ok(paperdollImagePaths([],{backpack:true}).includes(variantPath('backpack')));
-console.log(`165 items and ${AGENT_VARIANT_KEYS.length} full-agent PNGs: coverage, alpha, complete frames, body replacement, hands and catalog isolation passed.`);
+console.log(`${ITEMS.length} items and ${AGENT_VARIANT_KEYS.length} full-agent PNGs: coverage, alpha, complete frames, body replacement, hands and catalog isolation passed.`);

@@ -6,6 +6,8 @@ const low=(side,object,grip)=>({side,clear:[side==='left'?lowLeft:lowRight],part
 const bent=(side,object,grip)=>({side,clear:[side==='left'?lowLeft:lowRight],parts:[object],hands:[grip],posed:true});
 const both=(parts,hands)=>({side:'both',clear:[lowLeft,lowRight],parts,hands,posed:true,twoHands:true});
 export const AGENT_POSES=Object.freeze({
+  shield:low('right',box(251,290,88,224),[275,353,40,43]),
+  binoculars:low('left',box(55,334,103,110),[105,352,43,38]),
   pistol:low('left',box(90,330,60,105)),
   revolver:low('left',box(87,324,78,110)),
   knife:low('left',[[88,344],[126,348],[190,405],[190,430],[150,428],[104,390]]),

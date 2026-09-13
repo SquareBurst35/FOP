@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ITEMS } from "../items.js";
-import { ITEM_ART, artForItem } from "../item-art.js";
+import { ITEM_ART, ORIGINAL_ITEM_ART, artForItem } from "../item-art.js";
 import { EQUIPMENT_SLOTS, visualSlot, resolveEquipment, equipmentPlacements } from "../equipment-visuals.js";
 import { BODY_POINTS, atlasRect, placementFor, anchorOnDoll } from "../paperdoll-renderer.js";
 
 assert.equal(ITEM_ART.length, ITEMS.length, "Todos os itens do catálogo precisam de arte");
 assert.equal(new Set(ITEM_ART.map(a=>a.id)).size, ITEMS.length);
-assert.equal(new Set(ITEM_ART.map(a=>`${a.atlas}:${a.sourceRect.join(',')}`)).size, ITEMS.length, "Cada item tem seu próprio sprite");
+assert.equal(new Set(ORIGINAL_ITEM_ART.map(a=>`${a.atlas}:${a.sourceRect.join(',')}`)).size, 165, "Cada item tem seu próprio sprite");
 for (const item of ITEMS) {
   const art=artForItem(item);
   assert.ok(art, `Arte ausente: ${item.name}`);

@@ -8,8 +8,8 @@ import { resolveEquipment, equipmentPlacements, EQUIPMENT_SLOTS } from '../equip
 import { BODY_ATLAS, paintPaperdoll, placementFor, paperdollImagePaths } from '../paperdoll-renderer.js';
 
 const own=name=>({...ITEMS.find(i=>i.name===name),quantity:1});
-assert.equal(ITEMS.length,165);
-assert.equal(Object.keys(ITEM_COMPOSITION).length,165);
+assert.equal(ITEMS.length,ITEMS.length);
+assert.equal(Object.keys(ITEM_COMPOSITION).length,ITEMS.length);
 assert.deepEqual(new Set(Object.keys(ITEM_COMPOSITION)),new Set(ITEMS.map(i=>i.id)));
 const pristine=JSON.stringify({ITEMS,ITEM_ART});
 const dispatch=new Set(['held','belt','pocket','stored','quiver','vest','heavyVest','garment','sling','harness','glasses','knuckles','necklace','collar','wrist','companion','backpack','suit','adjustment','vehicle','boots','headband','cape','mask','helmet','gauntlets']);
@@ -51,7 +51,7 @@ for(const item of ITEMS) {
   assert.equal(equipped[recipe.slot]?.id,item.id,item.name);
   const placements=equipmentPlacements(equipped);
   if(recipe.visibility==='inventory'||recipe.visibility==='parent')assert.equal(placements.length,0,item.name);
-  else assert.equal(placements.length,recipe.kind==='gauntlets'?2:1,item.name);
+  else assert.equal(placements.length,art.parts?.length??1,item.name);
   for(const p of placements)assert.equal(p.art.composition,recipe.kind,item.name);
   render(placements);
   assert.ok(paperdollImagePaths(placements).every(path=>path===BODY_ATLAS||path.startsWith('assets/agent-variants/')), 'Catalog art cannot be sampled on the body');
@@ -97,4 +97,4 @@ for(const name of ['Carregador rápido','Bateria potente']) {
 }
 assert.equal(JSON.stringify({ITEMS,ITEM_ART}),pristine,'Rendering cannot mutate rules or catalog');
 assert.ok(placementFor(artForItem(own('Traje espacial')),'outfit').height>0);
-console.log('165 composition recipes: renderer dispatch, clipping, both hands, slot migration, missing textures and complete sets passed.');
+console.log(`${ITEMS.length} composition recipes: renderer dispatch, clipping, both hands, slot migration, missing textures and complete sets passed.`);

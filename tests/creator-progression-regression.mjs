@@ -1,3 +1,5 @@
+import * as upgrades from "../item-upgrades.js";
+import * as useOptions from "../use-options.js";
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -18,7 +20,7 @@ function boot(className,nex,trail='') {
   };
   const document={querySelector:element,querySelectorAll:()=>[],getElementById:element};
   const window={location:{hash:''},scrollY:0,addEventListener(){},scrollTo(){},setTimeout(){},clearTimeout(){}};
-  const context=vm.createContext({...rules,...content,...items,...progression,...choices,...session,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
+  const context=vm.createContext({...rules,...content,...items,...progression,...choices,...session,...useOptions,...upgrades,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
   vm.runInContext(source,context);
   const run=code=>vm.runInContext(code,context);
   const data={classe:className,nex,nivel:nex/5,origem:'Acadêmico',trilha:trail,nome:'Agente de teste',atributos:{agilidade:1,forca:1,intelecto:3,presenca:2,vigor:2}};
@@ -126,4 +128,4 @@ for(const ritual of content.RITUALS.filter(r=>r.family==='Amaldiçoar Arma')) {
 }
 const aliases=boot('Ocultista',5);
 aliases.run("ritualSearch='distorcao temporal';activeRitualCircle=4;activeRitualElement='Morte'");
-assert.match(aliases.run('renderRitualPickerResults()'),/Distorcer o Tempo/);
+assert.match(aliases.run('renderRitualPickerResults()'),/Distorção Temporal/);

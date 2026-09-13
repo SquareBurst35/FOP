@@ -212,7 +212,7 @@ function paranormalId(name) {
 }
 
 function ritualId() {
-  return RITUALS[0].id;
+  return RITUALS.find(r=>r.circle===1).id;
 }
 
 function enterChoices(ui) {
@@ -408,3 +408,36 @@ function finish(ui) {
 }
 
 console.log("13 cenários de regressão do level up e da sessão passaram.");
+
+// Ritual version selection is deferred until confirmation and persists its cost.
+{
+ const ritual=RITUALS.find(r=>r.name==='Amaldiçoar Arma (Sangue)');
+ const character=characterAtLevel({id:'ritual-versoes',level:11,className:'Ocultista',rituals:[ritual.id]});
+ character.afinidadeElemental='Sangue';character.aparencia='feminino';
+ const ui=await boot(character);ui.clickData('[data-sheet-tab]','sheetTab','rituais');
+ ui.clickData('[data-use-ritual]','useRitual',ritual.id);
+ assert.match(ui.html(),/data-use-option="normal"/);assert.match(ui.html(),/data-use-option="discente"/);assert.match(ui.html(),/data-use-option="verdadeiro"/);
+ assert.equal(ui.saved().recursos.peAtual,character.recursos.peAtual);
+ ui.clickData('[data-use-option]','useOption','verdadeiro');
+ ui.click('confirm-spend-dialog');
+ assert.equal(ui.saved().recursos.peAtual,character.recursos.peAtual-6);
+ assert.equal(ui.saved().controleSessao.historico.at(-1).variant,'Verdadeiro');
+ assert.equal(ui.saved().aparencia,'feminino');
+ ui.clickData('[data-sheet-tab]','sheetTab','inventario');assert.match(ui.html(),/data-appearance="feminino"/);
+}
+// New catalog entry, capacity bonus and attached upgrades survive save/reload.
+{
+ const {ITEMS}=await import('../items.js');
+ const {ITEM_UPGRADES}=await import('../item-upgrades.js');
+ const pack=ITEMS.find(i=>i.name==='Mochila militar'),armor=ITEMS.find(i=>i.name==='Proteção leve');
+ const character=characterAtLevel({id:'inventario-v13',level:5});
+ character.atributos.forca=1;character.patente='Agente de Elite';character.inventarioItens=[{itemId:pack.id,quantity:1},{itemId:armor.id,quantity:1}];
+ const ui=await boot(character);ui.clickData('[data-sheet-tab]','sheetTab','inventario');
+ assert.match(ui.html(),/Mochila militar/);assert.match(ui.html(),/2 \/ 7/);
+ const reinforced=ITEM_UPGRADES.find(u=>u.target==='Proteções'&&u.name==='Reforçada');
+ ui.choose('[data-item-upgrade]',reinforced.id);
+ assert.ok(ui.saved().inventarioModificacoes[armor.id].includes(reinforced.id));
+ assert.match(ui.html(),/3 \/ 7/);
+ ui.click('open-item-picker');ui.clickData('[data-item-group]','itemGroup','Modificações');assert.match(ui.html(),/Lente de Revelação/);
+}
+console.log('Ritual dialog, female persistence, inventory capacity and attached upgrades passed.');

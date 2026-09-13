@@ -1,7 +1,7 @@
 // Each entry selects a complete, already-equipped version of the agent.
 // Shared silhouettes describe physical item types; catalog illustrations stay separate.
-import { ITEM_ART } from './item-art.js?v=20';
-import { compositionFor } from './equipment-composition.js?v=21';
+import { ITEM_ART } from './item-art.js?v=24';
+import { compositionFor } from './equipment-composition.js?v=24';
 const groups = {
   knife: ['Faca','Punhal','Baioneta','Faca tática','A Primeira Adaga','Punhal X','Faca Predadora'],
   hammer: ['Martelo','Marreta','Marreta transtornada'],
@@ -51,12 +51,12 @@ for(const [key,names] of Object.entries(groups))for(const name of names) {
 const regionFor={vest:'torso',heavyVest:'armor',garment:'garment',suit:'body',boots:'feet',helmet:'head',headband:'brow',glasses:'eyes',mask:'face',necklace:'neck',collar:'neck',wrist:'leftArm',gauntlets:'arms',knuckles:'leftArm',backpack:'backpack',cape:'cape',companion:'companion',quiver:'quiver',sling:'sling',harness:'harness',belt:'belt',pocket:'belt',held:'pose',adjustment:'adjustment',stored:'inventory',vehicle:'inventory'};
 const orderFor={body:0,cape:1,backpack:2,quiver:3,garment:10,armor:20,torso:20,neck:25,belt:30,sling:35,harness:36,head:40,brow:41,eyes:42,face:43,feet:50,leftArm:55,rightArm:55,arms:55,pose:60,adjustment:65,companion:70};
 export const ITEM_VARIANTS=Object.freeze(Object.fromEntries(ITEM_ART.map(art=>{
-  const key=byName.get(art.name),composition=compositionFor(art),region=['wrist-device','link-bracer','knuckles'].includes(key)?'rightArm':regionFor[composition.kind];
+  const key=art.variantKey??byName.get(art.name),composition=compositionFor(art),region=['wrist-device','link-bracer','knuckles'].includes(key)?'rightArm':regionFor[composition.kind];
   if(!key||!region)throw Error(`Versão do agente ausente: ${art.name}`);
   return [art.id,Object.freeze({key,region,order:orderFor[region]??0,visibility:composition.visibility})];
 })));
-if(byName.size!==ITEM_ART.length)throw Error('O mapeamento de versões contém nomes fora do catálogo.');
-export const AGENT_VARIANT_KEYS=Object.freeze(Object.keys(groups).filter(key=>!['inventory','adjustment'].includes(key)));
+if(byName.size!==ITEM_ART.filter(a=>!a.variantKey).length)throw Error('O mapeamento de versões contém nomes fora do catálogo.');
+export const AGENT_VARIANT_KEYS=Object.freeze([...new Set([...Object.keys(groups),...ITEM_ART.map(a=>a.variantKey).filter(Boolean)])].filter(key=>!['inventory','adjustment'].includes(key)));
 export function variantFor(art) {return art?ITEM_VARIANTS[art.id]??null:null;}
 export function statesForPlacements(placements) {
   const seen=new Set();

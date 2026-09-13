@@ -1,5 +1,5 @@
 // Rendering recipes only. Catalog pixels and game data are deliberately independent.
-import { ITEM_ART } from './item-art.js?v=20';
+import { ITEM_ART } from './item-art.js?v=24';
 
 const groups = {
   held: ['Faca','Martelo','Punhal','Bastão','Machete','Lança','Cajado','Arco','Besta','Pistola','Revólver','Fuzil de caça','Machadinha','Nunchaku','Corrente','Espada','Florete','Machado','Marreta','Acha','Gadanho','Katana','Montante','Moto-serra','Arco composto','Balestra','Submetralhadora','Espingarda','Fuzil de assalto','Fuzil de precisão','Bazuca','Lança-chamas','Metralhadora','Pregador pneumático','Estilingue','Revólver compacto','Baioneta','Faca tática','Gancho de carne','Bastão policial','Picareta','Shuriken','Pistola pesada','Espingarda de cano duplo','Utensílio','Lanterna','Pistola de dardos','Taser','Celular','Chave de fenda universal','Notebook','Galão vermelho','Pá','Bússola','Caixa de ferramentas','Selo paranormal de 1º círculo','Selo paranormal de 2º círculo','Selo paranormal de 3º círculo','Selo paranormal de 4º círculo','Crânio espiral','Frasco de lodo','Pergaminho da pertinácia','Catalisador ampliador','Catalisador perturbador','Catalisador potencializador','Pendrive selado','Valete da salvação','Ampulheta do Tempo Sofrido','Câmera Obscura','Centrifugador Existencial','Dose d’A Praga','Espelho Refletor','Fuzil Alheio','Injeção de Lodo','Instantâneo Mortal','A Primeira Adaga','Rádio Chiador','Tábula do Saber Custoso','Agrupador ritualístico','Rubra','Arpão do pescador','Marreta transtornada','Machado do Mutilador','Punhal X','Sniper Fantasma','A Antena','Faca Predadora'],
@@ -28,7 +28,7 @@ for (const [kind, names] of Object.entries(groups)) for (const name of names) {
   byName.set(name, kind);
 }
 export const ITEM_COMPOSITION = Object.freeze(Object.fromEntries(ITEM_ART.map(art => {
-  const kind = byName.get(art.name);
+  const kind = art.compositionKind ?? byName.get(art.name);
   if (!kind) throw new Error(`Composição ausente: ${art.name}`);
   return [art.id, Object.freeze({ kind, slot: slotForKind[kind] ?? art.slot,
     visibility: ['stored','vehicle'].includes(kind) ? 'inventory' : kind === 'adjustment' ? 'parent' : 'body' })];

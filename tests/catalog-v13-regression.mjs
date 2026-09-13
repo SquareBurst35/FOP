@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { ITEMS, inventoryCapacity, inventoryUsage } from '../items.js';
+import { ITEM_ART, ORIGINAL_ITEM_ART } from '../item-art.js';
+import { ITEM_UPGRADES, canApplyUpgrade, upgradedItem } from '../item-upgrades.js';
+import { ITEM_VARIANTS } from '../equipment-variants.js';
+import { characterBodyPath } from '../paperdoll-renderer.js';
+const item=name=>ITEMS.find(i=>i.name===name);
+assert.equal(ITEMS.length,215);assert.equal(ITEM_ART.length,215);assert.equal(ORIGINAL_ITEM_ART.length,165);
+assert.equal(new Set(ITEMS.map(i=>i.id)).size,215);
+assert.ok(ITEMS.every(i=>ITEM_VARIANTS[i.id]),'Every original and new item has an explicit composition');
+for(const name of ['Escudo','Arpéu','Binóculos','Bloqueador de sinal','Corda','Equipamento de sobrevivência','Máscara de gás','Mochila militar','Pé de cabra','Pistola sinalizadora','Traje hazmat','Coroa de Espinhos','Frasco de Vitalidade','Pérola de Sangue','Punhos Enraivecidos','Seringa de Transfiguração','Amarras Mortais','Casaco de Lodo','Coletora','Vislumbre do Fim','Anéis do Elo Mental','Lanterna Reveladora','Máscara das Pessoas nas Sombras','Munição Jurada','Arcabuz dos Moretti','Bateria Reversa','Peitoral da Segunda Chance','Relógio de Arnaldo','Talismã da Sorte','Teclado de Conexão Neural','Tela do Pesadelo','Veículo Energizado','Jaqueta de Veríssimo','Dedo Decepado'])assert.ok(item(name),name);
+for(const element of ['Conhecimento','Energia','Morte','Sangue'])for(const prefix of ['Amarras de','Componentes ritualísticos de','Scanner de manifestação paranormal de'])assert.ok(item(`${prefix} ${element}`));
+const pack=item('Mochila militar');assert.equal(pack.spaces,0);assert.equal(pack.category,'I');
+const c={atributos:{forca:1},inventarioItens:[{itemId:pack.id,quantity:3}]};
+assert.equal(inventoryCapacity(c),7,'Backpack bonus never stacks');assert.equal(inventoryUsage(c).spaces,0);
+assert.equal(inventoryCapacity({...c,inventarioItens:[]}),5);
+assert.equal(inventoryCapacity({...c,atributos:{forca:0}}),4);
+const armor=item('Proteção leve'),reinforced=ITEM_UPGRADES.find(u=>u.target==='Proteções'&&u.name==='Reforçada');
+c.inventarioItens.push({itemId:armor.id,quantity:1});c.inventarioModificacoes={[armor.id]:[reinforced.id]};
+assert.equal(inventoryUsage(c).spaces,3);assert.equal(inventoryUsage(c).categoryCounts.II,1);
+const curses=ITEM_UPGRADES.filter(u=>u.target==='Armas'&&u.curse).slice(0,2);
+assert.equal(upgradedItem(item('Faca'),[curses[0].id]).category,'II');assert.equal(upgradedItem(item('Faca'),curses.map(u=>u.id)).category,'III');
+assert.equal(canApplyUpgrade(armor,ITEM_UPGRADES.find(u=>u.name==='Blindada')),false);
+assert.equal(new Set(ITEM_UPGRADES.map(u=>u.id)).size,ITEM_UPGRADES.length);assert.equal(ITEM_UPGRADES.length,60);
+assert.ok(item('Lanterna').aliases.includes('Lanterna tática'));assert.ok(item('Marreta').aliases.includes('Maça'));
+for(const appearance of ['masculino','feminino'])assert.ok(fs.existsSync(new URL('../'+characterBodyPath(appearance),import.meta.url)));
+const report=JSON.parse(fs.readFileSync(new URL('../docs/equipment-coverage.json',import.meta.url)));
+assert.equal(report.length,430);
+for(const appearance of ['masculino','feminino']){
+ const rows=report.filter(r=>r.appearance===appearance);assert.deepEqual(new Set(rows.map(r=>r.id)),new Set(ITEMS.map(i=>i.id)));
+ assert.ok(rows.every(r=>r.visibility==='body'?r.changedPixels>30:r.changedPixels===0));
+}
+console.log('215 catalog entries, 60 attached improvements, original 165 sprites and 430 raster coverage cases passed.');

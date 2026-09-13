@@ -1,3 +1,5 @@
+import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=24";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=24";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -18,7 +20,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=13";
+} from "./rules.js?v=24";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -34,21 +36,21 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=23";
+} from "./content.js?v=24";
 import {
   INVENTORY_GROUPS,
   ITEMS,
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=13";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=13";
+} from "./items.js?v=24";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=24";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=23";
+} from "./choices.js?v=24";
 import {
   effortResource,
   normalizeSession,
@@ -59,7 +61,7 @@ import {
   startNewSession,
   undoLastUse,
   useAbility,
-} from "./session.js?v=13";
+} from "./session.js?v=24";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -97,7 +99,6 @@ const NON_USABLE_ABILITY_NAMES = new Set([
   "Mestre em Elemento",
   "Mochila de Utilidades",
   "Mutação",
-  "Perito",
   "Resistir a Elemento",
   "Ritual Predileto",
   "Ser Amaldiçoado",
@@ -145,6 +146,7 @@ function createBlankCharacter() {
     id: crypto.randomUUID(),
     nome: "",
     jogador: "",
+    aparencia: "masculino",
     origem: "",
     classe: "Mundano",
     trilha: "",
@@ -216,6 +218,7 @@ function createBlankCharacter() {
 
 function normalizeCharacter(character) {
   if (!character || typeof character !== "object") return character;
+  character.aparencia=character.aparencia==="feminino"?"feminino":"masculino";
   ensureOptionalRules(character);
   character.atributos ??= { agilidade: 1, forca: 1, intelecto: 1, presenca: 1, vigor: 1 };
   character.periciasTreinadas = Array.isArray(character.periciasTreinadas)
@@ -294,6 +297,7 @@ function normalizeCharacter(character) {
       clamp((inventoryQuantities.get(selected.itemId) ?? 0) + numberOr(selected.quantity, 1), 1, 99),
     );
   }
+  character.inventarioModificacoes = Object.fromEntries([...inventoryQuantities.keys()].map(id => [id, itemUpgrades(ITEM_BY_ID.get(id), character.inventarioModificacoes?.[id]).map(u => u.id)]));
   character.inventarioItens = [...inventoryQuantities].map(([itemId, quantity]) => ({ itemId, quantity }));
   character.inventario ??= "";
   character.anotacoes ??= "";
@@ -553,6 +557,8 @@ function renderCreatorStep() {
       <div class="form-grid">
         ${field("Nome do agente", "nome", creatorState.nome, "Ex.: Arthur Cervero", true)}
         ${field("Nome do jogador", "jogador", creatorState.jogador, "Ex.: Pedro")}
+        <div class="field"><label for="aparencia">Personagem</label><select id="aparencia" name="aparencia"><option value="masculino" ${creatorState.aparencia!=="feminino"?"selected":""}>Masculino</option><option value="feminino" ${creatorState.aparencia==="feminino"?"selected":""}>Feminino</option></select><small class="field-help">Define a pixel art do inventário.</small></div>
+        <div class="creator-appearance-preview"><canvas id="creator-appearance-preview" width="420" height="600" aria-label="Prévia do personagem"></canvas></div>
       </div>
     `;
   }
@@ -932,6 +938,7 @@ function saveCreatorFields() {
   const value = (id) => document.querySelector(`#${id}`)?.value;
 
   if (currentStep === 0) {
+    creatorState.aparencia=value("aparencia")==="feminino"?"feminino":"masculino";
     creatorState.nome = value("nome")?.trim() || creatorState.nome;
     creatorState.jogador = value("jogador")?.trim() || "";
   }
@@ -1710,42 +1717,18 @@ function reopenAbilityChoice(character) {
   document.querySelector("#ability-choice-dialog")?.showModal();
 }
 
-function adjustedRitualBaseCost(character, ritual) {
-  let cost = numberOr(String(ritual.cost).match(/\d+/)?.[0], 0);
-  const reductions = [];
-  const choices = character.habilidadeEscolhas ?? [];
-  const prediletoIds = [...ABILITY_BY_ID.values()].filter((entry) => entry.name === "Ritual Predileto").map((entry) => entry.id);
-  if (choices.some((choice) => prediletoIds.includes(choice.abilityId) && choice.type === "ritual" && choice.valueId === ritual.id)) {
-    cost = Math.max(1, cost - 1);
-    reductions.push("Ritual Predileto −1");
-  }
-  const masterIds = [...ABILITY_BY_ID.values()].filter((entry) => entry.name === "Mestre em Elemento").map((entry) => entry.id);
-  if (choices.some((choice) => masterIds.includes(choice.abilityId) && choice.type === "elemento" && ritual.elements.includes(choice.valueId))) {
-    cost = Math.max(1, cost - 1);
-    reductions.push("Mestre em Elemento −1");
-  }
-  return { cost, reductions };
-}
-
 function startEntryUse(character, type, id) {
   const entry = type === "ritual" ? RITUAL_BY_ID.get(id) : ABILITY_BY_ID.get(id);
   if (!entry) return;
-  if (type === "ritual") {
-    const adjusted = adjustedRitualBaseCost(character, entry);
-    const extras = (entry.enhancements ?? []).map((label) => ({ label, extra: numberOr(label.match(/\+(\d+)\s*PE/i)?.[1], 0) })).filter((item) => item.extra > 0);
-    spendState = {
-      characterId: character.id,
-      type,
-      entryId: id,
-      min: adjusted.cost,
-      max: 20,
-      value: adjusted.cost,
-      resource: "effort",
-      extras,
-      reductions: adjusted.reductions,
-    };
-    reopenSpendDialog(character);
-    return;
+  const options=type==="ritual"?ritualUseOptions(character,entry):abilityUseOptions(character,entry);
+  if(type==="ritual"||options.length){
+    const first=options.find(o=>!o.disabled);
+    if(!first)return showToast("Nenhuma versão disponível para esta ficha.");
+    const model=type==="ritual"?{}:abilityUseModel(entry);
+    spendState={characterId:character.id,type,entryId:id,min:0,max:Number.MAX_SAFE_INTEGER,value:first.cost,resource:"effort",options,selectedOption:first.id,
+      sceneLimit:model.sceneLimit||(/uma vez por cena/i.test(entry.summary)?1:0),sessionLimit:model.sessionLimit||(/uma vez por sess[aã]o/i.test(entry.summary)?1:0),
+      reductions:type==="ritual"?ritualCostReduction(character,entry):[]};
+    reopenSpendDialog(character);return;
   }
   const model = abilityUseModel(entry);
   if (model.kind === "none") return showToast("Esta habilidade não possui uso ativo para registrar.");
@@ -1796,8 +1779,8 @@ function renderSpendDialog(character) {
       </div>
       <div class="spend-dialog-body">
         ${spendState.reductions?.length ? `<div class="cost-reduction-note"><strong>Redução automática</strong><span>${escapeHtml(spendState.reductions.join(" · "))}</span></div>` : ""}
-        ${spendState.extras?.length ? `<div class="spend-presets"><button type="button" data-spend-preset="${spendState.min}" class="${spendState.value === spendState.min ? "active" : ""}">Básico · ${spendState.min} ${resource.label}</button>${spendState.extras.map((item) => { const total = spendState.min + item.extra; return `<button type="button" data-spend-preset="${total}" class="${spendState.value === total ? "active" : ""}">${escapeHtml(item.label.replace(/\s*\([^)]*\)\s*:/, ""))} · ${total} ${resource.label}</button>`; }).join("")}</div>` : ""}
-        <label class="spend-amount" for="spend-amount"><span>Custo total</span><div><input id="spend-amount" type="number" min="${spendState.min}" max="${Math.max(spendState.min, maximum)}" value="${spendState.value}" /><strong>${resource.label}</strong></div><small>${spendState.type === "ritual" ? "Use o custo total da forma básica, Discente ou Verdadeiro." : "Informe o valor escolhido para este uso."}</small></label>
+        ${spendState.options?.length ? `<div class="spend-presets" role="group" aria-label="Versão do uso">${spendState.options.map(option=>`<button type="button" data-use-option="${escapeAttribute(option.id)}" aria-pressed="${spendState.selectedOption===option.id}" class="${spendState.selectedOption===option.id?"active":""}" ${option.disabled?"disabled":""}><strong>${escapeHtml(option.label)}</strong><span>${option.cost===null?"Não disponível":`${option.cost} ${resource.label}`}</span>${option.requirements?`<small>${escapeHtml(option.requirements)}</small>`:""}${option.reason?`<small>${escapeHtml(option.reason)}</small>`:""}</button>`).join("")}</div><div class="use-option-description"><p>${escapeHtml(spendState.options.find(o=>o.id===spendState.selectedOption)?.description??"")}</p>${entry.useVariants?.note?`<small>${escapeHtml(entry.useVariants.note)}</small>`:""}</div>`:""}
+        <label class="spend-amount" for="spend-amount"><span>Custo total</span><div><input id="spend-amount" type="number" min="${spendState.min}" max="${Math.max(spendState.min,maximum)}" value="${spendState.value}" ${spendState.options?.length?"readonly":""}/><strong>${resource.label}</strong></div><small>${spendState.options?.length?"O custo acompanha a versão selecionada.":"Informe o valor escolhido para este uso."}</small></label>
         <p class="spend-warning" ${spendState.value <= maximum ? "hidden" : ""}>Este valor ultrapassa o recurso disponível.</p>
       </div>
       <div class="choice-dialog-footer"><button class="button ghost" id="cancel-spend-dialog" type="button">Cancelar</button><span></span><button class="button primary" id="confirm-spend-dialog" type="button" ${spendState.value > maximum ? "disabled" : ""}>Confirmar uso</button></div>
@@ -1812,11 +1795,14 @@ function bindSpendDialog(character) {
   document.querySelector("#close-spend-dialog")?.addEventListener("click", close);
   document.querySelector("#cancel-spend-dialog")?.addEventListener("click", close);
   closeDialogOnBackdrop(document.querySelector("#spend-dialog"));
-  document.querySelectorAll("[data-spend-preset]").forEach((button) => button.addEventListener("click", () => {
-    spendState.value = numberOr(button.dataset.spendPreset, spendState.min);
-    reopenSpendDialog(character);
+  document.querySelectorAll("[data-use-option]").forEach(button=>button.addEventListener("click",()=>{
+    const option=spendState.options?.find(o=>o.id===button.dataset.useOption);
+    if(!option||option.disabled)return;
+    spendState.selectedOption=option.id;spendState.value=option.cost;reopenSpendDialog(character);
+    document.querySelector(`[data-use-option="${option.id}"]`)?.focus();
   }));
   document.querySelector("#spend-amount")?.addEventListener("input", (event) => {
+    if(spendState.options?.length)return;
     spendState.value = clamp(numberOr(event.target.value, spendState.min), spendState.min, spendState.max);
     const confirm = document.querySelector("#confirm-spend-dialog");
     const warning = document.querySelector(".spend-warning");
@@ -1833,14 +1819,18 @@ function bindSpendDialog(character) {
   document.querySelector("#confirm-spend-dialog")?.addEventListener("click", () => {
     const entry = spendState.type === "ritual" ? RITUAL_BY_ID.get(spendState.entryId) : ABILITY_BY_ID.get(spendState.entryId);
     if (!entry) return;
-    commitEntryUse(character, entry, spendState.type, spendState.value, spendState.resource, spendState.sceneLimit, spendState.sessionLimit);
+    const option=spendState.selectedOption?resolveUseOption(character,entry,spendState.type,spendState.selectedOption):null;
+    if(spendState.selectedOption&&!option)return showToast("Esta versão não está disponível para a ficha.");
+    commitEntryUse(character,entry,spendState.type,option?.cost??spendState.value,spendState.resource,spendState.sceneLimit,spendState.sessionLimit,option?.label);
+
   });
 }
 
-function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, sessionLimit = 0) {
+function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, sessionLimit = 0, variant = "") {
   const result = useAbility(character, {
     id: entry.id,
-    name: entry.name,
+    name: variant ? `${entry.name} — ${variant}` : entry.name,
+    variant,
     type,
     cost,
     resource,
@@ -1854,7 +1844,7 @@ function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, 
   upsertCharacter(character);
   renderSheet(character.id);
   const resourceLabel = result.record.resource ? ` e gastou ${result.record.cost} ${result.record.resource}` : "";
-  showToast(`${entry.name} usado${resourceLabel}.`);
+  showToast(`${result.record.name} usado${resourceLabel}.`);
 }
 
 function reopenSpendDialog(character) {
@@ -1864,7 +1854,7 @@ function reopenSpendDialog(character) {
 
 function inventorySelections(character) {
   return (character.inventarioItens ?? [])
-    .map((selected) => ({ ...selected, item: ITEM_BY_ID.get(selected.itemId) }))
+    .map((selected) => ({ ...selected, item: ITEM_BY_ID.has(selected.itemId) ? upgradedItem(ITEM_BY_ID.get(selected.itemId), character.inventarioModificacoes?.[selected.itemId]) : null }))
     .filter((selected) => selected.item)
     .sort((a, b) =>
       a.item.group.localeCompare(b.item.group) || a.item.name.localeCompare(b.item.name),
@@ -1885,7 +1875,7 @@ function renderInventoryTab(character) {
       ? "warning"
       : "complete";
   return `
-    <section class="sheet-section inventory-section">
+    <section class="sheet-section inventory-section" data-appearance="${character.aparencia==="feminino"?"feminino":"masculino"}">
       <div class="section-heading stacked-mobile">
         <div><h2>Inventário</h2><p class="muted small">Escolha o equipamento; espaços e categorias são somados automaticamente.</p></div>
         <button class="button primary compact" id="open-item-picker" type="button">+ Adicionar item</button>
@@ -1903,7 +1893,7 @@ function renderInventoryTab(character) {
       </div>
       <div class="entry-list inventory-list">
         ${selected.length
-          ? selected.map((selectedItem) => renderItemCard(selectedItem.item, { quantity: selectedItem.quantity })).join("")
+          ? selected.map((selectedItem) => renderItemCard(selectedItem.item, { quantity: selectedItem.quantity, character })).join("")
           : emptyCollection("Nenhum item adicionado. Use “Adicionar item” para abrir o catálogo.")}
       </div>
     </section>
@@ -1911,7 +1901,7 @@ function renderInventoryTab(character) {
   `;
 }
 
-function renderItemCard(item, { picker = false, quantity = 0 } = {}) {
+function renderItemCard(item, { picker = false, quantity = 0, character = null } = {}) {
   const totalSpaces = item.spaces * Math.max(1, quantity || 1);
   const action = picker
     ? renderItemPickerAction(item)
@@ -1937,10 +1927,23 @@ function renderItemCard(item, { picker = false, quantity = 0 } = {}) {
           <div><dt>Espaços</dt><dd>${formatInventoryNumber(item.spaces)}${quantity > 1 ? ` cada · ${formatInventoryNumber(totalSpaces)} no total` : ""}</dd></div>
           <div><dt>Fonte</dt><dd>${escapeHtml(item.source)}${item.page ? ` · p. ${escapeHtml(item.page)}` : ""}</dd></div>
         </dl>
+        ${character ? renderItemUpgrades(item, character) : ""}
         ${action}
       </div>
     </details>
   `;
+}
+
+function renderItemUpgrades(item, character) {
+ const original=ITEM_BY_ID.get(item.id),compatible=ITEM_UPGRADES.filter(u=>canApplyUpgrade(original,u));
+ if(!compatible.length)return "";
+ const chosen=itemUpgrades(original,character.inventarioModificacoes?.[item.id]);
+ return `<details class="item-upgrades"><summary>Modificações e maldições (${chosen.length})</summary><p class="muted small">A categoria e os espaços são atualizados aqui. A escolha vale para todas as cópias deste item; anote os demais efeitos na ficha.</p><div class="upgrade-choices">${compatible.map(u=>`<label><input type="checkbox" data-item-upgrade="${item.id}" value="${u.id}" ${chosen.some(c=>c.id===u.id)?"checked":""}/><span><strong>${escapeHtml(u.name)}</strong><small>${u.curse?"Maldição":"Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small></span></label>`).join("")}</div></details>`;
+}
+
+function renderUpgradeCatalog() {
+ const entries=ITEM_UPGRADES.filter(u=>(activeItemSource==='Todos'||u.source===activeItemSource)&&normalizeSearch(`${u.name} ${u.target} ${u.curse?'Maldição':''}`).includes(normalizeSearch(itemSearch)));
+ return entries.map(u=>`<article class="entry-card upgrade-reference"><strong>${escapeHtml(u.name)}</strong><p>${escapeHtml(u.target)} · ${u.curse?'Maldição':'Modificação'} · ${u.curse?'primeira +II; demais +I':'+I'} na categoria</p><small>${escapeHtml(u.source)} · p. ${u.page}</small><p class="muted small">Abra o equipamento no inventário e marque esta opção em “Modificações e maldições”.</p></article>`).join("");
 }
 
 function renderItemPickerAction(item) {
@@ -1952,6 +1955,7 @@ function renderItemPickerAction(item) {
 }
 
 function inventoryAddError(character, item) {
+  if(item) item = upgradedItem(item, character.inventarioModificacoes?.[item.id]);
   if (!item || item.category === "0" || item.group === "Modificações") return "";
   const usage = inventoryUsage(character);
   if (isSurvivorCharacter(character)) {
@@ -1994,10 +1998,11 @@ function renderItemPickerResults() {
     (item) =>
       item.group === activeItemGroup &&
       (activeItemSource === "Todos" || item.source === activeItemSource) &&
-      (!query || normalizeSearch(`${item.name} ${item.summary} ${item.source} ${item.details.flat().join(" ")}`).includes(query)),
+      (!query || normalizeSearch(`${item.name} ${(item.aliases ?? []).join(" ")} ${item.summary} ${item.source} ${item.details.flat().join(" ")}`).includes(query)),
   );
-  return entries.length
-    ? entries.map((item) => renderItemCard(item, { picker: true })).join("")
+  const upgrades = ["Todos", "Modificações"].includes(activeItemGroup) ? renderUpgradeCatalog() : "";
+  return entries.length || upgrades
+    ? entries.map((item) => renderItemCard(item, { picker: true })).join("") + upgrades
     : emptyCollection("Nenhum item encontrado neste filtro.");
 }
 
@@ -3298,6 +3303,16 @@ function bindItemDialog(character) {
     bindItemAddButtons(character, true);
   });
   bindItemAddButtons(character, false);
+  document.querySelectorAll("[data-item-upgrade]").forEach(input => input.addEventListener("change", () => {
+    const id=input.dataset.itemUpgrade,original=ITEM_BY_ID.get(id);
+    const selected=new Set(character.inventarioModificacoes?.[id]??[]);
+    if(input.checked)selected.add(input.value);else selected.delete(input.value);
+    const candidate=upgradedItem(original,[...selected]);
+    if(candidate.category==='V+')return showToast("Este conjunto ultrapassa a categoria IV."), input.checked=false;
+    if(input.checked&&!candidate.upgrades.some(u=>u.id===input.value))return showToast("Esta modificação é incompatível com uma escolha atual."), input.checked=false;
+    character.inventarioModificacoes={...character.inventarioModificacoes,[id]:candidate.upgrades.map(u=>u.id)};
+    upsertCharacter(character);renderSheet(character.id);showToast("Equipamento atualizado.");
+  }));
 
   document.querySelectorAll("[data-item-quantity]").forEach((button) => {
     button.addEventListener("click", () => {

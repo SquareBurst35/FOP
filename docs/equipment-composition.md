@@ -21,3 +21,7 @@ Itens guardados têm tratamento explícito e não geram imagens soltas. Os contr
 - `node scripts/render-equipment-qa.mjs /tmp/fop-equipment-qa`: gera uma imagem individual de cada item, folhas de contato, 15 conjuntos, variações na mão esquerda, mochila personalizada e `coverage.json`. Requer `@napi-rs/canvas` no ambiente local; não é dependência do site.
 
 A revisão desta alteração foi feita nas imagens geradas pelo mesmo renderer utilizado pelo site. Não foi possível executar o navegador local porque o binário não estava disponível e seu download falhou.
+
+## Aparências e catálogo v24
+
+`characterBodyPath()` escolhe a base masculina ou feminina. Roupas usam as mesmas regiões de encaixe; cabelo e rosto da base selecionada são restaurados onde precisam ficar visíveis. Capacetes e trajes substituem as partes cobertas. `additional-items.js` declara explicitamente os tipos e as versões usadas pelos 50 itens novos, sem alterar as 165 ilustrações originais. O relatório de cobertura inclui as duas aparências e deve acompanhar mudanças de catálogo.

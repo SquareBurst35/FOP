@@ -1,5 +1,6 @@
+import { ADDITIONAL_ITEMS } from "./additional-items.js?v=24";
 // Original pixel-art interpretations. Visual placement does not change game rules.
-export const ITEM_ART = Object.freeze([
+export const ORIGINAL_ITEM_ART = Object.freeze([
   {
     "id": "livro-base-armas-faca",
     "name": "Faca",
@@ -4990,6 +4991,12 @@ export const ITEM_ART = Object.freeze([
   }
 ]);
 
+export const ITEM_ART = Object.freeze([...ORIGINAL_ITEM_ART, ...ADDITIONAL_ITEMS.map(item => {
+ const source=ORIGINAL_ITEM_ART.find(a=>a.name===item.visual.icon);
+ if(!source)throw Error(`Missing catalog reference: ${item.name}`);
+ const {parts,fullBody,bodyAnchors,modification,...art}=source;
+ return {...art,id:item.id,name:item.name,slot:item.visual.slot,attachment:item.visual.kind==='held'?'hand':art.attachment,compositionKind:item.visual.kind,variantKey:item.visual.variant};
+})]);
 const byId = new Map(ITEM_ART.map(art => [art.id, art]));
 const byName = new Map(ITEM_ART.map(art => [art.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(), art]));
 export function artForItem(entry) {

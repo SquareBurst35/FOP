@@ -1,39 +1,35 @@
-# Conferência das referências — 9 de setembro de 2026
+# Conferência de referências — v24
 
-A conferência usa os quatro PDFs fornecidos pelo proprietário do projeto. Os PDFs não são distribuídos com o site. Foram extraídos o texto de todas as páginas, os títulos das opções de personagem e os cabeçalhos das descrições de rituais. Nomes quebrados entre linhas foram conferidos com as respectivas seções. Uma ausência no índice não foi tratada como ausência no livro.
+Revisão concluída em 13/09/2026. A referência principal é o **Livro base v1.3 de 332 páginas**, enviado pelo usuário, SHA-256 `df0d0b695a02ef594142f102a0dfe056fad3a723596474232cfb7c4b2c10341c`. Ele substitui o PDF antigo de 192 páginas na conferência de rituais e equipamentos. Os PDFs não são distribuídos pelo projeto; o catálogo usa resumos próprios.
 
-## Rituais corrigidos
-
-| Entrada | Resultado |
-| --- | --- |
-| Amaldiçoar Arma | Quatro escolhas de 1º círculo, uma para cada elemento: Conhecimento, Energia, Morte e Sangue. Cada escolha ocupa uma vaga de ritual; escolher uma não concede as outras. |
-| Criar Ilusão | Incluído a partir da descrição de Energia, 1º círculo, na página 121 do PDF base. |
-| Proteção contra Rituais | Incluído a partir da descrição de Medo, 2º círculo, na página 132 do PDF base. |
-| Distorção Temporal | Nome alternativo pesquisável para Distorcer o Tempo. O identificador já salvo nas fichas foi preservado. |
-
-A lista independente em `tests/fixtures/ritual-reference-catalog.json` contém 102 cabeçalhos de descrições: 80 do livro base, 16 de Sobrevivendo ao Horror, dois dos Arquivos Secretos #1 e quatro dos Arquivos Secretos #2. O teste confere presença, elemento e círculo de cada um, além das quatro escolhas de Amaldiçoar Arma. Há 107 escolhas de ritual no catálogo após as inclusões.
-
-Amaldiçoar Arma não está no índice nem entre as descrições da cópia antiga do livro base recebida; a própria trilha Lâmina Paranormal o menciona. A entrada solicitada foi conferida também em referências públicas de jogo, incluindo https://ordem-sanctum.webnode.page/rituais-de-sangue/ . Isso não equivale a uma conferência de uma edição atual completa do livro. As descrições adicionadas ao site são resumos próprios.
-
-## Conferência dos quatro documentos
-
-| Documento | Seções conferidas | Resultado e limites |
+| Referência | Conferência | Resultado |
 | --- | --- | --- |
-| Livro base enviado, 192 páginas | Origens, classes e trilhas, poderes, equipamentos, poderes paranormais e rituais | As ausências de rituais e o nome alternativo acima foram corrigidos. As origens listadas estão presentes. Existem divergências internas entre tabelas e descrições, indicadas abaixo. As listas de modificações não estão integralmente cadastradas como itens. |
-| Sobrevivendo ao Horror v1.2, 226 páginas | Opções de personagem do capítulo 1: origens, poderes, trilhas, equipamentos e rituais | Os títulos de opções foram comparados ao catálogo. Os 16 rituais descritos estão cobertos. Não foi encontrada outra ausência nominal nas opções de personagem conferidas. Regras de ameaças, missões e ferramentas do mestre não são opções de ficha. |
-| Arquivos Secretos #1 v1.2, 75 páginas | Origem e poderes das pp. 43–47; rituais das pp. 48 e 50; itens apresentados no suplemento | Os títulos das opções estão presentes, incluindo os títulos divididos entre linhas. Os dois rituais de Passagem de Conhecimento são entradas separadas. Fichas de criaturas e conteúdo narrativo foram identificados como conteúdo do mestre. |
-| Arquivos Secretos #2, 108 páginas | Recursos da p. 21; poderes, rituais e equipamentos das fichas e das seções “na sua mesa” | Os quatro rituais estão cobertos. Poderes com títulos quebrados, como Sintonização Mental com Proteção e Liturgia de Fortalecimento Ritualístico, já estavam presentes. Acoplável é uma habilidade de arma sem editor estruturado no site; pode ser anotada nas notas de inventário. |
+| Livro base v1.3 | Equipamentos, modificações e maldições; descrições de rituais nas pp. 124–143 | 50 equipamentos adicionados; 82 títulos de rituais, com Amaldiçoar Arma desdobrado em quatro elementos, totalizando 85 escolhas atuais do livro base |
+| Sobrevivendo ao Horror v1.2 | Opções de personagem e equipamento; 16 rituais | Custos e requisitos das versões conferidos; Lente de Revelação incluída como modificação da câmera |
+| Arquivos Secretos #1 v1.2 | Opções de personagem, itens e dois rituais | Entradas existentes preservadas; versões dos dois rituais conferidas |
+| Arquivos Secretos #2 | Recursos, equipamentos e quatro rituais | Entradas existentes preservadas; Acoplável disponível no editor do equipamento |
 
-## Divergências e funções ainda não automatizadas
+## Rituais e habilidades
 
-- **Forma Monstruosa:** o índice do PDF base indica 3º círculo; a descrição indica 2º. Foi conservado o 3º círculo já usado no site. O teste registra explicitamente a divergência.
-- **Origens do livro base:** tabelas e descrições usam nomes e, em alguns casos, perícias diferentes. Exemplos: Treinamento Militar/Para Bellum, Exorcismo/Acalentar, Computação Avançada/Motor de Busca e Trilhas e Rumos/Desbravador. A descrição de Lutador também difere da tabela. Essas diferenças não foram silenciosamente aplicadas às fichas.
-- **Munição:** a descrição usa “Balas Longas”, enquanto o catálogo existente usa “Balas pesadas”. Não foi criado outro pacote idêntico nem alterado o inventário salvo.
-- **Modificações:** o livro base possui listas para armas, proteções e acessórios (pp. 60–65 do PDF). Essas listas e Acoplável (Arquivos Secretos #2, p. 71) não têm aplicação estruturada completa. O site continua oferecendo notas de inventário; esta revisão visual não inventa cálculos para essas funções.
-- **Escopo da conferência:** presença nominal de opções e metadados de rituais. Não é uma certificação de todas as descrições, regras, erratas ou edições publicadas. As divergências exigem uma referência editorial consistente antes de mudar cálculos já utilizados.
+São **110 entradas de ritual**: 107 escolhas nos quatro livros atuais e três opções legadas preservadas para não quebrar fichas antigas. `tests/fixtures/ritual-use-costs.json` contém os 104 títulos extraídos das referências, com página do PDF, círculo, elemento, custo adicional e requisitos explícitos de cada versão. Os testes comparam cada entrada e cada versão ao catálogo.
 
-## Criação e compatibilidade
+- Normal, Discente e Verdadeiro aparecem ao conjurar. Uma forma inexistente ou sem requisito cumprido fica desabilitada com a explicação.
+- Custo total = custo-base + aprimoramento − descontos aplicáveis, com mínimo de 1. PE/PD seguem as regras opcionais da ficha. Recursos são descontados somente na confirmação; o histórico registra a versão e permite desfazer.
+- Ataque Especial e Especialista em Matar oferecem os patamares disponíveis e distribuições do bônus. Perito, Eclético, Técnica Secreta/Sublime, Força Opressora e Estrategista também têm escolhas explícitas.
+- Coincidência Forçada segue o 1º círculo da v1.3. Flagelo de Sangue, Inexistir e Invadir Mente foram adicionados.
+- Aprimorar Físico, Aprimorar Mente, Dissipar Ritual, Distorção Temporal, Miasma Entrópico e Tecer Ilusão usam os nomes da v1.3 e preservam os nomes antigos como aliases. IDs existentes permanecem estáveis.
+- Criar Ilusão, Ligação Telepática e Visão da Verdade permanecem identificados como opções de versão anterior. O teste da referência antiga continua verificando sua compatibilidade, com a substituição documentada de Coincidência Forçada.
 
-O fluxo de criação exige resolver as escolhas relativas à classe e ao NEX selecionados antes de concluir a ficha. Ocultista em NEX 5% escolhe três rituais de 1º círculo, incluindo qualquer uma das quatro variantes de Amaldiçoar Arma. Testes exercitam cada variante nessa criação, a busca pelo nome alternativo e a preservação dos identificadores existentes.
+## Equipamento e aparência
 
-A troca do personagem usa somente preferências de apresentação. Recursos, dano, defesa, carga, progressão e itens possuídos não são alterados pela composição visual.
+O catálogo tem **215 itens**, mantendo os 165 originais. Inclui a mochila militar, escudo, binóculos, máscara de gás, traje hazmat, componentes e detectores por elemento e os itens especiais das pp. 148–151. Nomes alternativos como Maça, Motosserra, Balas longas e Lanterna tática podem ser encontrados sem mudar os identificadores dos itens antigos.
+
+Há também **60 modificações/maldições de referência**, aplicadas dentro do item. O editor soma categoria e espaços; efeitos condicionais em testes, dano, Defesa, alvos e ativações específicas continuam sob controle do jogador. Não se contam essas melhorias como objetos soltos. Várias cópias de um item compartilham as modificações escolhidas. A mochila militar acrescenta 2 espaços à capacidade uma única vez.
+
+A criação permite escolher Masculino ou Feminino, com prévia imediata. Fichas antigas usam a aparência masculina. O compositor seleciona a base adequada e substitui regiões por versões já equipadas. As novas entradas compartilham silhuetas por tipo de equipamento; escudo, binóculos, máscara de gás e traje hazmat possuem novas versões. As 165 imagens originais do catálogo não foram alteradas. Pequenos objetos guardados e equipamento de veículo permanecem fora do corpo.
+
+## Verificação
+
+`node --test tests/*.mjs` executa os testes de regras, criação, level up, sessão, interface, custos e cobertura. `node scripts/render-equipment-qa.mjs /tmp/fop-review` gera a revisão visual: **430 casos individuais (215 por aparência), 20 conjuntos por aparência e poses na mão secundária**. `equipment-coverage.json` registra todos os casos, inclusive a ausência de alteração visual para objetos guardados. A revisão inclui roupas com proteções, capacete com óculos, trajes com objetos nas mãos, manoplas com arma e mochila com bandoleira e fuzil.
+
+Esta conferência cobre presença das opções, metadados de uso e composição visual. Não automatiza integralmente todos os efeitos narrativos e condicionais dos livros, nem substitui o texto da referência durante a mesa.

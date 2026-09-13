@@ -1,3 +1,5 @@
+import { upgradedItem } from "./item-upgrades.js?v=24";
+import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=24";
 const slug = (value) =>
   String(value)
     .normalize("NFD")
@@ -87,7 +89,7 @@ export const PATENT_ITEM_LIMITS = {
   "Agente de Elite": { I: 3, II: 3, III: 3, IV: 2 },
 };
 
-export const ITEMS = [
+const ORIGINAL_ITEMS = [
   // Livro base — armas simples
   weapon({ name: "Faca", proficiency: "Simples", handling: "Leve", category: "0", spaces: 1, damage: "1d4", critical: "19", range: "Curto", type: "Corte" }),
   weapon({ name: "Martelo", proficiency: "Simples", handling: "Leve", category: "0", spaces: 1, damage: "1d6", critical: "x2", type: "Impacto" }),
@@ -288,6 +290,8 @@ export const ITEMS = [
   utility("Faca Predadora", "Paranormais", "IV", 1, "Arma ágil de Sangue; ao gastar 2 PE e acertar, recupera 2d10 PV, convertendo o excesso em PV temporários.", "Arquivos Secretos #2", "93", [["Dano", "1d4 perfuração + 2d10 Sangue"], ["Crítico", "19/x3"], ["Alcance", "Curto (arremesso)"]]),
 ];
 
+export const ITEMS = [...ORIGINAL_ITEMS.map(item => ({...item, aliases: ITEM_NAME_ALIASES[item.name] ?? []})), ...ADDITIONAL_ITEMS];
+
 export const ITEM_BY_ID = new Map(ITEMS.map((entry) => [entry.id, entry]));
 
 export function inventoryCapacity(character) {
@@ -302,20 +306,22 @@ export function inventoryCapacity(character) {
     ? Math.max(0, Number(character?.nivel) || 0) * 5
     : Math.max(0, Number(character?.nex) || 0);
   const mascate = character?.trilha === "Muambeiro" && progressNex >= 10;
-  return base + (organized ? Math.max(0, Number(character?.atributos?.intelecto) || 0) : 0) + (mochileiro ? 5 : 0) + (mascate ? 5 : 0);
+  const militaryPack = (character?.inventarioItens ?? []).some(e => ITEM_BY_ID.get(e.itemId)?.name === "Mochila militar" && Number(e.quantity ?? 1) > 0);
+  return base + (militaryPack ? 2 : 0) + (organized ? Math.max(0, Number(character?.atributos?.intelecto) || 0) : 0) + (mochileiro ? 5 : 0) + (mascate ? 5 : 0);
 }
 
 export function inventoryUsage(character) {
   const entries = Array.isArray(character?.inventarioItens) ? character.inventarioItens : [];
-  const categoryCounts = { I: 0, II: 0, III: 0, IV: 0 };
+  const categoryCounts = { I: 0, II: 0, III: 0, IV: 0, "V+": 0 };
   let spaces = 0;
   let quantity = 0;
   const organized = (character?.habilidadesSelecionadas ?? []).some((id) =>
     String(id).endsWith("-inventario-organizado"),
   );
   for (const selected of entries) {
-    const catalogItem = ITEM_BY_ID.get(selected.itemId);
-    if (!catalogItem) continue;
+    const originalItem = ITEM_BY_ID.get(selected.itemId);
+    if (!originalItem) continue;
+    const catalogItem = upgradedItem(originalItem, character?.inventarioModificacoes?.[selected.itemId]);
     const amount = Math.max(1, Math.min(99, Number(selected.quantity) || 1));
     const unitSpaces = organized && catalogItem.spaces === 0.5 ? 0.25 : catalogItem.spaces;
     spaces += unitSpaces * amount;
