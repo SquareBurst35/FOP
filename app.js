@@ -320,6 +320,7 @@ function setInitialTrainingGrades(character) {
 }
 
 function readCharacters() {
+  if (window.fopPersistence) return window.fopPersistence.read();
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     return Array.isArray(parsed) ? parsed : [];
@@ -329,6 +330,7 @@ function readCharacters() {
 }
 
 function writeCharacters(characters) {
+  if (window.fopPersistence) return window.fopPersistence.write(characters);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(characters));
 }
 
@@ -3970,3 +3972,14 @@ function escapeAttribute(value) {
 
 if (!window.location.hash) window.location.hash = "#home";
 else renderRoute();
+
+// Auth changes cannot carry an unfinished draft into a different account.
+window.fopSyncBusy = () => Boolean(currentRoute().page === "criar" || levelUpState || abilityChoiceState || spendState || document.activeElement?.matches?.("input, textarea, select"));
+window.fopSyncNotice = showToast;
+window.addEventListener("fop-account-changed", () => {
+  creatorState = null; creatorProgress = null; levelUpState = null; abilityChoiceState = null; spendState = null; currentStep = 0;
+  navigate("home");
+});
+window.addEventListener("fop-characters-updated", () => {
+  if (!window.fopSyncBusy()) renderRoute();
+});

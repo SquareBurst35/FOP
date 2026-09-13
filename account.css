@@ -1,0 +1,9 @@
+/* Account controls only; the existing screens keep their current layout. */
+.header-account-area { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:10px; }
+.account-controls { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; max-width:440px; }
+.account-controls [hidden] { display:none; }
+.account-name { font-size:.78rem; color:var(--text); overflow-wrap:anywhere; }
+.account-status { font-size:.73rem; color:var(--muted); }
+.account-controls[data-state="error"] .account-status { color:var(--warning); }
+.account-controls[data-state="synced"] .account-status { color:var(--green); }
+@media(max-width:600px) { .header-account-area { max-width:64%; } .account-controls { gap:5px; } .account-status { width:100%; text-align:right; } }

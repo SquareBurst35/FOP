@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/characters/{characterId} {
+      function owner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+      allow read: if owner();
+      allow create, update: if owner()
+        && characterId.matches('^[a-zA-Z0-9_-]{1,180}$')
+        && request.resource.data.keys().hasOnly(['schema', 'json', 'revision', 'version', 'deleted', 'updatedAt'])
+        && request.resource.data.schema == 1
+        && request.resource.data.json is string
+        && request.resource.data.json.size() <= 800000
+        && request.resource.data.revision is string
+        && request.resource.data.revision.size() <= 100
+        && request.resource.data.version is int
+        && request.resource.data.version >= 1
+        && request.resource.data.deleted is bool
+        && request.resource.data.updatedAt == request.time;
+      // Tombstones synchronize deletions without reviving stale device caches.
+      allow delete: if false;
+    }
+  }
+}
