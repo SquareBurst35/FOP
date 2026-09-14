@@ -163,9 +163,9 @@ export function useAbility(character, use) {
     countsAgainstTurn = true;
   }
 
-  // Check before changing resources, usage limits or history. PD keeps its existing behavior.
-  if (resourceLabel === "PE" && cost > 0 && session.gastoTurno + cost > turnSpendLimit(character)) {
-    return { ok: false, reason: "turn", message: "Limite de PE por turno atingido." };
+  // Both PE and its optional PD replacement share the per-turn effort budget.
+  if (countsAgainstTurn && session.gastoTurno + cost > turnSpendLimit(character)) {
+    return { ok: false, reason: "turn", message: `Limite de ${resourceLabel} por turno atingido.` };
   }
 
   if (currentKey && numberOr(character.recursos?.[currentKey], 0) < cost) {

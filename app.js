@@ -62,7 +62,7 @@ import {
   turnSpendLimit,
   undoLastUse,
   useAbility,
-} from "./session.js?v=29";
+} from "./session.js?v=30";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -1233,9 +1233,7 @@ function renderSessionControl(character) {
       </div>
       <dl class="session-budget">
         <div><dt>${resource.label} atual</dt><dd>${current}/${maximum}</dd></div>
-        ${resource.label === "PE"
-          ? `<div class="session-turn-budget ${session.gastoTurno >= limit ? "at-limit" : ""}"><dt>Limite por turno</dt><dd>${session.gastoTurno}/${limit} PE</dd></div>`
-          : `<div><dt>Gasto no turno</dt><dd>${session.gastoTurno} ${resource.label}</dd></div>`}
+        <div class="session-turn-budget ${session.gastoTurno >= limit ? "at-limit" : ""}"><dt>Limite por turno</dt><dd>${session.gastoTurno}/${limit} ${resource.label}</dd></div>
       </dl>
       <div class="session-control-actions">
         <button type="button" data-session-action="turn">Resetar turno</button>

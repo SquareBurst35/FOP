@@ -115,11 +115,7 @@ test('legacy spending above the current level is preserved and blocks further PE
   assert.equal(use(character, 6).ok, true);
 });
 
-test('PD, PV, SAN, zero-cost actions and insufficient-resource checks keep their behavior', () => {
-  const determination = agent({ nivel: 1, optionalRules: { determination: true } });
-  assert.equal(use(determination, 4).ok, true);
-  assert.equal(determination.recursos.pdAtual, 46);
-  assert.equal(determination.recursos.peAtual, 50);
+test('PV, SAN, zero-cost actions and insufficient-resource checks keep their behavior', () => {
   for (const resource of ['pv', 'san']) {
     const character = agent({ nivel: 0 });
     assert.equal(use(character, 3, { resource }).ok, true);

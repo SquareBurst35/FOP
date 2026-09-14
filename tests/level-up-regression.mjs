@@ -410,47 +410,50 @@ function finish(ui) {
 console.log("13 cenários de regressão do level up e da sessão passaram.");
 
 // The real UI blocks a second use at level 1 and exposes only the compact reset controls.
-{
+for (const determination of [false, true]) {
+  const label = determination ? "PD" : "PE";
+  const currentKey = determination ? "pdAtual" : "peAtual";
   const power = GENERAL_POWERS.find(entry => entry.name === "Palpite Confiante");
-  const character = characterAtLevel({ id: "pe-ui-limit", level: 1, abilities: [power.id] });
+  const character = characterAtLevel({ id: `${label}-ui-limit`, level: 1, abilities: [power.id], optionalRules: { determination } });
   const ui = await boot(character);
   assert.match(ui.html(), /Resetar turno/);
   assert.match(ui.html(), /Resetar cena/);
   assert.doesNotMatch(ui.html(), /data-session-action="session"/);
-  assert.match(ui.html(), /0\/1 PE/);
+  assert.ok(ui.html().includes(`0/1 ${label}`));
   ui.clickData("[data-sheet-tab]", "sheetTab", "habilidades");
   ui.clickData("[data-use-ability]", "useAbility", power.id);
   const beforeBlocked = ui.saved();
   ui.clickData("[data-use-ability]", "useAbility", power.id);
   assert.deepEqual(ui.saved(), beforeBlocked);
-  assert.match(ui.document.querySelector("#toast").textContent, /Limite de PE por turno/);
-  assert.match(ui.html(), /1\/1 PE/);
+  assert.equal(ui.document.querySelector("#toast").textContent, `Limite de ${label} por turno atingido.`);
+  assert.ok(ui.html().includes(`1/1 ${label}`));
   ui.clickData("[data-session-action]", "sessionAction", "turn");
-  assert.equal(ui.saved().recursos.peAtual, beforeBlocked.recursos.peAtual);
-  assert.match(ui.html(), /0\/1 PE/);
+  assert.equal(ui.saved().recursos[currentKey], beforeBlocked.recursos[currentKey]);
+  assert.ok(ui.html().includes(`0/1 ${label}`));
   ui.clickData("[data-use-ability]", "useAbility", power.id);
-  assert.equal(ui.saved().recursos.peAtual, beforeBlocked.recursos.peAtual - 1);
+  assert.equal(ui.saved().recursos[currentKey], beforeBlocked.recursos[currentKey] - 1);
 }
 
 // Ritual version selection is deferred until confirmation and persists its cost.
-{
+for (const determination of [false, true]) {
+ const label=determination?'PD':'PE',currentKey=determination?'pdAtual':'peAtual';
  const ritual=RITUALS.find(r=>r.name==='Amaldiçoar Arma (Sangue)');
- const character=characterAtLevel({id:'ritual-versoes',level:11,className:'Ocultista',rituals:[ritual.id]});
+ const character=characterAtLevel({id:`ritual-versoes-${label}`,level:11,className:'Ocultista',rituals:[ritual.id],optionalRules:{determination}});
  character.afinidadeElemental='Sangue';character.aparencia='feminino';
  const ui=await boot(character);ui.clickData('[data-sheet-tab]','sheetTab','rituais');
  ui.clickData('[data-use-ritual]','useRitual',ritual.id);
  assert.match(ui.html(),/data-use-option="normal"/);assert.match(ui.html(),/data-use-option="discente"/);assert.match(ui.html(),/data-use-option="verdadeiro"/);
- assert.equal(ui.saved().recursos.peAtual,character.recursos.peAtual);
+ assert.equal(ui.saved().recursos[currentKey],character.recursos[currentKey]);
  ui.clickData('[data-use-option]','useOption','verdadeiro');
  ui.click('confirm-spend-dialog');
- assert.equal(ui.saved().recursos.peAtual,character.recursos.peAtual-6);
+ assert.equal(ui.saved().recursos[currentKey],character.recursos[currentKey]-6);
  assert.equal(ui.saved().controleSessao.historico.at(-1).variant,'Verdadeiro');
  const beforeBlockedRitual=ui.saved();
  ui.clickData('[data-use-ritual]','useRitual',ritual.id);
  ui.clickData('[data-use-option]','useOption','verdadeiro');
  ui.click('confirm-spend-dialog');
  assert.deepEqual(ui.saved(),beforeBlockedRitual);
- assert.match(ui.document.querySelector('#toast').textContent,/Limite de PE por turno/);
+ assert.equal(ui.document.querySelector('#toast').textContent,`Limite de ${label} por turno atingido.`);
  assert.equal(ui.saved().aparencia,'feminino');
  ui.clickData('[data-sheet-tab]','sheetTab','inventario');assert.match(ui.html(),/data-appearance="feminino"/);
 }
