@@ -22,7 +22,7 @@ Total: 468 páginas. Extração preparada página a página; extração não sig
 - AS #3: páginas PDF 1–142 lidas integralmente em texto. Conferidas visualmente as páginas 11, 88 e 141. Catalogadas 18 fichas de ameaças nas páginas 11, 17, 23, 29, 37, 41, 47, 51, 57, 63, 69, 73, 81, 88, 92, 95, 101 e 105.
 - AS #4: páginas PDF 1–79 lidas integralmente em texto. Fichas nas páginas 55–57 e 61; opções de personagem nas páginas 64–71; hacking nas páginas 72–73; exemplos narrativos de adaptação de ameaças nas páginas 76–78, sem novos itens livremente selecionáveis.
 - Nenhuma opção das páginas 108–119 de AS #3 consta com o mesmo nome nos catálogos atuais de poderes, rituais, trilhas ou itens.
-- Os demais PDFs ainda não foram integralmente comparados.
+- Comparação dos novos nomes, aliases e referências a poderes existentes concluída nos cinco suplementos: nenhum conflito de identidade encontrado nos catálogos de personagem. Comparação de funcionamento segue junto da integração.
 
 ## AS #3 — inventário de diferenças identificado
 
@@ -46,11 +46,11 @@ Total: 468 páginas. Extração preparada página a página; extração não sig
 
 ## Integração e testes
 
-Ainda não iniciados. Login, Firebase e sincronização permanecem fora do escopo de alteração. Dados de ameaças serão separados das opções selecionáveis dos personagens, sem página visual nova.
+Dados de personagem preparados nos módulos `supplements/as03.js` a `as07.js`; 9 testes de regras suplementares passaram. A interface e os catálogos principais ainda não importam esses módulos. Login, Firebase e sincronização permanecem fora do escopo de alteração. Dados de ameaças serão separados das opções selecionáveis dos personagens, sem página visual nova.
 
 ## Ponto de retomada
 
-Leitura textual integral concluída nos cinco PDFs. Conferir tabelas e integrações no código antes de fechar a cobertura. Implementações e testes não iniciados. Não marcar como adicionada uma opção apenas catalogada neste documento.
+Leitura textual integral concluída nos cinco PDFs. Conferir tabelas e integrações no código antes de fechar a cobertura. Dados estruturados dos cinco PDFs, avaliação de requisitos, controles de veículos/hacking e regras auxiliares escritos. Falta integrar aos fluxos da ficha, implementar todas as ativações e concluir as ameaças. Não marcar como adicionada uma opção apenas catalogada neste documento.
 
 ## Divergências das fontes
 
@@ -140,3 +140,16 @@ Texto integral das páginas 1–93 lido. Narrativas e ilustrações não serão 
 | Regra opcional não canônica publicada | Regras debaixo d’água; combate submerso; pressão | 92–93 |
 
 Divergências: Alvira p. 42 referencia Vampirismo como página `@@`; a regra está nas pp. 76–77. Incinerado p. 65 lista imunidade e vulnerabilidade a fogo simultaneamente e resistência/vulnerabilidade balística; Stryzga p. 67 também lista resistência/vulnerabilidade balística. Preservar o conflito e não decidir silenciosamente uma errata não fornecida. As grafias Stryzga/Strzyga e Zéfero/Zéfiro aparecem alternadas; usar uma identidade com aliases. As trilhas Monstruoso são variantes por classe, não duplicatas do Combatente.
+
+## Checkpoint técnico — catálogos preparados, ainda não publicados
+
+- Dados novos sem coincidência de nomes/aliases com a base: 9 origens; 31 poderes de classe; 12 gerais; 11 paranormais; 11 poderes de história; 28 habilidades de trilha (incluindo 3 aplicações da trilha geral Performático); 3 rituais; 26 itens; 5 modificações e 2 maldições; 22 aliados; 18 regalias e 4 perfis de veículo; 5 doenças e 5 venenos abstratos de jogo.
+- Pré-requisitos estruturados: alternativas de atributos, graus de perícia, poderes anteriores, NEX e elegibilidade de história. As referências a poderes anteriores foram encontradas no catálogo atual. Afinidades de novos poderes exigem segunda aquisição, além do elemento correspondente.
+- Controles independentes implementados: cena de hacking, veículos, tabelas de animais/categoria de veneno/construção/dardos e pressão submersa. Ainda sem interface.
+- Testes: `node --test tests/supplement-rules-regression.mjs`: 9/9. A suíte original passou 38/38 antes das alterações; ainda deve ser executada após a integração. Um erro no limite de VD animal em NEX 99 foi detectado e corrigido pelo teste.
+- Classificação de Evolução Modular: mapeamento editorial conforme os critérios da p.80; poderes dependentes de escolhas permanecem condicionados à escolha ou ao registro do mestre, sem categoria adivinhada. Padrão permanece desligado.
+- AS4 p.73: o imprevisto de quatro resultados 1 restaura PS; não concede novos dados virtuais. No caso de rerrolagem por Cobrir Rastros, são contados os resultados finais.
+- AS3 p.127 não especifica velocidade de manobra para resultado inferior a 5: o controle apresenta 0 até novo teste/decisão do mestre, sem inventar faixa adicional.
+- Não publicados: nenhum catálogo principal, fluxo de criação, login, inventário visual ou pixel art foi alterado neste checkpoint.
+
+Próximas etapas: efeitos/ativações, integração de escolhas e progressão, condições/inventário, dados completos de ameaças/perigos, cobertura de todos os registros, testes de criação/level up/PE/PD e regressões; depois publicação.

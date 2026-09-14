@@ -1,0 +1,24 @@
+import { AS03_POWERS, AS03_SACRIFICES, AS03_TRAILS, AS03_ITEMS } from './as03.js';
+import { AS04_ORIGINS, AS04_POWERS, AS04_TRAILS, AS04_RITUALS, AS04_ITEMS, AS04_UPGRADES } from './as04.js';
+import { AS05_ORIGINS, AS05_POWERS, AS05_TRAILS, AS05_TRANSMISSION, AS05_ITEMS } from './as05.js';
+import { AS06_ORIGINS, AS06_POWERS, AS06_RITUALS, AS06_ITEMS, AS06_UPGRADES, AS06_DISEASES, AS06_POISONS } from './as06.js';
+import { AS07_ORIGINS, AS07_TRAILS, AS07_RITUALS, AS07_ITEMS } from './as07.js';
+export { SUPPLEMENT_ALLIES } from './allies.js';
+export { VEHICLE_PERKS, VEHICLE_PROFILES } from './vehicles.js';
+export { AS06_DISEASES as SUPPLEMENT_DISEASES, AS06_POISONS as SUPPLEMENT_POISONS };
+export const SUPPLEMENT_ORIGINS = [...AS04_ORIGINS, ...AS05_ORIGINS, ...AS06_ORIGINS, ...AS07_ORIGINS];
+const powers = [...AS03_POWERS, ...AS04_POWERS, ...AS05_POWERS, ...AS06_POWERS];
+export const SUPPLEMENT_CLASS_POWERS = powers.filter(p => ['Combatente', 'Especialista', 'Ocultista'].includes(p.category));
+export const SUPPLEMENT_GENERAL_POWERS = powers.filter(p => p.category === 'Gerais');
+export const SUPPLEMENT_PARANORMAL_POWERS = powers.filter(p => p.category === 'Paranormais').map(p => ({ ...p, category: 'Poderes Paranormais' }));
+export const SUPPLEMENT_STORY_POWERS = [...AS03_SACRIFICES, ...AS05_TRANSMISSION].map(p => ({ ...p, category: 'Poderes de História', mechanics: { ...p.mechanics, acquisition: 'story' } }));
+export const SUPPLEMENT_TRAILS = [...AS03_TRAILS, ...AS04_TRAILS, ...AS05_TRAILS, ...AS07_TRAILS];
+export const SUPPLEMENT_RITUALS = [...AS04_RITUALS, ...AS06_RITUALS, ...AS07_RITUALS];
+export const SUPPLEMENT_ABILITIES = [...SUPPLEMENT_CLASS_POWERS, ...SUPPLEMENT_GENERAL_POWERS, ...SUPPLEMENT_PARANORMAL_POWERS, ...SUPPLEMENT_STORY_POWERS, ...SUPPLEMENT_TRAILS, ...SUPPLEMENT_ORIGINS.map(o => o.ability)];
+export const SUPPLEMENT_ITEMS = [...AS03_ITEMS, ...AS04_ITEMS, ...AS05_ITEMS, ...AS06_ITEMS, ...AS07_ITEMS].map(item => {
+  const weapon = item.mechanics.weapon;
+  const details = weapon ? [ ['Proficiência', weapon.proficiency], ['Empunhadura', weapon.handling], ['Dano', weapon.damage], ['Crítico', weapon.critical], ['Alcance', weapon.range], ['Tipo', weapon.damageType] ].filter(([,value]) => value != null) : [];
+  return { ...item, details };
+});
+export const SUPPLEMENT_UPGRADES = [...AS04_UPGRADES, ...AS06_UPGRADES];
+export const SUPPLEMENT_BY_ID = new Map([...SUPPLEMENT_ABILITIES, ...SUPPLEMENT_RITUALS, ...SUPPLEMENT_ITEMS, ...SUPPLEMENT_UPGRADES].map(entry => [entry.id, entry]));
