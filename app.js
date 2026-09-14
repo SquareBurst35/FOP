@@ -409,25 +409,28 @@ function renderRoute() {
 function renderHome() {
   const characters = readCharacters();
 
-  headerActions.innerHTML = `
-    <button class="button primary compact" id="new-character-header" type="button">+ Novo agente</button>
-  `;
-  document.querySelector("#new-character-header").addEventListener("click", startCreator);
+  headerActions.innerHTML = "";
 
   app.innerHTML = `
-    <section class="page-heading">
-      <div>
-        <p class="eyebrow">Central de operações</p>
-        <h1>Arquivo de agentes</h1>
-        <p class="muted">Crie fichas, acompanhe recursos durante a sessão e mantenha tudo salvo neste aparelho.</p>
-      </div>
-      <button class="button primary" id="new-character-main" type="button">+ Criar agente</button>
-    </section>
+    <div class="agent-home">
+      <section class="page-heading home-heading" aria-labelledby="archive-title">
+        <div>
+          <p class="eyebrow">Central de operações</p>
+          <h1 id="archive-title">Arquivo de agentes</h1>
+          <p class="muted">Suas fichas e recursos de sessão, em um só lugar.</p>
+        </div>
+        ${characters.length ? `<button class="button primary home-create" id="new-character-main" type="button"><span aria-hidden="true">+</span> Criar agente</button>` : ""}
+      </section>
 
-    ${characters.length ? renderCharacterGrid(characters) : renderEmptyState()}
+      <div class="archive-section-heading">
+        <h2>Seus agentes <span class="archive-count" aria-label="${characters.length} ${characters.length === 1 ? "agente" : "agentes"}">${characters.length}</span></h2>
+        <p>${characters.length ? "Escolha uma ficha para continuar." : "Seu próximo caso começa aqui."}</p>
+      </div>
+      ${characters.length ? renderCharacterGrid(characters) : renderEmptyState()}
+    </div>
   `;
 
-  document.querySelector("#new-character-main").addEventListener("click", startCreator);
+  document.querySelector("#new-character-main")?.addEventListener("click", startCreator);
   document.querySelector("#empty-create")?.addEventListener("click", startCreator);
 
   document.querySelectorAll("[data-open-character]").forEach((button) => {
@@ -452,12 +455,16 @@ function renderHome() {
 
 function renderEmptyState() {
   return `
-    <section class="empty-state">
+    <section class="empty-state" aria-labelledby="empty-archive-title">
       <div class="empty-state-inner">
-        <div class="empty-sigil" aria-hidden="true">∅</div>
-        <h2>Nenhum agente registrado</h2>
-        <p class="muted">Seu primeiro arquivo começa pela identidade do agente. O progresso será salvo no navegador.</p>
-        <button class="button primary" id="empty-create" type="button">Iniciar primeira ficha</button>
+        <div class="empty-sigil" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 12V8h11l4 4h11v20H7V12Z"/><path d="M13 19h14M13 24h10"/></svg>
+        </div>
+        <p class="eyebrow">Arquivo aberto. História por escrever.</p>
+        <h2 id="empty-archive-title">Quem vai encarar o próximo caso?</h2>
+        <p class="muted">Crie seu primeiro agente e prepare a ficha para a próxima sessão.</p>
+        <button class="button primary home-create" id="empty-create" type="button"><span aria-hidden="true">+</span> Criar agente</button>
+        <p class="empty-save-note">Suas alterações são salvas automaticamente.</p>
       </div>
     </section>
   `;
@@ -474,7 +481,7 @@ function renderCharacterGrid(characters) {
               <div class="character-card-head">
                 <div class="avatar" aria-hidden="true">${escapeHtml(initials(character.nome))}</div>
                 <div>
-                  <h2>${escapeHtml(character.nome || "Agente sem nome")}</h2>
+                  <h3>${escapeHtml(character.nome || "Agente sem nome")}</h3>
                   <span class="muted small">${escapeHtml(character.jogador || "Jogador não informado")}</span>
                 </div>
               </div>
@@ -486,9 +493,9 @@ function renderCharacterGrid(characters) {
                 ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
               </div>
               <div class="card-actions">
-                <button class="button compact" type="button" data-open-character="${character.id}">Abrir ficha</button>
-                <button class="button ghost compact" type="button" data-duplicate-character="${character.id}" aria-label="Duplicar ficha">Duplicar</button>
-                <button class="button danger compact" type="button" data-delete-character="${character.id}" aria-label="Excluir ficha">×</button>
+                <button class="button compact card-open" type="button" data-open-character="${character.id}" aria-label="Abrir ficha de ${escapeHtml(character.nome || "Agente sem nome")}">Abrir ficha <span aria-hidden="true">→</span></button>
+                <button class="button ghost compact" type="button" data-duplicate-character="${character.id}" aria-label="Duplicar ficha de ${escapeHtml(character.nome || "Agente sem nome")}">Duplicar</button>
+                <button class="button ghost compact card-delete" type="button" data-delete-character="${character.id}" aria-label="Excluir ficha de ${escapeHtml(character.nome || "Agente sem nome")}" title="Excluir ficha"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg></button>
               </div>
             </article>
           `,

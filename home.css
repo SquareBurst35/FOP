@@ -1,0 +1,108 @@
+/* Archive only. Account behavior and the other screens keep their own styles. */
+body:has(.agent-home) .topbar {
+  gap: 24px;
+  min-height: 88px;
+  padding-block: 16px;
+}
+body:has(.agent-home) .brand { min-width: 0; }
+body:has(.agent-home) .brand-mark { flex-shrink: 0; }
+body:has(.agent-home) .brand-copy strong { letter-spacing: .015em; }
+body:has(.agent-home) .brand-copy small { margin-top: 3px; font-size: .68rem; }
+body:has(.agent-home) .header-actions:empty { display: none; }
+body:has(.agent-home) .header-account-area { min-width: 0; max-width: 50%; }
+body:has(.agent-home) .account-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 16px;
+  align-items: center;
+}
+body:has(.agent-home) .account-name { grid-column: 1; text-align: right; }
+body:has(.agent-home) .account-name:empty { display: none; }
+body:has(.agent-home) .account-status { grid-column: 1; text-align: right; font-size: .75rem; }
+body:has(.agent-home) .account-controls .button {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  min-height: 44px;
+  border-color: #41454a;
+  background: #141619;
+  white-space: nowrap;
+}
+body:has(.agent-home) .account-controls .button:last-child:not([hidden]) { grid-row: 3; }
+body:has(.agent-home) .account-controls .button:disabled { opacity: .55; cursor: wait; transform: none; }
+body:has(.agent-home) #app { padding-top: 44px; }
+
+.agent-home { --home-border: rgba(174, 180, 183, .19); }
+.agent-home .home-heading { gap: 32px; align-items: center; padding: 0 0 32px; margin-bottom: 30px; }
+.agent-home .home-heading .eyebrow { margin-bottom: 14px; font-size: .7rem; letter-spacing: .2em; }
+.agent-home h1 { font-size: clamp(1.9rem, 3.5vw, 2.75rem); margin-bottom: 14px; }
+.agent-home .home-heading .muted { font-size: .96rem; }
+.agent-home .home-create { flex-shrink: 0; min-height: 48px; padding-inline: 22px; }
+.agent-home .home-create > span { font-size: 1.35rem; line-height: 1; font-weight: 400; }
+.archive-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.archive-section-heading h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1rem; }
+.archive-count { display: grid; place-items: center; min-width: 26px; height: 26px; padding-inline: 7px; border: 1px solid var(--home-border); border-radius: 6px; color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.archive-section-heading p { margin: 0; color: var(--muted); font-size: .8rem; }
+
+.agent-home .empty-state {
+  overflow: hidden;
+  min-height: 385px;
+  padding: 48px 24px 40px;
+  border-color: var(--home-border);
+  background: radial-gradient(ellipse at 50% 0, rgba(160, 25, 38, .085), transparent 65%), linear-gradient(145deg, #101214, #0b0d0f);
+  box-shadow: 0 16px 44px #0003;
+}
+.agent-home .empty-state::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-top: 1px solid #cc283438; border-radius: inherit; }
+.agent-home .empty-state-inner { max-width: 480px; }
+.agent-home .empty-sigil { width: 76px; height: 76px; margin-bottom: 28px; color: #f35a66; }
+.agent-home .empty-sigil svg { width: 40px; height: 40px; }
+.agent-home .empty-state .eyebrow { font-size: .62rem; letter-spacing: .15em; margin-bottom: 10px; color: #b88387; }
+.agent-home .empty-state h2 { font-size: clamp(1.2rem, 2.4vw, 1.5rem); margin-bottom: 12px; line-height: 1.3; }
+.agent-home .empty-state .muted { max-width: 350px; margin: 0 auto 24px; font-size: .92rem; }
+.agent-home .empty-save-note { margin: 16px 0 0; font-size: .72rem; color: var(--muted); }
+
+.agent-home .character-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 18px; }
+.agent-home .character-card { display: flex; flex-direction: column; min-width: 0; padding: 24px 20px 18px; border-color: var(--home-border); }
+.agent-home .character-card:hover { transform: translateY(-2px); }
+.agent-home .character-card:focus-within { border-color: #cb414b; }
+.agent-home .character-card-head { align-items: flex-start; margin-bottom: 22px; }
+.agent-home .character-card-head > div:last-child { min-width: 0; }
+.agent-home .character-card h3 { font-size: 1.13rem; line-height: 1.3; margin: 0 0 5px; overflow-wrap: anywhere; }
+.agent-home .character-card-head .small { display: block; font-size: .77rem; overflow-wrap: anywhere; }
+.agent-home .avatar { border-radius: 10px; font-size: .94rem; }
+.agent-home .character-meta { margin-bottom: 24px; gap: 6px; }
+.agent-home .badge { max-width: 100%; overflow-wrap: anywhere; border-radius: 5px; font-size: .71rem; font-weight: 600; }
+.agent-home .badge.red { font-weight: 750; }
+.agent-home .card-actions { align-items: center; gap: 7px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--home-border); }
+.agent-home .card-actions .button { min-height: 44px; }
+.agent-home .card-open { justify-content: space-between; padding-inline: 13px; border: 1px solid #42464b; background: #202328; }
+.agent-home .card-open:hover { border-color: #de535e; background: #2a2024; }
+.agent-home .card-delete { width: 44px; flex: 0 0 44px; padding: 10px; border-color: transparent; color: var(--muted); }
+.agent-home .card-delete svg { width: 19px; height: 19px; }
+.agent-home .card-delete:hover { background: var(--red-soft); border-color: #b73a46; color: #ff9ca4; }
+.agent-home .button:focus-visible, body:has(.agent-home) .topbar button:focus-visible { outline: 2px solid #f5848d; outline-offset: 4px; }
+.agent-home .button:active { transform: translateY(1px); }
+
+@media (max-width: 760px) {
+  body:has(.agent-home) .topbar { position: relative; flex-wrap: wrap; padding: 18px 20px 14px; gap: 16px; }
+  body:has(.agent-home) .brand { width: 100%; }
+  body:has(.agent-home) .brand-copy strong { font-size: .84rem; }
+  body:has(.agent-home) .brand-copy small { display: block; }
+  body:has(.agent-home) .header-account-area { width: 100%; max-width: none; padding-top: 13px; border-top: 1px solid #ffffff12; }
+  body:has(.agent-home) .account-controls { width: 100%; max-width: none; gap: 3px 12px; }
+  body:has(.agent-home) .account-name, body:has(.agent-home) .account-status { text-align: left; }
+  body:has(.agent-home) .account-status { font-size: .72rem; }
+  body:has(.agent-home) #app { width: calc(100% - 32px); padding-top: 30px; }
+  .agent-home .home-heading { flex-direction: column; align-items: stretch; gap: 22px; padding-bottom: 26px; margin-bottom: 24px; }
+  .agent-home .home-heading .muted { font-size: .88rem; }
+  .agent-home .home-create { width: 100%; }
+  .archive-section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .archive-section-heading p { font-size: .76rem; }
+  .agent-home .empty-state { min-height: 350px; padding: 32px 20px; }
+  .agent-home .empty-state .eyebrow { max-width: 230px; margin-inline: auto; }
+  .agent-home .empty-state .home-create { max-width: 280px; }
+  .agent-home .character-card { padding: 22px 16px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-home .character-card:hover, .agent-home .button:hover, .agent-home .button:active { transform: none; }
+}
