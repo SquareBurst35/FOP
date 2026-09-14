@@ -1,10 +1,11 @@
 /* Archive only. Account behavior and the other screens keep their own styles. */
+html:has(.agent-home) { min-width: 0; }
 body:has(.agent-home) .topbar {
   gap: 24px;
   min-height: 88px;
   padding-block: 16px;
 }
-body:has(.agent-home) .brand { min-width: 0; }
+body:has(.agent-home) .brand { min-width: 0; min-height: 44px; }
 body:has(.agent-home) .brand-mark { flex-shrink: 0; }
 body:has(.agent-home) .brand-copy strong { letter-spacing: .015em; }
 body:has(.agent-home) .brand-copy small { margin-top: 3px; font-size: .68rem; }
