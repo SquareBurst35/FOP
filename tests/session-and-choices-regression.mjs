@@ -55,20 +55,22 @@ assert.equal(rollUseCost(sanityCost, () => 0.999), 4);
 
 const standard = character();
 assert.equal(turnSpendLimit(standard), 5);
-assert.equal(turnSpendLimit(standard, { hasFacingDeath: true }), 6);
+assert.equal(turnSpendLimit(standard, { hasFacingDeath: true }), 5);
 standard.afinidadeElemental = "Morte";
-assert.equal(turnSpendLimit(standard, { hasFacingDeath: true }), 7);
-assert.equal(turnSpendLimit(standard, { ritual: true, hasPowerfulPresence: true }), 8);
+assert.equal(turnSpendLimit(standard, { hasFacingDeath: true }), 5);
+assert.equal(turnSpendLimit(standard, { ritual: true, hasPowerfulPresence: true }), 5);
 
 const spend = character();
 let result = useAbility(spend, { id: "teste", name: "Teste", cost: 3, resource: "effort", turnLimit: 5 });
 assert.equal(result.ok, true);
 assert.equal(spend.recursos.peAtual, 9);
 assert.equal(spend.controleSessao.gastoTurno, 3);
-result = useAbility(spend, { id: "teste-2", name: "Teste 2", cost: 3, resource: "effort", turnLimit: 5 });
+result = useAbility(spend, { id: "teste-2", name: "Teste 2", cost: 2, resource: "effort", turnLimit: 5 });
 assert.equal(result.ok, true);
-assert.equal(spend.recursos.peAtual, 6);
-assert.equal(spend.controleSessao.gastoTurno, 6);
+assert.equal(spend.recursos.peAtual, 7);
+assert.equal(spend.controleSessao.gastoTurno, 5);
+assert.equal(useAbility(spend, { id: "bloqueado", name: "Bloqueado", cost: 1, resource: "effort" }).reason, "turn");
+assert.equal(spend.recursos.peAtual, 7);
 assert.equal(undoLastUse(spend).ok, true);
 assert.equal(spend.recursos.peAtual, 9);
 assert.equal(spend.controleSessao.gastoTurno, 3);

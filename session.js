@@ -52,14 +52,13 @@ export function progressLevel(character) {
   return clamp(Math.round(nex / 5), 1, 20);
 }
 
-export function turnSpendLimit(character, { hasFacingDeath = false, ritual = false, hasPowerfulPresence = false } = {}) {
-  if (character?.classe === "Sobrevivente") return 1;
-  let limit = progressLevel(character);
-  if (hasFacingDeath) limit += character.afinidadeElemental === "Morte" ? 2 : 1;
-  if (ritual && hasPowerfulPresence) {
-    limit += Math.max(0, Math.trunc(numberOr(character.atributos?.presenca, 0)));
-  }
-  return Math.max(1, limit);
+export function turnSpendLimit(character) {
+  // This budget is independent from ritual access and other progression rules.
+  const stored = character?.nivel;
+  const hasStoredLevel = (typeof stored === "number" || (typeof stored === "string" && stored.trim() !== ""))
+    && Number.isFinite(Number(stored)) && Number(stored) >= 0;
+  const level = hasStoredLevel ? Number(stored) : numberOr(character?.nex, 0) / 5;
+  return clamp(Math.trunc(level), 0, 20);
 }
 
 export function parseUseCost(cost) {
@@ -162,6 +161,11 @@ export function useAbility(character, use) {
     maxKey = resource.maxKey;
     resourceLabel = resource.label;
     countsAgainstTurn = true;
+  }
+
+  // Check before changing resources, usage limits or history. PD keeps its existing behavior.
+  if (resourceLabel === "PE" && cost > 0 && session.gastoTurno + cost > turnSpendLimit(character)) {
+    return { ok: false, reason: "turn", message: "Limite de PE por turno atingido." };
   }
 
   if (currentKey && numberOr(character.recursos?.[currentKey], 0) < cost) {

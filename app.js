@@ -59,9 +59,10 @@ import {
   startNextScene,
   startNextTurn,
   startNewSession,
+  turnSpendLimit,
   undoLastUse,
   useAbility,
-} from "./session.js?v=24";
+} from "./session.js?v=29";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -1223,20 +1224,24 @@ function renderSessionControl(character) {
   const resource = effortResource(character);
   const current = numberOr(character.recursos?.[resource.currentKey], 0);
   const maximum = numberOr(character.recursos?.[resource.maxKey], 0);
+  const limit = turnSpendLimit(character);
   const last = session.historico.at(-1);
   return `
-    <section class="session-control" aria-label="Controle da sessão">
+    <section class="session-control" aria-label="Turno e cena">
       <div class="session-control-heading">
-        <div><span>Cena ${session.cena}</span><strong>Turno ${session.turno}</strong></div>
-        <span class="session-resource-label">${current}/${maximum} ${resource.label}</span>
+        <span>Cena ${session.cena}</span><strong>Turno ${session.turno}</strong>
       </div>
-      <p>Os custos são descontados automaticamente. O limite por turno fica sob controle do jogador.</p>
+      <dl class="session-budget">
+        <div><dt>${resource.label} atual</dt><dd>${current}/${maximum}</dd></div>
+        ${resource.label === "PE"
+          ? `<div class="session-turn-budget ${session.gastoTurno >= limit ? "at-limit" : ""}"><dt>Limite por turno</dt><dd>${session.gastoTurno}/${limit} PE</dd></div>`
+          : `<div><dt>Gasto no turno</dt><dd>${session.gastoTurno} ${resource.label}</dd></div>`}
+      </dl>
       <div class="session-control-actions">
-        <button type="button" data-session-action="turn">Novo turno</button>
-        <button type="button" data-session-action="scene">Nova cena</button>
-        <button type="button" data-session-action="session">Nova sessão</button>
+        <button type="button" data-session-action="turn">Resetar turno</button>
+        <button type="button" data-session-action="scene">Resetar cena</button>
       </div>
-      ${last ? `<div class="session-last-use"><span>Último uso</span><strong>${escapeHtml(last.name)}</strong><small>${last.cost ? `−${last.cost} ${escapeHtml(last.resource)}` : "Sem custo de recurso"}</small><button type="button" data-session-action="undo">Desfazer</button></div>` : `<div class="session-last-use empty"><span>Os usos aparecerão aqui.</span></div>`}
+      ${last ? `<details class="session-history"><summary>Último uso</summary><div class="session-last-use"><strong>${escapeHtml(last.name)}</strong><small>${last.cost ? `−${last.cost} ${escapeHtml(last.resource)}` : "Sem custo de recurso"}</small><button type="button" data-session-action="undo">Desfazer</button></div></details>` : ""}
     </section>
   `;
 }
@@ -3107,10 +3112,10 @@ function bindSheetInteractions(character) {
       const action = button.dataset.sessionAction;
       if (action === "turn") {
         startNextTurn(character);
-        showToast("Novo turno iniciado.");
+        showToast("Turno resetado.");
       } else if (action === "scene") {
         startNextScene(character);
-        showToast("Nova cena: usos por cena foram renovados.");
+        showToast("Cena resetada.");
       } else if (action === "session") {
         startNewSession(character);
         showToast("Nova sessão: limites de uso foram renovados.");

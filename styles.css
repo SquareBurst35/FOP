@@ -1179,23 +1179,14 @@ fieldset.skill-choice-block {
   background: linear-gradient(145deg, rgba(226, 46, 58, 0.08), rgba(255, 255, 255, 0.02));
 }
 
-.session-control-heading,
-.session-control-heading > div {
+.session-control-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.session-control-heading > div {
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 1px;
-}
-
 .session-control-heading span,
-.session-control > p,
-.session-last-use span,
 .session-last-use small {
   color: var(--muted);
   font-size: 0.7rem;
@@ -1205,28 +1196,41 @@ fieldset.skill-choice-block {
   font-size: 0.88rem;
 }
 
-.session-resource-label {
-  padding: 4px 7px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: #0d0f12;
-  color: #fff !important;
-  font-weight: 850;
+.session-budget {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 9px 0;
+  border-block: 1px solid var(--border);
+  font-size: 0.76rem;
 }
 
-.session-control > p {
-  margin: 0;
+.session-budget > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.session-budget dt { color: var(--muted); }
+.session-budget dd { margin: 0; font-weight: 750; font-variant-numeric: tabular-nums; }
+.session-turn-budget.at-limit dd { color: #ff9ca4; }
+
+.session-history summary {
+  padding: 5px 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  cursor: pointer;
 }
 
 .session-control-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
 }
 
 .session-control-actions button,
 .session-last-use button {
-  min-height: 32px;
+  min-height: 44px;
   padding: 5px 7px;
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -1250,8 +1254,7 @@ fieldset.skill-choice-block {
 }
 
 .session-last-use strong,
-.session-last-use small,
-.session-last-use span {
+.session-last-use small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1264,11 +1267,7 @@ fieldset.skill-choice-block {
 
 .session-last-use button {
   grid-column: 2;
-  grid-row: 1 / 4;
-}
-
-.session-last-use.empty {
-  display: block;
+  grid-row: 1 / 3;
 }
 
 .sheet-section {

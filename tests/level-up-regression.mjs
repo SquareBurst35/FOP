@@ -409,6 +409,29 @@ function finish(ui) {
 
 console.log("13 cenários de regressão do level up e da sessão passaram.");
 
+// The real UI blocks a second use at level 1 and exposes only the compact reset controls.
+{
+  const power = GENERAL_POWERS.find(entry => entry.name === "Palpite Confiante");
+  const character = characterAtLevel({ id: "pe-ui-limit", level: 1, abilities: [power.id] });
+  const ui = await boot(character);
+  assert.match(ui.html(), /Resetar turno/);
+  assert.match(ui.html(), /Resetar cena/);
+  assert.doesNotMatch(ui.html(), /data-session-action="session"/);
+  assert.match(ui.html(), /0\/1 PE/);
+  ui.clickData("[data-sheet-tab]", "sheetTab", "habilidades");
+  ui.clickData("[data-use-ability]", "useAbility", power.id);
+  const beforeBlocked = ui.saved();
+  ui.clickData("[data-use-ability]", "useAbility", power.id);
+  assert.deepEqual(ui.saved(), beforeBlocked);
+  assert.match(ui.document.querySelector("#toast").textContent, /Limite de PE por turno/);
+  assert.match(ui.html(), /1\/1 PE/);
+  ui.clickData("[data-session-action]", "sessionAction", "turn");
+  assert.equal(ui.saved().recursos.peAtual, beforeBlocked.recursos.peAtual);
+  assert.match(ui.html(), /0\/1 PE/);
+  ui.clickData("[data-use-ability]", "useAbility", power.id);
+  assert.equal(ui.saved().recursos.peAtual, beforeBlocked.recursos.peAtual - 1);
+}
+
 // Ritual version selection is deferred until confirmation and persists its cost.
 {
  const ritual=RITUALS.find(r=>r.name==='Amaldiçoar Arma (Sangue)');
@@ -422,6 +445,12 @@ console.log("13 cenários de regressão do level up e da sessão passaram.");
  ui.click('confirm-spend-dialog');
  assert.equal(ui.saved().recursos.peAtual,character.recursos.peAtual-6);
  assert.equal(ui.saved().controleSessao.historico.at(-1).variant,'Verdadeiro');
+ const beforeBlockedRitual=ui.saved();
+ ui.clickData('[data-use-ritual]','useRitual',ritual.id);
+ ui.clickData('[data-use-option]','useOption','verdadeiro');
+ ui.click('confirm-spend-dialog');
+ assert.deepEqual(ui.saved(),beforeBlockedRitual);
+ assert.match(ui.document.querySelector('#toast').textContent,/Limite de PE por turno/);
  assert.equal(ui.saved().aparencia,'feminino');
  ui.clickData('[data-sheet-tab]','sheetTab','inventario');assert.match(ui.html(),/data-appearance="feminino"/);
 }

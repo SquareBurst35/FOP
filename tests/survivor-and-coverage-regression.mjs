@@ -29,7 +29,7 @@ assert.deepEqual(
 assert.equal(calculateDerived(survivor(2, "Durão")).pvMax, 16);
 assert.equal(calculateDerived(survivor(3, "Durão")).pvMax, 20);
 assert.equal(calculateDerived({ ...survivor(5), optionalRules: { separateLevelNex: false, determination: true } }).pdMax, 14);
-assert.equal(turnSpendLimit(survivor(5)), 1);
+assert.equal(turnSpendLimit(survivor(5)), 0); // Stored level is 0; stage does not replace level for the PE budget.
 
 const hasNames = (entries, names, label) => {
   const actual = new Set(entries.map((entry) => entry.name));
