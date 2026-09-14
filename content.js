@@ -445,6 +445,7 @@ export const PARANORMAL_POWERS = [
 ];
 
 export const ORIGIN_POWER_DETAILS = {
+  "Antes Só": ["Sem aliados em alcance curto, ganhe +1 na Defesa, nos testes de perícia e no limite de PE por turno. Em Determinação, o acréscimo se aplica ao limite de PD. Marque a situação no painel de turno/cena.", "Passivo"],
   "Saber é Poder": ["Aprimora um teste baseado em Intelecto quando você investe esforço.", "2 PE"],
   "Técnica Medicinal": ["Melhora a recuperação obtida com cuidados de Medicina.", "Conforme o uso"],
   "Vislumbres do Passado": ["O mestre pode revelar fragmentos úteis da história esquecida do personagem.", "Narrativo"],
@@ -494,6 +495,7 @@ export const ORIGIN_POWER_DETAILS = {
 };
 
 export const ORIGIN_BACKGROUNDS = {
+  "Revoltado": "Você aprendeu a agir por conta própria e questionar o mundo ao seu redor. Agora usa essa independência em suas missões.",
   "Acadêmico": "Você passou boa parte da vida entre estudos, pesquisas e ambientes de ensino, aprendendo a encontrar respostas onde outros veem apenas informação solta.",
   "Agente de Saúde": "Sua experiência cuidando de pessoas ensinou a reconhecer sintomas, manter a calma e agir quando alguém precisa de atendimento.",
   "Amnésico": "Uma parte importante do seu passado desapareceu. As lacunas da memória podem esconder capacidades, contatos ou acontecimentos ligados à missão.",

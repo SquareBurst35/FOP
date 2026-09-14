@@ -1,6 +1,6 @@
-import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=24';
-import { ORIGINS } from './rules.js?v=24';
-import { parseUseCost, progressLevel } from './session.js?v=24';
+import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=31';
+import { ORIGINS } from './rules.js?v=31';
+import { parseUseCost, progressLevel } from './session.js?v=31';
 const names=new Map([...CORE_CLASS_ABILITIES,...allSelectableAbilities(ORIGINS)].map(a=>[a.id,a.name]));
 export function ritualCircleAccess(c){const n=progressLevel(c)*5;return c.classe==='Ocultista'?(n>=85?4:n>=55?3:n>=25?2:1):(n>=75?3:n>=45?2:1);}
 export function ritualCostReduction(c,r){const choices=c.habilidadeEscolhas??[],out=[];if(choices.some(x=>names.get(x.abilityId)==='Ritual Predileto'&&x.type==='ritual'&&x.valueId===r.id))out.push('Ritual Predileto −1');if(choices.some(x=>names.get(x.abilityId)==='Mestre em Elemento'&&x.type==='elemento'&&r.elements.includes(x.valueId)))out.push('Mestre em Elemento −1');return out;}

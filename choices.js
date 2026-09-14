@@ -5,9 +5,9 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=24";
+} from "./content.js?v=31";
 import { ITEMS } from "./items.js?v=24";
-import { ORIGINS, SKILLS } from "./rules.js?v=24";
+import { ORIGINS, SKILLS } from "./rules.js?v=31";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",

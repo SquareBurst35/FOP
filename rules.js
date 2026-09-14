@@ -1,3 +1,4 @@
+import { beforeSoBonus } from "./session.js?v=31";
 export const ATTRIBUTE_TARGET = 9;
 export const MUNDANE_ATTRIBUTE_TARGET = 8;
 export const ATTRIBUTE_MAX_AT_CREATION = 3;
@@ -35,6 +36,7 @@ export const SKILLS = [
 ];
 
 export const ORIGINS = [
+  { name: "Revoltado", skills: ["Furtividade", "Vontade"], power: "Antes Só", source: "Marca-páginas — O Segredo na Floresta (César)", sourcePage: null },
   { name: "Acadêmico", skills: ["Ciências", "Investigação"], power: "Saber é Poder", source: "Livro base" },
   { name: "Agente de Saúde", skills: ["Intuição", "Medicina"], power: "Técnica Medicinal", source: "Livro base" },
   { name: "Amnésico", skills: [], skillChoices: 2, skillChoiceLabel: "Definidas com o mestre", power: "Vislumbres do Passado", source: "Livro base" },
@@ -272,7 +274,7 @@ export function calculateDerived(character) {
       pvMax: 0,
       peMax: 0,
       sanMax: 0,
-      defesa: 10 + agilidade,
+      defesa: 10 + agilidade + beforeSoBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: 0,
@@ -296,7 +298,7 @@ export function calculateDerived(character) {
       pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus,
       peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus,
       sanMax: classData.initial.san + advances * classData.gain.san,
-      defesa: 10 + agilidade,
+      defesa: 10 + agilidade + beforeSoBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
@@ -317,7 +319,7 @@ export function calculateDerived(character) {
     pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus,
     peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
-    defesa: 10 + agilidade,
+    defesa: 10 + agilidade + beforeSoBonus(character),
     deslocamento: 9,
     advances,
     skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),

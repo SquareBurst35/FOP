@@ -1,5 +1,5 @@
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=24";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=24";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=31";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -20,7 +20,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=24";
+} from "./rules.js?v=31";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -36,7 +36,7 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=24";
+} from "./content.js?v=31";
 import {
   INVENTORY_GROUPS,
   ITEMS,
@@ -44,15 +44,17 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=24";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=24";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=31";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=24";
+} from "./choices.js?v=31";
 import {
   effortResource,
+  beforeSoBonus,
+  hasBeforeSo,
   normalizeSession,
   parseUseCost,
   rollUseCost,
@@ -62,7 +64,7 @@ import {
   turnSpendLimit,
   undoLastUse,
   useAbility,
-} from "./session.js?v=30";
+} from "./session.js?v=31";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -1145,6 +1147,7 @@ function renderSkillsTab(character) {
         </table>
       </div>
     </section>
+    ${beforeSoBonus(character) ? `<p class="muted small">Antes Só ativo: +1 incluído nos testes de perícia. O campo Outros mantém seus bônus manuais.</p>` : ""}
     ${notesSection("Observações de perícias", "pericias", character.pericias, "Especializações, condições e bônus temporários.")}
   `;
 }
@@ -1154,7 +1157,7 @@ function renderSkillRow(character, skill) {
   const dice = skillAttributeValue(character, attribute);
   const grade = numberOr(character.grausPericia?.[skill], 0);
   const other = numberOr(character.outrosBonusPericia?.[skill], 0);
-  const total = grade + other;
+  const total = grade + other + beforeSoBonus(character);
   return `
     <tr class="skill-rank-${grade}">
       <th scope="row"><span class="skill-die" aria-hidden="true">◇</span>${escapeHtml(skill)}</th>
@@ -1235,6 +1238,7 @@ function renderSessionControl(character) {
         <div><dt>${resource.label} atual</dt><dd>${current}/${maximum}</dd></div>
         <div class="session-turn-budget ${session.gastoTurno >= limit ? "at-limit" : ""}"><dt>Limite por turno</dt><dd>${session.gastoTurno}/${limit} ${resource.label}</dd></div>
       </dl>
+      ${hasBeforeSo(character) ? `<label class="skill-option ${beforeSoBonus(character) ? "selected" : ""}"><input type="checkbox" data-before-so ${beforeSoBonus(character) ? "checked" : ""} /><span>Sem aliados em alcance curto<small>Antes Só: +1 Defesa, perícias e limite de ${resource.label} por turno.</small></span></label>` : ""}
       <div class="session-control-actions">
         <button type="button" data-session-action="turn">Resetar turno</button>
         <button type="button" data-session-action="scene">Resetar cena</button>
@@ -3103,6 +3107,14 @@ function bindSheetInteractions(character) {
       upsertCharacter(character);
       renderSheet(character.id);
     });
+  });
+
+  document.querySelector("[data-before-so]")?.addEventListener("change", (event) => {
+    if (!hasBeforeSo(character)) return;
+    character.antesSoSemAliados = event.target.checked === true;
+    upsertCharacter(character);
+    renderSheet(character.id);
+    showToast(character.antesSoSemAliados ? "Antes Só ativo." : "Antes Só desativado.");
   });
 
   document.querySelectorAll("[data-session-action]").forEach((button) => {
