@@ -32,6 +32,46 @@ body:has(.agent-home) .account-controls .button:last-child:not([hidden]) { grid-
 body:has(.agent-home) .account-controls .button:disabled { opacity: .55; cursor: wait; transform: none; }
 body:has(.agent-home) #app { padding-top: 44px; }
 
+/* One slow composited fog layer; all linework and texture remain still. */
+body:has(.agent-home) {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 5% 8%, #641a2424, transparent 48rem),
+    repeating-linear-gradient(0deg, #ffffff02 0 1px, transparent 1px 4px),
+    #09090b;
+}
+body:has(.agent-home)::before {
+  inset: -2%;
+  background:
+    radial-gradient(ellipse at 8% 45%, #80384426, transparent 52%),
+    radial-gradient(ellipse at 88% 68%, #55505620, transparent 44%),
+    radial-gradient(ellipse at 42% 88%, #68283120, transparent 48%);
+  mask-image: none;
+  opacity: .7;
+  animation: archive-mist 28s ease-in-out infinite alternate;
+}
+body:has(.agent-home)::after {
+  width: min(52vw, 620px);
+  height: auto;
+  aspect-ratio: 1;
+  top: auto;
+  right: -110px;
+  bottom: -140px;
+  border: 0;
+  border-radius: 0;
+  background: url("assets/archive-seal.svg") center / contain no-repeat;
+  box-shadow: none;
+  opacity: .17;
+  transform: rotate(-14deg);
+}
+body:has(.agent-home) .topbar {
+  background: linear-gradient(110deg, #100d0ff5, #0b0c0df5);
+  box-shadow: 0 6px 24px #0004;
+}
+body:has(.agent-home) .topbar::after { background: linear-gradient(90deg, transparent, #bf4651 25%, #6c252f 65%, transparent); }
+body:has(.agent-home) .brand-mark { box-shadow: 0 0 0 4px #a8313c0d, inset 0 0 18px #a8313c18; }
+body:has(.agent-home) .site-footer { background: #09090b9c; }
+
 .agent-home { --home-border: rgba(174, 180, 183, .19); }
 .agent-home .home-heading { gap: 32px; align-items: center; padding: 0 0 32px; margin-bottom: 30px; }
 .agent-home .home-heading .eyebrow { margin-bottom: 14px; font-size: .7rem; letter-spacing: .2em; }
@@ -83,7 +123,44 @@ body:has(.agent-home) #app { padding-top: 44px; }
 .agent-home .button:focus-visible, body:has(.agent-home) .topbar button:focus-visible { outline: 2px solid #f5848d; outline-offset: 4px; }
 .agent-home .button:active { transform: translateY(1px); }
 
+/* Small details echo an investigation file without covering the content. */
+.agent-home .home-heading .eyebrow { display: flex; align-items: center; gap: 10px; }
+.agent-home .home-heading .eyebrow::before { content: ""; width: 6px; height: 6px; border: 1px solid #b7525c; transform: rotate(45deg); }
+.agent-home .home-heading::after { width: min(280px, 55%); box-shadow: none; }
+.agent-home .empty-state {
+  background: radial-gradient(ellipse at 50% 0, #7c283114, transparent 70%), linear-gradient(145deg, #131113, #0c0e10);
+}
+.agent-home .empty-state::before {
+  content: "";
+  position: absolute;
+  width: 270px;
+  height: 270px;
+  left: -100px;
+  bottom: -76px;
+  background: url("assets/archive-seal.svg") center / contain no-repeat;
+  opacity: .14;
+  transform: rotate(19deg);
+  pointer-events: none;
+}
+.agent-home .empty-state-inner { position: relative; z-index: 1; }
+.agent-home .empty-sigil { box-shadow: 0 0 0 7px #9c31390a, inset 0 0 24px #0005; }
+.agent-home .empty-sigil::before { animation: none; }
+.agent-home .character-card { background: linear-gradient(135deg, #ffffff03, transparent 42%), linear-gradient(165deg, #171416, #0e1012); }
+.agent-home .character-card::before { box-shadow: none; opacity: .8; }
+.agent-home .character-card::after { border-color: #a9546059; }
+.agent-home .character-card:hover { box-shadow: 0 12px 28px #0005; border-color: #9c4a54; }
+.agent-home .button.primary { border-color: #cf4a57; background: linear-gradient(#cf2d3d, #a9202e); box-shadow: 0 5px 18px #98172626; }
+.agent-home .button.primary:hover { background: linear-gradient(#dd3747, #b82433); border-color: #e46a74; }
+
+@keyframes archive-mist {
+  from { transform: translate3d(-.7%, .6%, 0); opacity: .55; }
+  to { transform: translate3d(1%, -.5%, 0); opacity: .8; }
+}
+
 @media (max-width: 760px) {
+  body:has(.agent-home)::before { animation: none; transform: none; opacity: .6; }
+  body:has(.agent-home)::after { width: 280px; right: -120px; bottom: 16%; opacity: .12; }
+  .agent-home .empty-state::before { width: 200px; height: 200px; left: -112px; bottom: -62px; opacity: .1; }
   body:has(.agent-home) .topbar { position: relative; flex-wrap: wrap; padding: 18px 20px 14px; gap: 16px; }
   body:has(.agent-home) .brand { width: 100%; }
   body:has(.agent-home) .brand-copy strong { font-size: .84rem; }
@@ -105,5 +182,7 @@ body:has(.agent-home) #app { padding-top: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body:has(.agent-home)::before { animation: none; transform: none; opacity: .65; }
+  body:has(.agent-home) .brand:hover .brand-mark { transform: none; }
   .agent-home .character-card:hover, .agent-home .button:hover, .agent-home .button:active { transform: none; }
 }

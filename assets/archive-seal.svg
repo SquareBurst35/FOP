@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" fill="none" stroke="#b66569" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Original FOP ornament: broken rings, the brand's overlapping squares and invented marks.
+       Visual references: ordemparanormal.com.br and the Symbols/Occult Symbols visual gallery
+       at ordemparanormal.fandom.com. Decorative artwork; no gameplay meaning. -->
+  <path d="M112 63A218 218 0 0 1 439 309M410 375A218 218 0 0 1 45 342M25 270A218 218 0 0 1 67 106"/>
+  <path d="M130 56A213 213 0 0 1 449 250M369 411A212 212 0 0 1 32 266" opacity=".4"/>
+  <path d="M74 180A180 180 0 0 1 374 120M416 207A180 180 0 0 1 294 412M224 419A180 180 0 0 1 68 294"/>
+  <path d="m240 94 145 148-146 146L93 239 240 94Zm-98 55 198-2 2 191-202 3 2-192Z"/>
+  <path d="m240 117 122 125-123 124-124-127M154 163l174-3-3 168-170 3" opacity=".4"/>
+  <path d="M215 270c-47-30-41-92 17-108 61-16 112 51 83 107-27 54-106 47-122-10-12-39 31-74 67-57 26 12 23 55-3 62-20 5-36-14-28-29 6-10 22-6 23 4"/>
+  <path d="M240 72v41m-8-18h16M408 240h-41m18-8v16M240 408v-41m-8 18h16M72 240h41m-18-8v16"/>
+  <g stroke-width="1.6">
+    <path d="m220 35 6 15 7-12 6 12 7-15m-12 6v17m30-17 8-5-1 17 11-6M309 51l-4 18 16-6m-11-7 14 18M366 90l-8 14 16 3-4-11m17 29-10 10 11 10m-6-8 16-2"/>
+    <path d="m424 191-17 7 13 8-12 9m28 14-14 8 14 8m-7-13v23m-16 48-12 5 10 9-10 6M380 365l-15-8-4 17 12-5m-21 20-10-8-7 17m4-8 16 7"/>
+    <path d="m279 435-5-17-9 12-7-12m-22 18-7-14-10 14m7-9-10-4m-40-3 1-19-14 10m5-13-14 14M111 374l11-14-18-1 7 11M77 334l15-8-15-8m8 4-12-13"/>
+    <path d="m44 275 16-8-13-8 12-7M39 224l15-7-15-7m7 12 9-21m7-38 17 4-7-15 10-7M91 111l13 6 5-18m-10 9 17 6m38-42 6-17 9 14 7-9"/>
+  </g>
+  <g opacity=".55">
+    <circle cx="240" cy="74" r="4"/><circle cx="406" cy="241" r="3"/>
+    <circle cx="240" cy="406" r="4"/><circle cx="74" cy="239" r="3"/>
+    <path d="m82 89 18 14M385 83l-13 18M390 383l19 14M83 377l15-9M290 129l13-4M163 350l12-4M137 193l-5 12M350 279l-6 10"/>
+  </g>
+</svg>
