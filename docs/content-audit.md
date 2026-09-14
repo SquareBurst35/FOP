@@ -1,0 +1,142 @@
+# Auditoria de Arquivos Secretos 3–7
+
+Status: **em andamento**. Este arquivo não declara cobertura completa enquanto houver páginas ou integrações pendentes.
+
+Base de comparação: commit `22f7c8ba445aae08ab9dc4e024c989cad145cda3`. Os identificadores existentes devem ser preservados. Descrições novas serão resumos mecânicos, sem reproduzir narrativas ou ilustrações dos PDFs.
+
+## Fontes recebidas
+
+| Fonte | Arquivo | Páginas PDF | Leitura integral |
+|---|---|---:|---|
+| Arquivos Secretos #3 | Arquivos-Secretos-3-v-1-0.pdf | 142 | Texto completo; conferência visual de tabelas e fichas em andamento |
+| Arquivos Secretos #4 | Arquivos-Secretos-04-v1.0.pdf | 79 | Texto completo; conferência visual de fichas pendente |
+| Arquivos Secretos #5 | Arquivos-Secretos-05-v1.0.pdf | 70 | Texto completo; conferência visual de fichas pendente |
+| Arquivos Secretos #6 | Arquivos-Secretos-06.pdf | 84 | Texto completo, incluindo erratas v1.1 |
+| Arquivos Secretos #7 | Arquivos-Secretos-07-v1-0.pdf | 93 | Texto completo; conferência visual de fichas/tabelas pendente |
+
+Total: 468 páginas. Extração preparada página a página; extração não significa leitura/revisão concluída. Metadados usam `source`, `sourcePage` (numeração impressa) e `pdfPage` quando necessário.
+
+## Registro de leitura e comparação
+
+- Sumários dos cinco arquivos conferidos.
+- AS #3: páginas PDF 1–142 lidas integralmente em texto. Conferidas visualmente as páginas 11, 88 e 141. Catalogadas 18 fichas de ameaças nas páginas 11, 17, 23, 29, 37, 41, 47, 51, 57, 63, 69, 73, 81, 88, 92, 95, 101 e 105.
+- AS #4: páginas PDF 1–79 lidas integralmente em texto. Fichas nas páginas 55–57 e 61; opções de personagem nas páginas 64–71; hacking nas páginas 72–73; exemplos narrativos de adaptação de ameaças nas páginas 76–78, sem novos itens livremente selecionáveis.
+- Nenhuma opção das páginas 108–119 de AS #3 consta com o mesmo nome nos catálogos atuais de poderes, rituais, trilhas ou itens.
+- Os demais PDFs ainda não foram integralmente comparados.
+
+## AS #3 — inventário de diferenças identificado
+
+| Categoria | Conteúdo | Página | Situação |
+|---|---|---:|---|
+| Poderes de Combatente | Guardião da Tropa; Vitalidade Sofrida | 108 | Adição pendente; requisitos, repetição e PV retroativos |
+| Poderes de Ocultista | Flagelo Bem Aproveitado; Recuperação Flagelante | 108 | Adição pendente; alteração da conversão de PV e controle entre interlúdios |
+| Poderes gerais | Ambidestria; Entrada Triunfal; Papinho Sedutor | 108–109 | Adição pendente; requisitos alternativos e limite por sessão |
+| Poderes paranormais | Instrumento Elétrico de Combate; Conhecimento de Direção Precognitiva | 109 | Adição pendente; afinidade e instrumento gerado |
+| Poderes de sacrifício | Causar Culpa; Despertar Obsessão; Arrogância Diabólica; Estimular Hedonismo; Fruto da Ambição; Ódio Suprimido | 110–111 | Adição pendente; aquisição condicionada ao estigma, não poderes gerais livres |
+| Arma | Garra do Harpia | 112 | Adição pendente; item único e ativação de 2 PE |
+| Equipamentos | Paçoca; Bloody Mary Batizada | 112 | Adição pendente; consumo, recuperação e condições |
+| Itens paranormais | Crânio Dominador; Gaiola do Corvo | 113 | Adição pendente; ativações, alvos e intervalo de 24 h |
+| Itens amaldiçoados | Camiseta Psikolera; Dupla Obsessiva; Armaduras de Guevara | 114–115 | Adição pendente; arma composta, reações e armadura progressiva |
+| Aliados | Ana; Argano; Chispa; Escarlata; Torvo; Coruja; Harpia; Corvo; Papagaio; Pomba; Alê; Caio; Cindy; Eloy; Franco | 116–118 | Adição pendente; bônus e ações com limites próprios |
+| Trilha geral | Performático: Ensaio; Frase de Efeito; Mosh Pit; Rítmo Contagiante | 119 | Adição pendente; Combatente, Especialista e Ocultista; NEX 10/40/65/99 |
+| Regras opcionais | Batalhas de intenções; trocas de recursos; construção de base; minijogos; boas recordações; vínculos e condições | 120–124 | Adição pendente; distinguir regras de mesa e controles da ficha |
+| Veículos | Categorias II/III/IV; 9 regalias; direção; combustível; danos; reparos; motocicleta dos Gaudérios | 125–131 | Adição pendente; sem criar campanhas |
+| Animais | Treinamento; aliados Serpente, Corvo e Gato; progressão de animal como ameaça | 132–134 | Adição pendente |
+| Criação de ameaças | Tabela de valores médios e adaptação para ameaças da realidade | 140–141 | Estruturação pendente; não é lista de criaturas prontas |
+
+## Integração e testes
+
+Ainda não iniciados. Login, Firebase e sincronização permanecem fora do escopo de alteração. Dados de ameaças serão separados das opções selecionáveis dos personagens, sem página visual nova.
+
+## Ponto de retomada
+
+Leitura textual integral concluída nos cinco PDFs. Conferir tabelas e integrações no código antes de fechar a cobertura. Implementações e testes não iniciados. Não marcar como adicionada uma opção apenas catalogada neste documento.
+
+## Divergências das fontes
+
+- AS #3 p. 11, Alê: Hora do Show declara +10 Defesa e +20 PV, mas apresenta totais 26/90 incompatíveis com a base 18/45. Registrar o conflito no dado, sem alterar silenciosamente os números.
+- AS #3 p. 88, Corvo: o resumo de Tecer Ilusão Discente inclui e depois exclui tato, temperatura e cheiro. Os valores particulares de círculo/DT dessa ficha não devem sobrescrever os rituais dos personagens.
+- AS #3 p. 69, Escarlata: preservar as DTs específicas impressas dos rituais e registrar a diferença da DT geral 23.
+
+## AS #4 — inventário de diferenças identificado
+
+| Categoria | Conteúdo | Página | Situação |
+|---|---|---:|---|
+| Origens | Caçador de Recompensas; Influencer Paranormal | 64 | Comparação/implementação pendente |
+| Perícia | Tecnologia: Obter Informações | 64 | Pendente; ação completa, DT 5, informação adicional a cada 5 |
+| Combatente | Chuva de Balas; Combatente Esforçado; Treinamento Militarizado | 65 | Pendente |
+| Especialista | Análise Conturbada; Profissão Perigo; Quase Novo | 65 | Pendente |
+| Ocultista | Explorador da Névoa; Sinestesia Paranormal; Terrores Noturnos | 66 | Pendente |
+| Geral | Gororoba; Ruído Branco; Uma Última Olhada | 66–67 | Pendente |
+| Paranormais | Foco Gravitacional; Sobrepor Imprevisível; Traço de Inconsistência | 67 | Pendente, incluindo afinidades |
+| Ritual | Backup, normal/discente/verdadeiro | 68 | Pendente |
+| Trilha de Especialista | Granadeiro Blaster: Meus Bebês; Fogo Amigo; O Calor do Momento; Memória Muscular | 69 | Pendente |
+| Itens | Granada de Gás Lacrimogêneo; Granada de Tinta; Granada Ctrl+C Ctrl+V; Lançador de Granadas; variantes 40 mm | 70–71 | Pendente |
+| Modificações | Adesiva; Dupla; Programada (granadas) | 71 | Pendente; categoria +I, sem acúmulo de iguais |
+| Regra opcional | Hacking: PS, dados virtuais, cinco ações e quatro imprevistos | 72–73 | Pendente |
+| Ameaças | Assistente de Produção; Produtor; Diretor; Simulacro (Troyan, Krypto, Vvorm, Botnetz) | 55–61 | Estruturação pendente |
+
+## AS #5 — inventário de diferenças identificado
+
+Texto integral das páginas 1–70 lido. Implementação pendente de todos os itens abaixo; comparação por identidade e comportamento será feita antes da integração.
+
+| Categoria | Conteúdo | Página |
+|---|---|---:|
+| Origens | Ufólogo; Funcionário de Beira de Estrada | 54 |
+| Perícia | Tecnologia: Rastrear Trilha Digital (veterano) | 54 |
+| Combatente | Aura de Confiança; Fôlego de Emergência; Parede de Carne | 55 |
+| Especialista | Adepto do Escuro; Saudosista Hi-Tech; Treinado nas Telas | 55 |
+| Ocultista | Catálogo de Criaturas Ambulante; Meditação Ocultista; Ruído de Comunicação | 56 |
+| Geral | Apaixonado por Veículos; Desafiar o Ego; Direção Defensiva | 56 |
+| Paranormais | Ácido Corrosivo; Dead Man Switch; Paralinguística Ampliada | 57 |
+| Trilha de Ocultista | Criptologista do Oculto: Método Intuitivo; Caligrafia Eficiente; Decifrar à Distância; Selo Supremo | 58 |
+| Regalias de veículos | Conversão de Combustível para Alto Rendimento; Gaiola de Proteção; Indução Forçada; Pneus Run-Flat ou com Gel Selante; Sistema de Óxido Nitroso; Sistema Multicombustível Avançado; Sistema de Snorkel Selado; Tanques de Lastro Hidrodinâmicos; Vedação Hermética | 59 |
+| Itens | Câmera Filmadora; Faixas da Vidência; Joias da Mente; Larva da Fúria; Skate Caótico; Tênis Lépidos | 60–61 |
+| Elemento e poderes | Transmissão (Conhecimento e Energia simultâneos); Conexão Comunicativa; Sincronia Conectiva; Transmissão de Perícia; Transmissão de Poder; Transmissão de Ritual | 46, 62–63 |
+| Ameaças | Hospedeiro Parasitado e quatro perfis; Hospedeiro Aflorado; Interflorado; Fummu; Doppelganger Civil/Combatente/Cultista e forma monstruosa; Bilu; Rastropoda; Memoflígico | 36–51 |
+| Perigos complexos | Explosão em Contagem Regressiva; Fuga de Horda de Criaturas; Navio Naufragando; Prédio Ocupado por Criaturas; Chuva de Sangue | 66–69 |
+
+Divergências: p. 39 remete Trêmulo a AS #05 p. 124, página inexistente; a regra encontra-se em AS #3 p. 124. Rituais de NPCs têm círculo/DT próprios (p. 45, Tela de Ruído Energia 1); não substituir automaticamente os dados canônicos do catálogo.
+
+## AS #6 — inventário de diferenças identificado
+
+Texto integral das páginas 1–84 lido. O arquivo fornecido é a **versão 1.1**, conforme expediente e erratas das páginas 83–84. Todos os registros abaixo ainda aguardam comparação e implementação.
+
+| Categoria | Conteúdo | Página |
+|---|---|---:|
+| Origens | Cientista Ex-Panacea; Cobaia Sobrevivente; Segurança Ex-Panacea | 66 |
+| Combatente | Análise Combativa; Especialista em Proteção Leve | 67 |
+| Especialista | Doutor em Emergências; Farmacêutico de Campo; Médico da Salvação; Resgatar da Morte; Veterano da Equipe de Trauma | 68 |
+| Ocultista | Barreira do Oculto; Grão-Mestre em Elemento | 69 |
+| Geral | Adaptação Climática; Especialista em Armas Improvisadas; Muito Sorrateiro | 70 |
+| Paranormais | Escudo Espiral Temporal; Grilhões de Lodo; Salto de Dados | 71 |
+| Ritual | Hesitação Forçada (Conhecimento), três versões | 72 |
+| Itens | Anel Invertido; Aplicador de Adrenalina; Lança-nitrogênio | 73 |
+| Maldições de medicamentos | Aceleração Espiral; Esforço Espiral | 74 |
+| Modificações de medicamentos | Emulsificante Químico; Potencializador Químico | 74 |
+| Doenças | Crise Alérgica; Crise Hipertensiva; Crise Hipocondríaca; Infecção Cerebral; Infecção Generalizada | 75 |
+| Venenos (dados abstratos de jogo) | Batracotoxina; Cianeto de Potássio; Gás Neurotóxico; Ricina; Toxina Cardiotóxica | 76 |
+| Regra opcional | Categoria de veneno por DT | 76 |
+| Regra opcional não canônica publicada | Evolução Modular: poderes de utilidade/combate alternados; Versatilidade restrita à primeira habilidade de outra trilha | 80–81 |
+| Aliados | Alice Cruzes; Ketan Arjuna; Laila Verdante; Dr. Neruda | 28, 33, 37, 41 |
+| Ameaças | Alice Cruzes; Ketan Arjuna; Laila Verdante; Dr. Neruda; Cientista da Panacea; Manda-chuva da Panacea; Segurança da Panacea; Hikikomori; Marca-Passo; Estímulo; Experimento Ssabáka | 28, 33, 37, 41, 56–63 |
+
+Erratas aplicáveis: não adicionar Dominador de Elemento (substituído por Barreira do Oculto); não atribuir Sangue ao ritual Hesitação Forçada; Hikikomori, Marca-Passo e Estímulo têm Sangue secundário. O texto remete venenos à p. 77, mas a tabela está na p. 76. A Crise Hipocondríaca não fornece perícia/DT própria; não inventar esse valor. Salto de Dados necessita restauração mecânica limitada à ficha, preservando identidade, conta e dados de sincronização.
+
+## AS #7 — inventário de diferenças identificado
+
+Texto integral das páginas 1–93 lido. Narrativas e ilustrações não serão reproduzidas; registros de regras usam números e descrições neutras resumidas. Todos os registros abaixo aguardam implementação.
+
+| Categoria | Conteúdo | Página |
+|---|---|---:|
+| Origens | Exorcizado; Sensitivo Rebelde | 80 |
+| Perícia | Religião: Resguardar Espírito | 80 |
+| Ritual | Vampirismo: três versões e cinco efeitos sensoriais | 76–77 |
+| Itens | Carranca Caçadora; Cajado da Cruz de Sangue; Pé de Coelho; Sal Dourado; Terço Maculado | 78–79 |
+| Trilha de Especialista | Monstruoso: Ser Experimentado; Ser Testado; Ser Expurgado; Ser Apavorante, com quatro elementos | 81–84 |
+| Trilha de Ocultista | Monstruoso: Ser Escarificado; Ser Perfurado; Ser Rasgado; Ser Mutilado, com quatro elementos | 85–88 |
+| Ameaças | Raziel; O Verdadeiro Raziel; Alvira; Sabara; Velisar; Zéfero; Incinerado; Stryzga; Apóstata (quatro estágios) | 40–45, 65, 67, 70–73 |
+| Condição progressiva | Mentem Corrumpere, vinculada à Apóstata | 70–71 |
+| Regra opcional não canônica publicada | Regras debaixo d’água; combate submerso; pressão | 92–93 |
+
+Divergências: Alvira p. 42 referencia Vampirismo como página `@@`; a regra está nas pp. 76–77. Incinerado p. 65 lista imunidade e vulnerabilidade a fogo simultaneamente e resistência/vulnerabilidade balística; Stryzga p. 67 também lista resistência/vulnerabilidade balística. Preservar o conflito e não decidir silenciosamente uma errata não fornecida. As grafias Stryzga/Strzyga e Zéfero/Zéfiro aparecem alternadas; usar uma identidade com aliases. As trilhas Monstruoso são variantes por classe, não duplicatas do Combatente.
