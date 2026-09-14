@@ -153,3 +153,29 @@ Divergências: Alvira p. 42 referencia Vampirismo como página `@@`; a regra est
 - Não publicados: nenhum catálogo principal, fluxo de criação, login, inventário visual ou pixel art foi alterado neste checkpoint.
 
 Próximas etapas: efeitos/ativações, integração de escolhas e progressão, condições/inventário, dados completos de ameaças/perigos, cobertura de todos os registros, testes de criação/level up/PE/PD e regressões; depois publicação.
+
+## Retomada em 14/09/2026 — interrupção do ambiente local
+
+A auditoria completa permanece **inacabada e sem publicação**. O checkpoint remoto anterior é `76a86a0fa1b4a57c8a2e3e0c3cdec7a7e08547ed`, na branch `content-audit-as3-as7`; contém os catálogos e controles descritos acima, além dos 9 testes específicos que passaram naquele checkpoint. O site principal não recebeu esses catálogos.
+
+Adição independente solicitada pelo usuário: **Revoltado / Antes Só**, publicada em `72cd602e466c801d01630fabb195d4188477032a`. Origem única, Furtividade e Vontade, bônus condicionais de Defesa/perícias/limite de PE ou PD; metadados remetem ao marca-páginas de César, não ao livro básico. Detalhes em `docs/revoltado-audit.md`. Suíte principal: **44 testes aprovados**, nenhum erro. Actions #56: https://github.com/SquareBurst35/FOP/actions/runs/34867069856 . Esta branch incorpora a adição para evitar sua perda quando a auditoria for integrada.
+
+### Ponto de leitura
+
+Não há PDF parado no meio da leitura textual: AS3 até p.142, AS4 até p.79, AS5 até p.70, AS6 até p.84 e AS7 até p.93. O bloqueio ocorreu durante implementação de efeitos/ativações após essa leitura. Continuam pendentes conferências visuais e a transcrição estruturada das ameaças a partir das páginas indicadas nas tabelas. A ferramenta de navegação também não conseguiu abrir o Pages nesta sessão; a publicação está confirmada pelo Actions, sem teste visual no navegador.
+
+### Rascunhos locais posteriores ao checkpoint
+
+Antes de o ambiente ficar indisponível, foram criados rascunhos em `supplements/state.js`, `engine.js`, `handlers-general.js`, `handlers-powers.js` e `ritual-support.js`, no checkout scratch `/workspace/scratch/f92e9837d004/FOP`. Esses cinco arquivos **não estão neste commit nem tiveram testes concluídos**. Não foi possível ler ou preservar seus conteúdos pelo conector do GitHub após a interrupção. Ao recuperar o ambiente, inspecionar o estado local antes de qualquer reset; se não existirem mais, reconstruí-los a partir dos dados já versionados. Não considerá-los implementação validada.
+
+### Ordem de continuação
+
+1. Recuperar os PDFs e o checkout local. Preservar alterações locais e a pasta de QA existente antes de reconciliar com esta branch.
+2. Completar os handlers de itens, trilhas e rituais, sua ligação ao motor de efeitos e cobertura de todas as ativações. Não ligar rascunhos incompletos ao app.
+3. Conferir referências de regras existentes: Criar Selo não foi encontrado no catálogo; os custos de Paramédico/Médico da Salvação, DTs, recuperação em interlúdio e conversões de SAN no modo PD precisam de verificação. Não preencher lacunas por suposição.
+4. Corrigir riscos identificados nos rascunhos: normalização de recursos ausentes, histórico limitado a 30 registros, atomicidade de ações com múltiplos custos, efeitos passivos sem acumulação e restauração de Salto de Dados sem alterar identidade/conta/inventário externo.
+5. Integrar catálogos, criação, evolução, escolhas/pré-requisitos/afinidade, habilidades, PE/PD, rituais, condições, inventário e modificações. Manter IDs antigos e valores manuais.
+6. Estruturar integralmente ameaças, variantes, estágios, perigos complexos e tabela de criação, com fonte/página e divergências explícitas; não criar interface de Ameaças.
+7. Completar testes mecânicos e regressões, conferir a aplicação e somente então publicar a auditoria completa.
+
+Nenhuma alteração de login, estrutura do Firebase, sincronização ou visual foi feita para Revoltado. Os testes de persistência reutilizam o armazenamento e o codec existentes.

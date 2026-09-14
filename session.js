@@ -52,13 +52,28 @@ export function progressLevel(character) {
   return clamp(Math.round(nex / 5), 1, 20);
 }
 
+// Antes Só is conditional: the sheet cannot infer ally distance.
+export function hasBeforeSo(character) {
+  if (character?.origem === "Revoltado") return true;
+  const selected = new Set(character?.habilidadesSelecionadas ?? []);
+  if (selected.has("origens-revoltado-antes-so")) return true;
+  const flashback = "especialista-poderes-de-especialista-flashback";
+  return selected.has(flashback) && (character?.habilidadeEscolhas ?? []).some(
+    choice => choice.abilityId === flashback && choice.type === "origem" && choice.valueId === "Revoltado",
+  );
+}
+
+export function beforeSoBonus(character) {
+  return hasBeforeSo(character) && character?.antesSoSemAliados === true ? 1 : 0;
+}
+
 export function turnSpendLimit(character) {
   // This budget is independent from ritual access and other progression rules.
   const stored = character?.nivel;
   const hasStoredLevel = (typeof stored === "number" || (typeof stored === "string" && stored.trim() !== ""))
     && Number.isFinite(Number(stored)) && Number(stored) >= 0;
   const level = hasStoredLevel ? Number(stored) : numberOr(character?.nex, 0) / 5;
-  return clamp(Math.trunc(level), 0, 20);
+  return clamp(Math.trunc(level), 0, 20) + beforeSoBonus(character);
 }
 
 export function parseUseCost(cost) {
@@ -233,6 +248,7 @@ export function startNextTurn(character) {
 
 export function startNextScene(character) {
   const session = normalizeSession(character);
+  if (character.antesSoSemAliados === true) character.antesSoSemAliados = false;
   session.cena += 1;
   session.turno = 1;
   session.gastoTurno = 0;
@@ -242,6 +258,7 @@ export function startNextScene(character) {
 
 export function startNewSession(character) {
   const session = normalizeSession(character);
+  if (character.antesSoSemAliados === true) character.antesSoSemAliados = false;
   session.cena = 1;
   session.turno = 1;
   session.gastoTurno = 0;
