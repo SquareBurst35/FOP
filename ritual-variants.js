@@ -1983,6 +1983,26 @@ export const RITUAL_VARIANTS=Object.freeze({
       }
     ]
   },
+  "Arquivos Secretos #4:backup": {
+    "name": "Backup",
+    "circle": 2,
+    "page": "68",
+    "edition": "Suplemento",
+    "variants": [
+      {
+        "name": "Discente",
+        "extra": 2,
+        "minCircle": 2,
+        "affinity": false
+      },
+      {
+        "name": "Verdadeiro",
+        "extra": 5,
+        "minCircle": 3,
+        "affinity": false
+      }
+    ]
+  },
   "Livro base:visao da verdade": {
     "name": "Visão da Verdade",
     "edition": "Versão anterior",

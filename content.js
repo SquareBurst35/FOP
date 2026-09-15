@@ -1,4 +1,4 @@
-import { ritualVariantData } from "./ritual-variants.js?v=24";
+import { ritualVariantData } from "./ritual-variants.js?v=32";
 export const PATENTS = [
   "Recruta",
   "Operador",
@@ -171,6 +171,17 @@ export const CLASS_POWERS = [
   ability({ name: "Dominar Habilidade Ritualística", category: "Ocultista", group: "Poderes de Ocultista", summary: "Escolha uma habilidade de trilha de Ocultista cujo NEX você já tenha alcançado. Dependências entre habilidades continuam valendo.", requirement: "INT 3, treinado em Ocultismo e capacidade de conjurar rituais", unlockNex: 15, source: "Arquivos Secretos #2", page: "74", details: ["Pode ser adquirido até três vezes, escolhendo uma habilidade em cada aquisição."] }),
   ability({ name: "Marteladas", category: "Combatente", group: "Poderes de Combatente", summary: "Realiza três ataques desarmados contra o mesmo alvo e resolve o dano como uma única fonte.", cost: "Ação completa e 3 PE", requirement: "FOR 2, treinado em Luta e Artista Marcial", unlockNex: 15, source: "Arquivos Secretos #2", page: "86" }),
   ability({ name: "Liturgia de Fortalecimento Ritualístico", category: "Ocultista", group: "Poderes de Ocultista", summary: "Durante um interlúdio, fortalece um ritual conhecido e aumenta sua DT até o próximo interlúdio.", cost: "Ação de interlúdio e 2 PE", requirement: "INT 2 e PRE 2", unlockNex: 15, source: "Arquivos Secretos #2", page: "92" }),
+
+  // Arquivos Secretos #4
+  ability({ name: "Chuva de Balas", category: "Combatente", group: "Poderes de Combatente", summary: "Pacotes de munição duram o dobro de cenas. Antes do dano de uma arma de fogo, gaste pacotes extras: cada pacote acrescenta dois dados do mesmo tipo, valendo por dez projéteis na contagem individual.", unlockNex: 15, source: "Arquivos Secretos #4", page: "65" }),
+  ability({ name: "Combatente Esforçado", category: "Combatente", group: "Poderes de Combatente", summary: "Recebe +1 PE máximo por nível de NEX, incluindo os níveis anteriores.", requirement: "FOR 3 ou VIG 3", unlockNex: 15, source: "Arquivos Secretos #4", page: "65" }),
+  ability({ name: "Treinamento Militarizado", category: "Combatente", group: "Poderes de Combatente", summary: "O bônus de exercitar-se no interlúdio torna-se 1d8 e também pode ser aplicado ao dano; apenas um bônus por rolagem.", unlockNex: 15, source: "Arquivos Secretos #4", page: "65" }),
+  ability({ name: "Análise Conturbada", category: "Especialista", group: "Poderes de Especialista", summary: "Ação padrão: você e os voluntários presentes fazem uma análise. Role 1d6: o valor é perdido de SAN e torna-se bônus nos testes de Intelecto e Presença até o fim da cena.", unlockNex: 15, source: "Arquivos Secretos #4", page: "65" }),
+  ability({ name: "Profissão Perigo", category: "Especialista", group: "Poderes de Especialista", summary: "Uma vez por missão, ação completa e 4 PE substituem um item do inventário por um operacional de categoria e espaços iguais ou menores.", cost: "4 PE · 1/missão", unlockNex: 15, source: "Arquivos Secretos #4", page: "65" }),
+  ability({ name: "Quase Novo", category: "Especialista", group: "Poderes de Especialista", summary: "Na manutenção do interlúdio, o item reparado recebe +10 PV e uma modificação permitida pela patente até o próximo interlúdio.", unlockNex: 15, source: "Arquivos Secretos #4", page: "65" }),
+  ability({ name: "Explorador da Névoa", category: "Ocultista", group: "Poderes de Ocultista", summary: "Uma vez por cena, 2 PE revelam o estado da Membrana. Se danificada ou pior, perde 1 SAN e reduz os custos dos seus rituais em 1 PE.", cost: "2 PE", unlockNex: 15, source: "Arquivos Secretos #4", page: "66" }),
+  ability({ name: "Sinestesia Paranormal", category: "Ocultista", group: "Poderes de Ocultista", summary: "Ao entrar numa área de Membrana danificada, pode perder 1d6 SAN e trocar os atributos-base entre dois pares de perícias até sair da área; não pode usar perícias sem treinamento. Nova aceitação apenas no dia seguinte.", unlockNex: 15, source: "Arquivos Secretos #4", page: "66" }),
+  ability({ name: "Terrores Noturnos", category: "Ocultista", group: "Poderes de Ocultista", summary: "Ao dormir, role 1d100. De 1 a 50: descanso precário, perda de 1d4 SAN e escolha de um poder paranormal ou ritual cujos requisitos cumpra, usável uma vez antes do próximo interlúdio pagando seu custo normal.", unlockNex: 15, source: "Arquivos Secretos #4", page: "66" }),
 ];
 
 export const GENERAL_POWERS = [
@@ -233,6 +244,10 @@ export const GENERAL_POWERS = [
   ability({ name: "Sintonização Mental com Arma", category: "Gerais", group: "Poderes Gerais", summary: "Em um interlúdio, vincula uma arma e permite usar um atributo escolhido nos testes de ataque e dano até o próximo interlúdio.", cost: "Ação de interlúdio e 3 PE", requirement: "INT 2 ou PRE 2, treinado em Ocultismo e capacidade de conjurar rituais", unlockNex: 15, source: "Arquivos Secretos #2", page: "83" }),
   ability({ name: "Especialista em Correntes", key: "fixacao", category: "Gerais", group: "Poderes Gerais", summary: "Permite prender itens com correntes para impedir que sejam desarmados ou retirados e melhora manobras feitas com equipamentos semelhantes.", cost: "Ação completa", requirement: "AGI 2", unlockNex: 15, source: "Arquivos Secretos #2", page: "70", details: ["Carregar vários itens presos dessa maneira pode gerar penalidade por carga."] }),
   ability({ name: "Especialista em Correntes", key: "controle", category: "Gerais", group: "Poderes Gerais", summary: "Ao acertar com uma corrente ou arma semelhante, permite puxar o alvo e dificultar ataques dele contra outras pessoas.", cost: "2 PE", requirement: "FOR 2 ou AGI 2 e treinado em Luta", unlockNex: 15, source: "Arquivos Secretos #2", page: "70" }),
+
+  ability({ name: "Gororoba", category: "Gerais", group: "Poderes Gerais", summary: "Uma vez por interlúdio, recebe uma refeição sem gastar ação e sem precisar ter uma disponível.", cost: "1 vez por interlúdio", unlockNex: 15, source: "Arquivos Secretos #4", page: "66" }),
+  ability({ name: "Ruído Branco", category: "Gerais", group: "Poderes Gerais", summary: "Em ambiente movimentado, recebe +1d6 em Investigação e Percepção. Com aprovação do mestre, uma vez por cena, 1 PE permite obter uma informação útil entre conversas.", cost: "1 PE", unlockNex: 15, source: "Arquivos Secretos #4", page: "66" }),
+  ability({ name: "Uma Última Olhada", category: "Gerais", group: "Poderes Gerais", summary: "Na última rodada da investigação, gaste 2 PE para acrescentar uma rodada disponível ao grupo. Uma vez por cena.", cost: "2 PE", unlockNex: 15, source: "Arquivos Secretos #4", page: "67" }),
 ];
 
 const trail = (category, group, source, entries) =>
@@ -405,6 +420,12 @@ export const TRAIL_ABILITIES = [
     ["Reproduzir Maldição", 65, "Imita temporariamente uma maldição compreendida pela trilha."],
     ["Maldição Suprema", 99, "Desbloqueia a aplicação mais avançada do estudo de maldições."],
   ]),
+  ...trail("Especialista", "Granadeiro Blaster", "Arquivos Secretos #4", [
+    ["Meus Bebês", 10, "Recebe Profissão (químico) treinada, ou +5 se já treinado. Começa a missão com um explosivo autoral fora do limite de itens; dois/três/quatro em NEX 40/65/99.", "Passivo", "Trilha escolhida", "69"],
+    ["Fogo Amigo", 40, "Recebe Perito em Explosivos. Se já possuía ou o escolher novamente, dobra o bônus de DT e o número de alvos excluídos; a área dos explosivos aumenta em 6 m.", "Passivo", "Trilha escolhida", "69"],
+    ["O Calor do Momento", 65, "Ação completa e 4 PE criam um explosivo autoral. Ao usá-lo, resultado 1–25 em 1d100 faz o efeito ocorrer na posição do usuário, inclusive ao disparar por lançador.", "4 PE", "Trilha escolhida", "69"],
+    ["Memória Muscular", 99, "Qualquer pessoa pode empunhar seus explosivos autorais como ação livre; usá-los custa ação de movimento e 4 PE. Seus explosivos autorais têm o dobro dos dados de dano.", "4 PE", "Trilha escolhida", "69"],
+  ]),
 ];
 
 export const PARANORMAL_POWERS = [
@@ -442,6 +463,9 @@ export const PARANORMAL_POWERS = [
   ability({ name: "Predador de Sangue", category: "Poderes Paranormais", group: "Sangue", summary: "Memoriza os sinais de uma pessoa para melhorar testes usados para rastreá-la, percebê-la e atacá-la; a afinidade amplia o número de alvos memorizados.", cost: "Ação padrão e 3 PE", requirement: "Afinidade amplia o efeito", unlockNex: 15, source: "Arquivos Secretos #2", page: "40" }),
   ability({ name: "Zona dos Sussurros", category: "Poderes Paranormais", group: "Conhecimento", summary: "Marca uma área que melhora ataques e permite agir furtivamente após ações chamativas; a afinidade melhora o dano contra alvos vulneráveis.", cost: "Ação completa e 3 PE", requirement: "Afinidade amplia o efeito", unlockNex: 15, source: "Arquivos Secretos #2", page: "52", details: ["Mantém até três áreas; criar outra encerra uma das anteriores."] }),
   ability({ name: "Engolir Sangue", category: "Poderes Paranormais", group: "Sangue", summary: "Ao realizar um ato macabro com uma porção orgânica, recupera PV, mas sofre uma perda de SAN; a afinidade aumenta a recuperação.", cost: "Ação completa e 1d4 SAN", requirement: "Afinidade amplia o efeito", unlockNex: 15, source: "Arquivos Secretos #2", page: "93" }),
+  ability({ name: "Foco Gravitacional", category: "Poderes Paranormais", group: "Energia", summary: "Escolha um equipamento: ele ocupa zero espaços quando guardado. Ao empunhá-lo, role 1d100; de 1 a 25 ele aparece em um espaço em alcance curto definido pelo mestre. Pode trocar a escolha se o item for destruído ou consumido.", requirement: "Afinidade permite escolher entre até três equipamentos", unlockNex: 15, source: "Arquivos Secretos #4", page: "67" }),
+  ability({ name: "Sobrepor Imprevisível", category: "Poderes Paranormais", group: "Energia", summary: "No início da rodada, uma vez por rodada, 2 PE permitem rolar 1d20: some o resultado à iniciativa se par, subtraia se ímpar.", cost: "2 PE", requirement: "Afinidade permite rolar dois dados e escolher um", unlockNex: 15, source: "Arquivos Secretos #4", page: "67" }),
+  ability({ name: "Traço de Inconsistência", category: "Poderes Paranormais", group: "Energia", summary: "Reação de 2 PE oculta a identidade numa captura digital.", cost: "2 PE", requirement: "Afinidade torna a imagem permanentemente indetectável por captura digital e distorce a voz em gravações", unlockNex: 15, source: "Arquivos Secretos #4", page: "67" }),
 ];
 
 export const ORIGIN_POWER_DETAILS = {
@@ -492,6 +516,8 @@ export const ORIGIN_POWER_DETAILS = {
   "Encontrar a Verdade": ["Conecta depoimentos e pistas para apontar uma informação relevante à investigação.", "Conforme o uso"],
   "Mácula Ritualística": ["A cicatriz paranormal conecta o personagem a um elemento e concede o benefício definido pela origem.", "Passivo"],
   "Sofrimento de Sangue": ["Transforma a ligação da origem com Sangue em um recurso de resistência ou confronto.", "Conforme o uso"],
+  "Quem Não Arrisca Não Petisca": ["Recebe +2 para resistir a condições mentais e de medo. Uma falha nessa resistência concede +1d20 ao próximo teste até o fim da cena; não acumula.", "Passivo"],
+  "Registrar Paranormal": ["Uma vez por cena, ação padrão e 2 PE registram uma criatura ou ritual usado na cena, concedendo +5 em testes de Presença contra criaturas registradas. Numa ação de interlúdio, permite memorizar um ritual registrado até o próximo interlúdio, conforme o NEX e o círculo.", "2 PE"],
 };
 
 export const ORIGIN_BACKGROUNDS = {
@@ -542,6 +568,8 @@ export const ORIGIN_BACKGROUNDS = {
   "Repórter Investigativo": "Você sabe entrevistar, cruzar fontes e insistir até encontrar a informação que alguém tentou esconder.",
   "Ferido por Ritual": "Um ritual deixou uma marca paranormal duradoura e uma ligação com determinado elemento do Outro Lado.",
   "Transtornado Arrependido": "Você abandonou um grupo perigoso e carrega conhecimento sobre seus métodos, tentando dar outro destino ao que viveu.",
+  "Caçador de Recompensas": "Você rastreava alvos por dinheiro antes de a Ordem redirecionar essa experiência para ameaças paranormais.",
+  "Influencer Paranormal": "Você construiu audiência documentando o estranho e o inexplicável, e agora usa esse faro para registrar manifestações reais.",
 };
 
 const RITUAL_COSTS = { 1: 1, 2: 3, 3: 6, 4: 10 };
@@ -683,6 +711,8 @@ export const RITUALS = [
   ritual("Inexistir", "Conhecimento", 4, "Manifesta Conhecimento contra um alvo, causando dano paranormal elevado."),
   ritual("Invadir Mente", "Conhecimento", 2, "Permite comunicação telepática ou um efeito mental contra um alvo."),
 
+  // Arquivos Secretos #4
+  ritual("Backup", "Energia", 2, "Cria uma cópia do conjurador em um espaço vazio em alcance curto por 24 horas, com movimentos simples e uma frase; a conexão alcança 50 km. Uma reação troca a posição do conjurador com a cópia e custa 2d4 SAN. Dano à cópia ou sair da conexão encerra o ritual.", "Arquivos Secretos #4", { page: "68", execution: "Padrão", range: "Curto", target: "1 espaço vazio", duration: "24 horas", enhancements: ["Discente (+2 PE): duração permanente; uma ação padrão permite usar os sentidos da cópia, ficando cego, surdo e pasmo no corpo original até encerrar a observação.", "Verdadeiro (+5 PE): também permite falar pela cópia e dar-lhe uma aparência conhecida; ao trocar de lugar, pode encerrar o ritual e causar 6d6 de Energia nas duas áreas de alcance curto, reduzido à metade por Reflexos."] }),
 ];
 
 export const ABILITY_CATEGORIES = ["Sobrevivente", "Combatente", "Especialista", "Ocultista", "Gerais", "Origens", "Poderes Paranormais"];

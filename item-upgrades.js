@@ -7,6 +7,7 @@ for(const name of ['Antibombas','Blindada','Discreta','Reforçada'])add(name,'Pr
 for(const name of ['Aprimorado','Discreto','Função Adicional','Instrumental'])add(name,'Acessórios',64,{spaces:name==='Discreto'?-1:0});
 add('Lente de Revelação','Câmera de aura paranormal',45,{source:'Sobrevivendo ao Horror'});
 add('Acoplável','Armas',71,{source:'Arquivos Secretos #2'});
+for(const name of ['Adesiva','Dupla','Programada'])add(name,'Explosivos',71,{source:'Arquivos Secretos #4'});
 for(const [target,names]of[
  ['Armas',['Antielemento','Ritualística','Senciente','Empuxo','Energética','Vibrante','Consumidora','Erosiva','Repulsora','Lancinante','Predadora','Sanguinária']],
  ['Proteções',['Abascanta','Profética','Sombria','Cinética','Lépida','Voltaica','Letárgica','Repulsiva','Regenerativa','Sádica']],

@@ -1,5 +1,5 @@
-import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=24";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=31";
+import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=32";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=32";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -20,7 +20,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=31";
+} from "./rules.js?v=32";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -36,21 +36,21 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=31";
+} from "./content.js?v=32";
 import {
   INVENTORY_GROUPS,
   ITEMS,
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=24";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=31";
+} from "./items.js?v=32";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=32";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=31";
+} from "./choices.js?v=32";
 import {
   effortResource,
   beforeSoBonus,

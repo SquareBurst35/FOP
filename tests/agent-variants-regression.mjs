@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import { ITEMS } from '../items.js';
-import { artForItem } from '../item-art.js';
+import { ITEM_ART, artForItem } from '../item-art.js';
 import { ITEM_VARIANTS, AGENT_VARIANT_KEYS, statesForPlacements } from '../equipment-variants.js';
 import { AGENT_POSES } from '../agent-poses.js';
 import { VARIANT_REGIONS, variantPath, visibleAgentStates } from '../agent-variants.js';
@@ -10,8 +10,8 @@ import { equipmentPlacements, resolveEquipment } from '../equipment-visuals.js';
 import { BODY_ATLAS, paperdollImagePaths } from '../paperdoll-renderer.js';
 const own=name=>({...ITEMS.find(item=>item.name===name),quantity:1});
 const placements=names=>equipmentPlacements(resolveEquipment(names.map(own)));
-assert.equal(Object.keys(ITEM_VARIANTS).length,ITEMS.length);
-assert.deepEqual(new Set(Object.keys(ITEM_VARIANTS)),new Set(ITEMS.map(i=>i.id)));
+assert.equal(Object.keys(ITEM_VARIANTS).length,ITEM_ART.length);
+assert.deepEqual(new Set(Object.keys(ITEM_VARIANTS)),new Set(ITEM_ART.map(a=>a.id)));
 function decodePng(file) {
  const b=fs.readFileSync(file);assert.equal(b.subarray(1,4).toString(),'PNG');
  const width=b.readUInt32BE(16),height=b.readUInt32BE(20);assert.equal(b[24],8);assert.equal(b[25],6,'RGBA sprites need real alpha');
@@ -27,7 +27,8 @@ for(const key of AGENT_VARIANT_KEYS){
  let opaque=0,transparent=0,magenta=0;for(let i=0;i<png.data.length;i+=4){const [r,g,b,a]=png.data.subarray(i,i+4);if(a>128){opaque++;if(r>200&&b>200&&g<50)magenta++;}else transparent++;}
  assert.ok(opaque>15000&&transparent>10000,`${key}: complete body and transparent background`);assert.equal(magenta,0,`${key}: leftover chroma background`);
 }
-for(const item of ITEMS){
+// Catalog-only supplement items (no matching item-art.js entry) have no agent variant by design.
+for(const item of ITEMS.filter(i=>artForItem(i))){
  const state=ITEM_VARIANTS[item.id];
  if(state.region==='pose')assert.ok(AGENT_POSES[state.key],`Hand pose missing for ${item.name}`);
  else assert.ok(['inventory','adjustment','arms'].includes(state.region)||VARIANT_REGIONS[state.region],item.name);
@@ -50,4 +51,4 @@ const two=statesForPlacements(placements(['Fuzil de assalto','Lanterna','Paraque
 const visible=visibleAgentStates(two);assert.equal(visible.filter(s=>s.region==='pose').length,1);assert.ok(visible.some(s=>s.key==='rifle'));assert.ok(visible.some(s=>s.key==='backpack'));assert.ok(visible.some(s=>s.key==='sling'));
 const one=statesForPlacements(placements(['Faca','Pistola']));assert.equal(visibleAgentStates(one).filter(s=>s.region==='pose').length,2,'One-handed props can occupy both hands');
 assert.ok(paperdollImagePaths([],{backpack:true}).includes(variantPath('backpack')));
-console.log(`${ITEMS.length} items and ${AGENT_VARIANT_KEYS.length} full-agent PNGs: coverage, alpha, complete frames, body replacement, hands and catalog isolation passed.`);
+console.log(`${ITEM_ART.length} items and ${AGENT_VARIANT_KEYS.length} full-agent PNGs: coverage, alpha, complete frames, body replacement, hands and catalog isolation passed.`);

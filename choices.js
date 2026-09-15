@@ -5,9 +5,9 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=31";
-import { ITEMS } from "./items.js?v=24";
-import { ORIGINS, SKILLS } from "./rules.js?v=31";
+} from "./content.js?v=32";
+import { ITEMS } from "./items.js?v=32";
+import { ORIGINS, SKILLS } from "./rules.js?v=32";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",
@@ -78,6 +78,7 @@ export function abilityCanRepeatChoice(entry) {
     "Aprender Ritual",
     "Dominar Habilidade Ritualística",
     "Foco em Perícia",
+    "Foco Gravitacional",
     "Resistir a Elemento",
     "Transcender",
     "Treinamento em Perícia",
@@ -252,6 +253,11 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
   if (name === "Expansão de Conhecimento") {
     const powers = CLASS_POWERS.filter((power) => power.category !== character.classe && power.name !== "Transcender" && power.unlockNex <= levelNex);
     return [spec(entry.id, "poder", "Escolha o poder de outra classe", abilityOptions(powers))];
+  }
+  if (name === "Foco Gravitacional") {
+    return [spec(entry.id, "item", "Escolha o equipamento de peso zero", itemOptions(ITEMS), {
+      help: "Com afinidade, o poder pode ser adquirido novamente para escolher outro equipamento, até três no total.",
+    })];
   }
   if (name === "Transcender") {
     const known = new Set(character.habilidadesSelecionadas ?? []);

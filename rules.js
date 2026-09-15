@@ -85,6 +85,9 @@ export const ORIGINS = [
 
   { name: "Ferido por Ritual", skills: ["Ocultismo"], skillChoices: 1, skillChoiceLabel: "Perícia ligada ao elemento", power: "Mácula Ritualística", source: "Arquivos Secretos #1" },
   { name: "Transtornado Arrependido", skills: ["Luta", "Ocultismo"], power: "Sofrimento de Sangue", source: "Arquivos Secretos #1" },
+
+  { name: "Caçador de Recompensas", skills: ["Crime", "Investigação"], power: "Quem Não Arrisca Não Petisca", source: "Arquivos Secretos #4" },
+  { name: "Influencer Paranormal", skills: ["Enganação", "Tecnologia"], power: "Registrar Paranormal", source: "Arquivos Secretos #4" },
 ];
 
 export const CLASSES = {
@@ -144,6 +147,7 @@ export const CLASSES = {
       "Bibliotecário",
       "Perseverante",
       "Muambeiro",
+      "Granadeiro Blaster",
     ],
   },
   Ocultista: {

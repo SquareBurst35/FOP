@@ -87,7 +87,7 @@ test('creation choices, panel, skill totals and distance toggle are connected to
   const document={querySelector:element,querySelectorAll:()=>[],getElementById:element};
   const window={location:{hash:''},scrollY:0,addEventListener(){},scrollTo(){},setTimeout(){},clearTimeout(){}};
   const context=vm.createContext({...rules,...content,...session,...items,...progression,...choices,...useOptions,...upgrades,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:storage()});
-  const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?from\s+"[^"]+";\n/gm,'');
+  const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?from\s+"[^"]+";\r?\n/gm,'');
   vm.runInContext(app,context);
   context.c=agent(true);context.c.antesSoSemAliados=true;context.c.grausPericia.Luta=5;context.c.outrosBonusPericia={Luta:3};
   const run=code=>vm.runInContext(code,context);

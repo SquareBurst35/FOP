@@ -11,7 +11,7 @@ import * as choices from '../choices.js';
 import * as session from '../session.js';
 import { webcrypto } from 'node:crypto';
 
-const source=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?from\s+"[^"]+";\n/gm,'');
+const source=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?from\s+"[^"]+";\r?\n/gm,'');
 function boot(className,nex,trail='') {
   const store=new Map(),els=new Map();
   const element=key=>{
