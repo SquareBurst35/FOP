@@ -1,5 +1,5 @@
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=32";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=32";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=34";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -36,7 +36,7 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=32";
+} from "./content.js?v=34";
 import {
   INVENTORY_GROUPS,
   ITEMS,
@@ -50,7 +50,7 @@ import {
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=33";
+} from "./choices.js?v=34";
 import {
   effortResource,
   beforeSoBonus,
