@@ -2409,6 +2409,72 @@
     "changedPixels": 29082
   },
   {
+    "appearance": "masculino",
+    "index": 219,
+    "id": "arquivos-secretos-5-operacionais-camera-filmadora",
+    "name": "Câmera Filmadora",
+    "kind": "held",
+    "variant": "camera",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12846
+  },
+  {
+    "appearance": "masculino",
+    "index": 220,
+    "id": "arquivos-secretos-5-paranormais-faixas-da-videncia",
+    "name": "Faixas da Vidência",
+    "kind": "garment",
+    "variant": "garment",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 43083
+  },
+  {
+    "appearance": "masculino",
+    "index": 221,
+    "id": "arquivos-secretos-5-paranormais-joias-da-mente",
+    "name": "Joias da Mente",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "appearance": "masculino",
+    "index": 222,
+    "id": "arquivos-secretos-5-paranormais-larva-da-furia",
+    "name": "Larva da Fúria",
+    "kind": "held",
+    "variant": "bottle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10013
+  },
+  {
+    "appearance": "masculino",
+    "index": 223,
+    "id": "arquivos-secretos-5-paranormais-skate-caotico",
+    "name": "Skate Caótico",
+    "kind": "held",
+    "variant": "baton",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10507
+  },
+  {
+    "appearance": "masculino",
+    "index": 224,
+    "id": "arquivos-secretos-5-paranormais-tenis-lepidos",
+    "name": "Tênis Lépidos",
+    "kind": "boots",
+    "variant": "dead-boots",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 13643
+  },
+  {
     "appearance": "feminino",
     "index": 0,
     "id": "livro-base-armas-faca",
@@ -4816,5 +4882,71 @@
     "visibility": "body",
     "placements": 1,
     "changedPixels": 29404
+  },
+  {
+    "appearance": "feminino",
+    "index": 219,
+    "id": "arquivos-secretos-5-operacionais-camera-filmadora",
+    "name": "Câmera Filmadora",
+    "kind": "held",
+    "variant": "camera",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12419
+  },
+  {
+    "appearance": "feminino",
+    "index": 220,
+    "id": "arquivos-secretos-5-paranormais-faixas-da-videncia",
+    "name": "Faixas da Vidência",
+    "kind": "garment",
+    "variant": "garment",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 44901
+  },
+  {
+    "appearance": "feminino",
+    "index": 221,
+    "id": "arquivos-secretos-5-paranormais-joias-da-mente",
+    "name": "Joias da Mente",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9831
+  },
+  {
+    "appearance": "feminino",
+    "index": 222,
+    "id": "arquivos-secretos-5-paranormais-larva-da-furia",
+    "name": "Larva da Fúria",
+    "kind": "held",
+    "variant": "bottle",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9630
+  },
+  {
+    "appearance": "feminino",
+    "index": 223,
+    "id": "arquivos-secretos-5-paranormais-skate-caotico",
+    "name": "Skate Caótico",
+    "kind": "held",
+    "variant": "baton",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 10503
+  },
+  {
+    "appearance": "feminino",
+    "index": 224,
+    "id": "arquivos-secretos-5-paranormais-tenis-lepidos",
+    "name": "Tênis Lépidos",
+    "kind": "boots",
+    "variant": "dead-boots",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 12625
   }
 ]

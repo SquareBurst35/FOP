@@ -1,6 +1,6 @@
-import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=37";
-import { artForItem } from "./item-art.js?v=37";
-import { createPaperdoll, drawItemIcon, paperdollVisibleStates } from "./paperdoll-renderer.js?v=37";
+import { EQUIPMENT_SLOTS, candidatesFor, resolveEquipment, equipmentPlacements } from "./equipment-visuals.js?v=51";
+import { artForItem } from "./item-art.js?v=51";
+import { createPaperdoll, drawItemIcon, paperdollVisibleStates } from "./paperdoll-renderer.js?v=51";
 
 const memoryPreferences = new Map();
 

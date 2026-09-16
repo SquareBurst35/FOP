@@ -88,6 +88,9 @@ export const ORIGINS = [
 
   { name: "Caçador de Recompensas", skills: ["Crime", "Investigação"], power: "Quem Não Arrisca Não Petisca", source: "Arquivos Secretos #4" },
   { name: "Influencer Paranormal", skills: ["Enganação", "Tecnologia"], power: "Registrar Paranormal", source: "Arquivos Secretos #4" },
+
+  { name: "Ufólogo", skills: ["Ciências", "Ocultismo"], power: "Minha Teoria Absurda", source: "Arquivos Secretos #5" },
+  { name: "Funcionário de Beira de Estrada", skills: ["Fortitude", "Intuição"], power: "Turno Invertido", source: "Arquivos Secretos #5" },
 ];
 
 export const CLASSES = {
@@ -167,6 +170,7 @@ export const CLASSES = {
       "Possuído",
       "Parapsicólogo",
       "Maledictólogo",
+      "Criptologista do Oculto",
     ],
   },
 };
