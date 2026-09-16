@@ -78,23 +78,23 @@ Leitura textual integral concluída nos cinco PDFs. Conferir tabelas e integraç
 
 ## AS #5 — inventário de diferenças identificado
 
-Texto integral das páginas 1–70 lido. Implementação pendente de todos os itens abaixo; comparação por identidade e comportamento será feita antes da integração.
+Texto integral das páginas 1–70 lido. **Opções de personagem integradas de verdade em rules.js/content.js/items.js em 15/09/2026** (commit `60da8b5`), fora do schema abandonado em `supplements/`. Ameaças, perigos complexos e regalias de veículo continuam fora do catálogo (ver notas de escopo abaixo).
 
-| Categoria | Conteúdo | Página |
-|---|---|---:|
-| Origens | Ufólogo; Funcionário de Beira de Estrada | 54 |
-| Perícia | Tecnologia: Rastrear Trilha Digital (veterano) | 54 |
-| Combatente | Aura de Confiança; Fôlego de Emergência; Parede de Carne | 55 |
-| Especialista | Adepto do Escuro; Saudosista Hi-Tech; Treinado nas Telas | 55 |
-| Ocultista | Catálogo de Criaturas Ambulante; Meditação Ocultista; Ruído de Comunicação | 56 |
-| Geral | Apaixonado por Veículos; Desafiar o Ego; Direção Defensiva | 56 |
-| Paranormais | Ácido Corrosivo; Dead Man Switch; Paralinguística Ampliada | 57 |
-| Trilha de Ocultista | Criptologista do Oculto: Método Intuitivo; Caligrafia Eficiente; Decifrar à Distância; Selo Supremo | 58 |
-| Regalias de veículos | Conversão de Combustível para Alto Rendimento; Gaiola de Proteção; Indução Forçada; Pneus Run-Flat ou com Gel Selante; Sistema de Óxido Nitroso; Sistema Multicombustível Avançado; Sistema de Snorkel Selado; Tanques de Lastro Hidrodinâmicos; Vedação Hermética | 59 |
-| Itens | Câmera Filmadora; Faixas da Vidência; Joias da Mente; Larva da Fúria; Skate Caótico; Tênis Lépidos | 60–61 |
-| Elemento e poderes | Transmissão (Conhecimento e Energia simultâneos); Conexão Comunicativa; Sincronia Conectiva; Transmissão de Perícia; Transmissão de Poder; Transmissão de Ritual | 46, 62–63 |
-| Ameaças | Hospedeiro Parasitado e quatro perfis; Hospedeiro Aflorado; Interflorado; Fummu; Doppelganger Civil/Combatente/Cultista e forma monstruosa; Bilu; Rastropoda; Memoflígico | 36–51 |
-| Perigos complexos | Explosão em Contagem Regressiva; Fuga de Horda de Criaturas; Navio Naufragando; Prédio Ocupado por Criaturas; Chuva de Sangue | 66–69 |
+| Categoria | Conteúdo | Página | Situação |
+|---|---|---:|---|
+| Origens | Ufólogo; Funcionário de Beira de Estrada | 54 | Integrado |
+| Perícia | Tecnologia: Rastrear Trilha Digital (veterano) | 54 | Fora do escopo — não há catálogo de "novos usos de perícia" no site |
+| Combatente | Aura de Confiança; Fôlego de Emergência; Parede de Carne | 55 | Integrado |
+| Especialista | Adepto do Escuro; Saudosista Hi-Tech; Treinado nas Telas | 55 | Integrado |
+| Ocultista | Catálogo de Criaturas Ambulante; Meditação Ocultista; Ruído de Comunicação | 56 | Integrado |
+| Geral | Apaixonado por Veículos; Desafiar o Ego; Direção Defensiva | 56 | Integrado |
+| Paranormais | Ácido Corrosivo; Dead Man Switch; Paralinguística Ampliada | 57 | Integrado |
+| Trilha de Ocultista | Criptologista do Oculto: Método Intuitivo; Caligrafia Eficiente; Decifrar à Distância; Selo Supremo | 58 | Integrado |
+| Regalias de veículos | Conversão de Combustível para Alto Rendimento; Gaiola de Proteção; Indução Forçada; Pneus Run-Flat ou com Gel Selante; Sistema de Óxido Nitroso; Sistema Multicombustível Avançado; Sistema de Snorkel Selado; Tanques de Lastro Hidrodinâmicos; Vedação Hermética | 59 | Fora do escopo — depende da regra opcional de Veículos Operacionais (AS #3), que ainda não existe no site |
+| Itens | Câmera Filmadora; Faixas da Vidência; Joias da Mente; Larva da Fúria; Skate Caótico; Tênis Lépidos | 60–61 | Integrado, com pixel art (sprites reaproveitados) |
+| Elemento e poderes | Transmissão (Conhecimento e Energia simultâneos); Conexão Comunicativa; Sincronia Conectiva; Transmissão de Perícia; Transmissão de Poder; Transmissão de Ritual | 46, 62–63 | Integrado como Poderes Paranormais, grupo "Transmissão"; pré-requisito do Sino de Transmissão e a exigência de dois ou mais seres registrados no campo de requisito |
+| Ameaças | Hospedeiro Parasitado e quatro perfis; Hospedeiro Aflorado; Interflorado; Fummu; Doppelganger Civil/Combatente/Cultista e forma monstruosa; Bilu; Rastropoda; Memoflígico | 36–51 | Fora do escopo — site não tem interface de Ameaças |
+| Perigos complexos | Explosão em Contagem Regressiva; Fuga de Horda de Criaturas; Navio Naufragando; Prédio Ocupado por Criaturas; Chuva de Sangue | 66–69 | Fora do escopo — site não tem interface de Ameaças |
 
 Divergências: p. 39 remete Trêmulo a AS #05 p. 124, página inexistente; a regra encontra-se em AS #3 p. 124. Rituais de NPCs têm círculo/DT próprios (p. 45, Tela de Ruído Energia 1); não substituir automaticamente os dados canônicos do catálogo.
 
