@@ -43,14 +43,14 @@ import {
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=32";
+} from "./items.js?v=33";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=32";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=32";
+} from "./choices.js?v=33";
 import {
   effortResource,
   beforeSoBonus,

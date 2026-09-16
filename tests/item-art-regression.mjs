@@ -5,11 +5,10 @@ import { ITEM_ART, ORIGINAL_ITEM_ART, artForItem } from "../item-art.js";
 import { EQUIPMENT_SLOTS, visualSlot, resolveEquipment, equipmentPlacements } from "../equipment-visuals.js";
 import { BODY_POINTS, atlasRect, placementFor, anchorOnDoll } from "../paperdoll-renderer.js";
 
-assert.ok(ITEM_ART.every(a => ITEMS.some(i => i.id === a.id)), "Toda arte corresponde a um item do catálogo");
-assert.equal(new Set(ITEM_ART.map(a=>a.id)).size, ITEM_ART.length);
+assert.equal(ITEM_ART.length, ITEMS.length, "Todos os itens do catálogo precisam de arte");
+assert.equal(new Set(ITEM_ART.map(a=>a.id)).size, ITEMS.length);
 assert.equal(new Set(ORIGINAL_ITEM_ART.map(a=>`${a.atlas}:${a.sourceRect.join(',')}`)).size, 165, "Cada item tem seu próprio sprite");
-// Catalog-only supplement items (no matching item-art.js entry) render without a paperdoll sprite by design.
-for (const item of ITEMS.filter(i => artForItem(i))) {
+for (const item of ITEMS) {
   const art=artForItem(item);
   assert.ok(art, `Arte ausente: ${item.name}`);
   assert.ok(EQUIPMENT_SLOTS.some(s=>s.id===art.slot), `Posição inválida: ${item.name}`);
@@ -44,4 +43,4 @@ assert.ok(suit.some(p=>p.art.fullBody));
 assert.notDeepEqual(suit.find(p=>p.slot==='weapon').target,BODY_POINTS.hand,'O traje tem seus próprios pontos de apoio');
 const baton=owned('Bastão');
 assert.equal(resolveEquipment([baton],{weapon:baton.id,secondary:baton.id}).secondary,null);
-console.log(`${ITEM_ART.length} sprites verificados: cobertura, arquivos, recortes, mãos, roupas e modificações.`);
+console.log(`${ITEMS.length} sprites verificados: cobertura, arquivos, recortes, mãos, roupas e modificações.`);

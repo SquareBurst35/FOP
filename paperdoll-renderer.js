@@ -1,5 +1,5 @@
 import { paintAgentRegions, variantPath, visibleAgentStates } from './agent-variants.js?v=24';
-import { statesForPlacements } from './equipment-variants.js?v=24';
+import { statesForPlacements } from './equipment-variants.js?v=33';
 // The same compositor is used by the page and the offline rendering checks.
 // Coordinates are in the character's original 420 × 600 sprite space.
 export const DOLL_SIZE = Object.freeze({ width: 420, height: 600 });

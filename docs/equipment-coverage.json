@@ -2365,6 +2365,50 @@
     "changedPixels": 5754
   },
   {
+    "appearance": "masculino",
+    "index": 215,
+    "id": "arquivos-secretos-4-explosivos-granada-de-gas-lacrimogeneo",
+    "name": "Granada de Gás Lacrimogêneo",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "masculino",
+    "index": 216,
+    "id": "arquivos-secretos-4-explosivos-granada-de-tinta",
+    "name": "Granada de Tinta",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "masculino",
+    "index": 217,
+    "id": "arquivos-secretos-4-explosivos-granada-ctrl-c-ctrl-v",
+    "name": "Granada Ctrl+C Ctrl+V",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "masculino",
+    "index": 218,
+    "id": "arquivos-secretos-4-armas-lancador-de-granadas",
+    "name": "Lançador de Granadas",
+    "kind": "held",
+    "variant": "launcher",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 29082
+  },
+  {
     "appearance": "feminino",
     "index": 0,
     "id": "livro-base-armas-faca",
@@ -4728,5 +4772,49 @@
     "visibility": "body",
     "placements": 1,
     "changedPixels": 9831
+  },
+  {
+    "appearance": "feminino",
+    "index": 215,
+    "id": "arquivos-secretos-4-explosivos-granada-de-gas-lacrimogeneo",
+    "name": "Granada de Gás Lacrimogêneo",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "feminino",
+    "index": 216,
+    "id": "arquivos-secretos-4-explosivos-granada-de-tinta",
+    "name": "Granada de Tinta",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "feminino",
+    "index": 217,
+    "id": "arquivos-secretos-4-explosivos-granada-ctrl-c-ctrl-v",
+    "name": "Granada Ctrl+C Ctrl+V",
+    "kind": "belt",
+    "variant": "belt-grenade",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "feminino",
+    "index": 218,
+    "id": "arquivos-secretos-4-armas-lancador-de-granadas",
+    "name": "Lançador de Granadas",
+    "kind": "held",
+    "variant": "launcher",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 29404
   }
 ]

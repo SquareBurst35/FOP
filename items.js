@@ -1,6 +1,5 @@
 import { upgradedItem } from "./item-upgrades.js?v=32";
-import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=24";
-import { SUPPLEMENT_ITEMS } from "./supplement-items.js?v=1";
+import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=33";
 const slug = (value) =>
   String(value)
     .normalize("NFD")
@@ -291,7 +290,7 @@ const ORIGINAL_ITEMS = [
   utility("Faca Predadora", "Paranormais", "IV", 1, "Arma ágil de Sangue; ao gastar 2 PE e acertar, recupera 2d10 PV, convertendo o excesso em PV temporários.", "Arquivos Secretos #2", "93", [["Dano", "1d4 perfuração + 2d10 Sangue"], ["Crítico", "19/x3"], ["Alcance", "Curto (arremesso)"]]),
 ];
 
-export const ITEMS = [...ORIGINAL_ITEMS.map(item => ({...item, aliases: ITEM_NAME_ALIASES[item.name] ?? []})), ...ADDITIONAL_ITEMS, ...SUPPLEMENT_ITEMS];
+export const ITEMS = [...ORIGINAL_ITEMS.map(item => ({...item, aliases: ITEM_NAME_ALIASES[item.name] ?? []})), ...ADDITIONAL_ITEMS];
 
 export const ITEM_BY_ID = new Map(ITEMS.map((entry) => [entry.id, entry]));
 

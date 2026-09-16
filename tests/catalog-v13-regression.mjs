@@ -6,9 +6,9 @@ import { ITEM_UPGRADES, canApplyUpgrade, upgradedItem } from '../item-upgrades.j
 import { ITEM_VARIANTS } from '../equipment-variants.js';
 import { characterBodyPath } from '../paperdoll-renderer.js';
 const item=name=>ITEMS.find(i=>i.name===name);
-assert.equal(ITEMS.length,219);assert.equal(ITEM_ART.length,215);assert.equal(ORIGINAL_ITEM_ART.length,165);
+assert.equal(ITEMS.length,219);assert.equal(ITEM_ART.length,219);assert.equal(ORIGINAL_ITEM_ART.length,165);
 assert.equal(new Set(ITEMS.map(i=>i.id)).size,219);
-assert.ok(ITEM_ART.every(a=>ITEM_VARIANTS[a.id]),'Every item with paperdoll art has an explicit composition; catalog-only supplement items render without one');
+assert.ok(ITEMS.every(i=>ITEM_VARIANTS[i.id]),'Every original and new item has an explicit composition');
 for(const name of ['Escudo','Arpéu','Binóculos','Bloqueador de sinal','Corda','Equipamento de sobrevivência','Máscara de gás','Mochila militar','Pé de cabra','Pistola sinalizadora','Traje hazmat','Coroa de Espinhos','Frasco de Vitalidade','Pérola de Sangue','Punhos Enraivecidos','Seringa de Transfiguração','Amarras Mortais','Casaco de Lodo','Coletora','Vislumbre do Fim','Anéis do Elo Mental','Lanterna Reveladora','Máscara das Pessoas nas Sombras','Munição Jurada','Arcabuz dos Moretti','Bateria Reversa','Peitoral da Segunda Chance','Relógio de Arnaldo','Talismã da Sorte','Teclado de Conexão Neural','Tela do Pesadelo','Veículo Energizado','Jaqueta de Veríssimo','Dedo Decepado'])assert.ok(item(name),name);
 for(const element of ['Conhecimento','Energia','Morte','Sangue'])for(const prefix of ['Amarras de','Componentes ritualísticos de','Scanner de manifestação paranormal de'])assert.ok(item(`${prefix} ${element}`));
 const pack=item('Mochila militar');assert.equal(pack.spaces,0);assert.equal(pack.category,'I');
@@ -26,9 +26,9 @@ assert.equal(new Set(ITEM_UPGRADES.map(u=>u.id)).size,ITEM_UPGRADES.length);asse
 assert.ok(item('Lanterna').aliases.includes('Lanterna tática'));assert.ok(item('Marreta').aliases.includes('Maça'));
 for(const appearance of ['masculino','feminino'])assert.ok(fs.existsSync(new URL('../'+characterBodyPath(appearance),import.meta.url)));
 const report=JSON.parse(fs.readFileSync(new URL('../docs/equipment-coverage.json',import.meta.url)));
-assert.equal(report.length,430);
+assert.equal(report.length,438);
 for(const appearance of ['masculino','feminino']){
- const rows=report.filter(r=>r.appearance===appearance);assert.deepEqual(new Set(rows.map(r=>r.id)),new Set(ITEM_ART.map(a=>a.id)));
+ const rows=report.filter(r=>r.appearance===appearance);assert.deepEqual(new Set(rows.map(r=>r.id)),new Set(ITEMS.map(i=>i.id)));
  assert.ok(rows.every(r=>r.visibility==='body'?r.changedPixels>30:r.changedPixels===0));
 }
-console.log('219 catalog entries, 63 attached improvements, original 165 sprites and 430 raster coverage cases passed.');
+console.log('219 catalog entries, 63 attached improvements, original 165 sprites and 438 raster coverage cases passed.');

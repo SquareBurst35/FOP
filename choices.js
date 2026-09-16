@@ -6,7 +6,7 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
 } from "./content.js?v=32";
-import { ITEMS } from "./items.js?v=32";
+import { ITEMS } from "./items.js?v=33";
 import { ORIGINS, SKILLS } from "./rules.js?v=32";
 
 export const CHOICE_TYPE_LABELS = {

@@ -8,8 +8,8 @@ import { resolveEquipment, equipmentPlacements, EQUIPMENT_SLOTS } from '../equip
 import { BODY_ATLAS, paintPaperdoll, placementFor, paperdollImagePaths } from '../paperdoll-renderer.js';
 
 const own=name=>({...ITEMS.find(i=>i.name===name),quantity:1});
-assert.equal(Object.keys(ITEM_COMPOSITION).length,ITEM_ART.length);
-assert.deepEqual(new Set(Object.keys(ITEM_COMPOSITION)),new Set(ITEM_ART.map(a=>a.id)));
+assert.equal(Object.keys(ITEM_COMPOSITION).length,ITEMS.length);
+assert.deepEqual(new Set(Object.keys(ITEM_COMPOSITION)),new Set(ITEMS.map(i=>i.id)));
 const pristine=JSON.stringify({ITEMS,ITEM_ART});
 const dispatch=new Set(['held','belt','pocket','stored','quiver','vest','heavyVest','garment','sling','harness','glasses','knuckles','necklace','collar','wrist','companion','backpack','suit','adjustment','vehicle','boots','headband','cape','mask','helmet','gauntlets']);
 
@@ -42,8 +42,7 @@ const render=(placements,imgs=images)=>{
   return contexts.map(c=>c.log);
 };
 const bare=render([]);
-// Catalog-only supplement items (no matching item-art.js entry) have no composition recipe by design.
-for(const item of ITEMS.filter(i=>artForItem(i))) {
+for(const item of ITEMS) {
   const art=artForItem(item),recipe=compositionFor(art);
   assert.ok(recipe&&dispatch.has(recipe.kind),item.name);
   assert.ok(EQUIPMENT_SLOTS.some(s=>s.id===recipe.slot),item.name);
@@ -97,4 +96,4 @@ for(const name of ['Carregador rápido','Bateria potente']) {
 }
 assert.equal(JSON.stringify({ITEMS,ITEM_ART}),pristine,'Rendering cannot mutate rules or catalog');
 assert.ok(placementFor(artForItem(own('Traje espacial')),'outfit').height>0);
-console.log(`${ITEM_ART.length} composition recipes: renderer dispatch, clipping, both hands, slot migration, missing textures and complete sets passed.`);
+console.log(`${ITEMS.length} composition recipes: renderer dispatch, clipping, both hands, slot migration, missing textures and complete sets passed.`);

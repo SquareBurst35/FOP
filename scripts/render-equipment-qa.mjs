@@ -2,6 +2,7 @@
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { ITEMS } from '../items.js';
 import { ITEM_ART, artForItem } from '../item-art.js';
 import { resolveEquipment, equipmentPlacements } from '../equipment-visuals.js';
@@ -13,7 +14,7 @@ const require=createRequire(import.meta.url);
 let canvas;try{canvas=require('@napi-rs/canvas');}catch{canvas=require(path.join(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES||'/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules','@napi-rs/canvas'));}
 const {createCanvas,loadImage}=canvas;
 const output=path.resolve(process.argv[2]??'/tmp/fop-equipment-qa');fs.mkdirSync(output,{recursive:true});
-const images=new Map(await Promise.all([...new Set([BODY_ATLAS,FEMALE_BODY,...ITEMS.flatMap(item=>paperdollImagePaths(equipmentPlacements(resolveEquipment([{...item,quantity:1}])))), 'assets/agent-variants/backpack.png'])].map(async p=>[p,await loadImage(new URL('../'+p,import.meta.url).pathname)])));
+const images=new Map(await Promise.all([...new Set([BODY_ATLAS,FEMALE_BODY,...ITEMS.flatMap(item=>paperdollImagePaths(equipmentPlacements(resolveEquipment([{...item,quantity:1}])))), 'assets/agent-variants/backpack.png'])].map(async p=>[p,await loadImage(fileURLToPath(new URL('../'+p,import.meta.url)))])));
 const own=name=>{const item=ITEMS.find(i=>i.name===name);if(!item)throw Error('Unknown QA item: '+name);return {...item,quantity:1};};
 const sets=[
  ['Escudo','Máscara de gás'],['Binóculos','Mochila militar'],['Traje hazmat','Lanterna'],['Mochila militar','Bandoleira','Fuzil de assalto'],['Anéis do Elo Mental','Vislumbre do Fim','Amarras Mortais'],

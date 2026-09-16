@@ -2,7 +2,7 @@
 // Visuals select equipped-agent silhouettes; the 165 original catalog images stay intact.
 const slug=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const rows=[];
-function add(name,group,category,spaces,summary,page,icon,kind,variant,slot,details=[]){rows.push({id:slug(`Livro base-${group}-${name}`),name,group,category,spaces,summary,source:'Livro base',page:String(page),details,visual:{icon,kind,variant,slot}});}
+function add(name,group,category,spaces,summary,page,icon,kind,variant,slot,details=[],source='Livro base'){rows.push({id:slug(`${source}-${group}-${name}`),name,group,category,spaces,summary,source,page:String(page),details,visual:{icon,kind,variant,slot}});}
 add('Escudo','Proteções','I',2,'Ocupa uma mão e concede +2 na Defesa.',62,'Proteção pesada','held','shield','weapon', [['Defesa','+2'],['Empunhadura','Uma mão']]);
 const op=(n,c,s,d,p,i,k,v,l)=>add(n,'Operacionais',c,s,d,p,i,k,v,l);
 op('Arpéu','0',1,'Acessório de exploração que acompanha uma corda.',65,'Kit de escalada','belt','belt-pouch','utility');
@@ -48,5 +48,10 @@ special('Tela do Pesadelo','Dispositivo paranormal de Energia com uma ativação
 special('Veículo Energizado','Melhoria paranormal aplicada a um veículo; permanece fora do corpo do agente.',151,'Ligação direta infernal','vehicle','inventory','vehicle');
 special('Jaqueta de Veríssimo','Jaqueta única de categoria IV com benefícios defensivos para o grupo.',151,'Vestimenta','garment','garment','outfit','IV');
 special('Dedo Decepado','Relíquia que concede um poder paranormal conforme a escolha e os limites da referência.',151,'Amuleto sagrado','necklace','amulet','neck');
+// Arquivos Secretos #4 — reuses existing sprites and agent-variant states, same as the Livro base additions above.
+add('Granada de Gás Lacrimogêneo','Explosivos','I',1,'Consumível de raio de 6 m: 4d6 de dano químico, enjoado e dificuldade respiratória. Fortitude reduz o dano à metade e evita enjoado. Fora da área, a dificuldade respiratória dura 1d4 rodadas.',70,'Granada de fumaça','belt','belt-grenade','utility',[],'Arquivos Secretos #4');
+add('Granada de Tinta','Explosivos','0',1,'Consumível de raio de 6 m: deixa os alvos vulneráveis e aplica −2d20 em Furtividade pela cena; Reflexos evita.',70,'Granada de atordoamento','belt','belt-grenade','utility',[],'Arquivos Secretos #4');
+add('Granada Ctrl+C Ctrl+V','Explosivos','II',1,'Granada amaldiçoada de Energia: alcance médio, raio de 6 m, 8d6 de dano de Energia; Reflexos reduz à metade. Após cada explosão, 1d4 par cria outra granada dentro da área anterior, até quatro explosões no total.',70,'Granada de PEM','belt','belt-grenade','utility',[['Elemento','Energia']],'Arquivos Secretos #4');
+add('Lançador de Granadas','Armas','II',2,'Arma pesada de duas mãos e alcance longo que comporta seis granadas 40 mm; recarregar uma custa ação de movimento. Um acerto direto nega a resistência apenas do alvo atingido; disparar num ponto dispensa o ataque e todos os alvos resistem. Granadas de arremesso não são compatíveis.',71,'Bazuca','held','launcher','weapon',[],'Arquivos Secretos #4');
 export const ADDITIONAL_ITEMS=Object.freeze(rows);
 export const ITEM_NAME_ALIASES=Object.freeze({'Marreta':['Maça'],'Moto-serra':['Motosserra'],'Balas pesadas':['Balas longas'],'Lanterna':['Lanterna tática']});
