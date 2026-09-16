@@ -272,7 +272,7 @@ export const TRAIL_ABILITIES = [
   ...trail("Combatente", "Aniquilador", "Livro base", [
     ["A Favorita", 10, "Escolha uma arma; ela passa a exigir uma categoria a menos para ser requisitada (redução de I)."],
     ["Técnica Secreta", 40, "A redução de categoria da arma favorita passa a II. Ao atacar com ela, 2 PE aplicam Amplo (atinge também um alvo adjacente ao original) e/ou Destruidor (+1 no multiplicador de crítico), +2 PE por efeito adicional.", "2 PE"],
-    ["Técnica Sublime", 65, "Adiciona à lista de efeitos: Letal (+2 na margem de ameaça, ou +5 escolhendo duas vezes) e Perfurante (ignora até 5 de resistência a dano do alvo).", "3 PE"],
+    ["Técnica Sublime", 65, "Adiciona à lista de efeitos da Técnica Secreta: Letal (+2 na margem de ameaça, ou +5 escolhendo duas vezes) e Perfurante (ignora até 5 de resistência a dano do alvo). Segue o mesmo custo da Técnica Secreta (2 PE + 2 PE por efeito adicional).", "Conforme Técnica Secreta"],
     ["Máquina de Matar", 99, "A redução de categoria da arma favorita passa a III, ela recebe +2 na margem de ameaça e seu dano aumenta em mais um dado do mesmo tipo."],
   ]),
   ...trail("Combatente", "Comandante de Campo", "Livro base", [
