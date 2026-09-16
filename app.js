@@ -1,4 +1,4 @@
-import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=32";
+import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=37";
 import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=36";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
@@ -43,14 +43,14 @@ import {
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=33";
+} from "./items.js?v=37";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=32";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=36";
+} from "./choices.js?v=37";
 import {
   effortResource,
   beforeSoBonus,
@@ -1954,12 +1954,12 @@ function renderItemUpgrades(item, character) {
  const original=ITEM_BY_ID.get(item.id),compatible=ITEM_UPGRADES.filter(u=>canApplyUpgrade(original,u));
  if(!compatible.length)return "";
  const chosen=itemUpgrades(original,character.inventarioModificacoes?.[item.id]);
- return `<details class="item-upgrades"><summary>Modificações e maldições (${chosen.length})</summary><p class="muted small">A categoria e os espaços são atualizados aqui. A escolha vale para todas as cópias deste item; anote os demais efeitos na ficha.</p><div class="upgrade-choices">${compatible.map(u=>`<label><input type="checkbox" data-item-upgrade="${item.id}" value="${u.id}" ${chosen.some(c=>c.id===u.id)?"checked":""}/><span><strong>${escapeHtml(u.name)}</strong><small>${u.curse?"Maldição":"Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small></span></label>`).join("")}</div></details>`;
+ return `<details class="item-upgrades"><summary>Modificações e maldições (${chosen.length})</summary><p class="muted small">A categoria e os espaços são atualizados aqui. A escolha vale para todas as cópias deste item.</p><div class="upgrade-choices">${compatible.map(u=>`<label><input type="checkbox" data-item-upgrade="${item.id}" value="${u.id}" ${chosen.some(c=>c.id===u.id)?"checked":""}/><span><strong>${escapeHtml(u.name)}</strong><small>${u.curse?"Maldição":"Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small>${u.summary?`<small class="muted">${escapeHtml(u.summary)}</small>`:""}</span></label>`).join("")}</div></details>`;
 }
 
 function renderUpgradeCatalog() {
  const entries=ITEM_UPGRADES.filter(u=>(activeItemSource==='Todos'||u.source===activeItemSource)&&normalizeSearch(`${u.name} ${u.target} ${u.curse?'Maldição':''}`).includes(normalizeSearch(itemSearch)));
- return entries.map(u=>`<article class="entry-card upgrade-reference"><strong>${escapeHtml(u.name)}</strong><p>${escapeHtml(u.target)} · ${u.curse?'Maldição':'Modificação'} · ${u.curse?'primeira +II; demais +I':'+I'} na categoria</p><small>${escapeHtml(u.source)} · p. ${u.page}</small><p class="muted small">Abra o equipamento no inventário e marque esta opção em “Modificações e maldições”.</p></article>`).join("");
+ return entries.map(u=>`<article class="entry-card upgrade-reference"><strong>${escapeHtml(u.name)}</strong><p>${escapeHtml(u.target)} · ${u.curse?'Maldição':'Modificação'} · ${u.curse?'primeira +II; demais +I':'+I'} na categoria</p>${u.summary?`<p class="muted small">${escapeHtml(u.summary)}</p>`:""}<small>${escapeHtml(u.source)} · p. ${u.page}</small></article>`).join("");
 }
 
 function renderItemPickerAction(item) {

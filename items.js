@@ -1,5 +1,5 @@
-import { upgradedItem } from "./item-upgrades.js?v=32";
-import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=33";
+import { upgradedItem } from "./item-upgrades.js?v=37";
+import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=37";
 const slug = (value) =>
   String(value)
     .normalize("NFD")
@@ -159,20 +159,20 @@ const ORIGINAL_ITEMS = [
   utility("Vestimenta", "Acessórios", "I", 1, "Roupa preparada para conceder +2 em uma perícia apropriada, exceto Luta e Pontaria.", "Livro base", "61", [["Limite", "Benefício de até duas vestimentas"]]),
 
   // Livro base — explosivos e itens operacionais
-  utility("Granada de atordoamento", "Explosivos", "0", 1, "Consumível de área que pode atordoar; Fortitude reduz o efeito."),
-  utility("Granada de fragmentação", "Explosivos", "I", 1, "Consumível de área que causa 8d6 de perfuração; Reflexos reduz o dano à metade."),
+  utility("Granada de atordoamento", "Explosivos", "0", 1, "Consumível de raio de 6 m: atordoa por 1 rodada; Fortitude reduz para ofuscado e surdo por 1 rodada."),
+  utility("Granada de fragmentação", "Explosivos", "I", 1, "Consumível de raio de 6 m que causa 8d6 de dano de perfuração; Reflexos reduz o dano à metade."),
   utility("Granada de fumaça", "Explosivos", "0", 1, "Cria por duas rodadas uma área de fumaça que bloqueia a visão."),
   utility("Granada incendiária", "Explosivos", "I", 1, "Consumível de área que causa 6d6 de fogo e pode deixar alvos em chamas; Reflexos reduz o efeito."),
-  utility("Mina antipessoal", "Explosivos", "I", 1, "Dispositivo remoto de área; exige Tática para instalação e causa 10d6 de perfuração em cone."),
-  utility("Algemas", "Operacionais", "0", 1, "Restrição metálica para imobilizar os pulsos de uma criatura dominada ou agarrada."),
+  utility("Mina antipessoal", "Explosivos", "I", 1, "Instalar exige ação completa e Tática DT 15; ao detonar (ação padrão em alcance longo), causa 12d6 de dano de perfuração num cone de 6 m; Reflexos reduz à metade."),
+  utility("Algemas", "Operacionais", "0", 1, "Restrição metálica: prender os dois pulsos aplica -5 em testes que usem as mãos e impede conjurar; escapar exige Acrobacia DT 30."),
   utility("Bandoleira", "Operacionais", "0", 1, "Armazena até quatro itens pequenos e permite sacar ou guardar um deles como ação livre uma vez por rodada."),
   utility("Cicatrizante", "Operacionais", "I", 1, "Consumível de uso rápido que recupera 2d8+2 PV."),
-  utility("Lanterna", "Operacionais", "0", 1, "Projeta luz clara em alcance curto e pode ser empunhada ou presa ao corpo."),
+  utility("Lanterna", "Operacionais", "0", 1, "Ilumina um cone de 9 m; como ação de movimento, mira nos olhos de um alvo em alcance curto, deixando-o ofuscado por 1 rodada (e imune à lanterna pelo resto da cena)."),
   utility("Óculos de visão térmica", "Operacionais", "I", 1, "Remove penalidades em testes causadas por camuflagem."),
-  utility("Pistola de dardos", "Operacionais", "I", 1, "Dispositivo de alcance curto com duas cargas que pode incapacitar um alvo; Fortitude reduz o efeito."),
+  utility("Pistola de dardos", "Operacionais", "I", 1, "Arma leve de alcance curto com 2 dardos; um acerto deixa o alvo inconsciente até o fim da cena (Fortitude reduz para desprevenido e lento por 1 rodada)."),
   utility("Soqueira", "Operacionais", "0", 1, "Aumenta em +1 o dano desarmado e aceita modificações próprias de armas corpo a corpo."),
-  utility("Spray de pimenta", "Operacionais", "0", 1, "Item de alcance curto que pode prejudicar a visão de um alvo; Fortitude reduz o efeito."),
-  utility("Taser", "Operacionais", "0", 1, "Dispositivo de duas cargas que pode incapacitar uma criatura adjacente; Fortitude reduz o efeito."),
+  utility("Spray de pimenta", "Operacionais", "0", 1, "Ação padrão contra um alvo adjacente: cega por 1d4 rodadas (Fortitude evita). Tem carga para dois usos."),
+  utility("Taser", "Operacionais", "0", 1, "Ação padrão contra um alvo adjacente: causa 1d6 de dano elétrico e atordoa por 1 rodada (Fortitude evita). A bateria dura dois usos."),
 
   // Sobrevivendo ao Horror — acessórios
   utility("Amuleto sagrado", "Acessórios", "0", 1, "Item vestido que concede +2 em Religião e Vontade.", "Sobrevivendo ao Horror", "39"),
@@ -223,10 +223,10 @@ const ORIGINAL_ITEMS = [
   utility("Selo paranormal de 2º círculo", "Paranormais", "II", 1, "Consumível que contém um ritual de 2º círculo e desaparece após a ativação.", "Livro base", "142"),
   utility("Selo paranormal de 3º círculo", "Paranormais", "III", 1, "Consumível que contém um ritual de 3º círculo e desaparece após a ativação.", "Livro base", "142"),
   utility("Selo paranormal de 4º círculo", "Paranormais", "IV", 1, "Consumível que contém um ritual de 4º círculo e desaparece após a ativação.", "Livro base", "142"),
-  utility("Coração pulsante", "Paranormais", "Especial", 1, "Item de uso único que permite gastar reação e 2 PE para reduzir pela metade um dano recebido.", "Livro base", "142"),
-  utility("Crânio espiral", "Paranormais", "Especial", 1, "Item de uso único que conjura Velocidade Mortal sem o custo-base do ritual.", "Livro base", "142"),
-  utility("Frasco de lodo", "Paranormais", "Especial", 1, "Consumível paranormal que pode recuperar PV; ferimentos antigos tornam o resultado incerto.", "Livro base", "143"),
-  utility("Pergaminho da pertinácia", "Paranormais", "Especial", 1, "Consumível que concede 5 PE temporários até o fim da cena.", "Livro base", "143"),
+  utility("Coração pulsante", "Paranormais", "Especial", 1, "Reação: espreme o item para reduzir um dano sofrido à metade. Testa Fortitude DT 15 (+5 por uso adicional no mesmo dia); se falhar, o item é destruído.", "Livro base", "142"),
+  utility("Crânio espiral", "Paranormais", "Especial", 1, "Ação livre: concede uma ação padrão adicional na rodada. Testa Vontade DT 15 (+5 por uso adicional no mesmo dia); se falhar, você ainda recebe o benefício, mas envelhece 1d4 anos e não pode reativá-lo nesse dia.", "Livro base", "142"),
+  utility("Frasco de lodo", "Paranormais", "Especial", 1, "Ação padrão para aplicar num ferimento: se sofrido até 1 rodada atrás, recupera 6d8+20 PV. Em ferimento mais antigo, role 1d6 par para recuperar 3d8+10 PV, ou ímpar para a ferida infeccionar e causar 3d8+10 de dano de Morte. Uma única ativação.", "Livro base", "143"),
+  utility("Pergaminho da pertinácia", "Paranormais", "Especial", 1, "Ação padrão: concede 5 PE temporários até o fim da cena. Testa Ocultismo DT 15 (+5 por uso adicional no mesmo dia); se falhar, o pergaminho se desfaz.", "Livro base", "143"),
   utility("Catalisador ampliador", "Paranormais", "I", 0.5, "Consumível ritualístico que aumenta o alcance em um passo ou dobra a área do ritual.", "Sobrevivendo ao Horror", "44"),
   utility("Catalisador perturbador", "Paranormais", "I", 0.5, "Consumível ritualístico que aumenta em +2 a DT de resistência do ritual.", "Sobrevivendo ao Horror", "44"),
   utility("Catalisador potencializador", "Paranormais", "I", 0.5, "Consumível ritualístico que aumenta o dano do ritual em um dado do mesmo tipo.", "Sobrevivendo ao Horror", "44"),

@@ -1,4 +1,4 @@
-import { ADDITIONAL_ITEMS } from "./additional-items.js?v=33";
+import { ADDITIONAL_ITEMS } from "./additional-items.js?v=37";
 // Original pixel-art interpretations. Visual placement does not change game rules.
 export const ORIGINAL_ITEM_ART = Object.freeze([
   {
