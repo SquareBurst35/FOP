@@ -1,8 +1,10 @@
 # Auditoria de Arquivos Secretos 3–7
 
-Status: **em andamento**. Este arquivo não declara cobertura completa enquanto houver páginas ou integrações pendentes.
+Status: **opções de personagem concluídas nos cinco suplementos** (AS #3, #4, #5, #6 e #7), integradas de verdade nos catálogos principais entre setembro de 2026 — não no schema de rascunho de `supplements/`, que está superado e é mantido apenas para não quebrar testes antigos.
 
-Base de comparação: commit `22f7c8ba445aae08ab9dc4e024c989cad145cda3`. Os identificadores existentes devem ser preservados. Descrições novas serão resumos mecânicos, sem reproduzir narrativas ou ilustrações dos PDFs.
+O que permanece **fora do escopo** por decisão registrada, não por esquecimento: fichas de ameaças e aliados (o site não tem essa interface), tabelas de mesa/mestre (doenças, venenos, criação de ameaças, animais), subsistemas opcionais que o site não implementa (veículos operacionais, hacking, combate submerso, batalhas de intenções, construção de base), regras opcionais não canônicas (Evolução Modular) e os "novos usos de perícia" (não existe catálogo para eles). Cada tabela abaixo marca item por item o que entrou e o motivo do que ficou fora.
+
+Base de comparação: commit `22f7c8ba445aae08ab9dc4e024c989cad145cda3`. Os identificadores existentes devem ser preservados. Descrições novas são resumos mecânicos próprios, sem reproduzir narrativas ou ilustrações dos PDFs.
 
 ## Fontes recebidas
 
@@ -26,23 +28,25 @@ Total: 468 páginas. Extração preparada página a página; extração não sig
 
 ## AS #3 — inventário de diferenças identificado
 
+**Opções de personagem integradas de verdade em rules.js/content.js/additional-items.js em 16/09/2026** (commit `42f0bec`), fora do schema abandonado em `supplements/`.
+
 | Categoria | Conteúdo | Página | Situação |
 |---|---|---:|---|
-| Poderes de Combatente | Guardião da Tropa; Vitalidade Sofrida | 108 | Adição pendente; requisitos, repetição e PV retroativos |
-| Poderes de Ocultista | Flagelo Bem Aproveitado; Recuperação Flagelante | 108 | Adição pendente; alteração da conversão de PV e controle entre interlúdios |
-| Poderes gerais | Ambidestria; Entrada Triunfal; Papinho Sedutor | 108–109 | Adição pendente; requisitos alternativos e limite por sessão |
-| Poderes paranormais | Instrumento Elétrico de Combate; Conhecimento de Direção Precognitiva | 109 | Adição pendente; afinidade e instrumento gerado |
-| Poderes de sacrifício | Causar Culpa; Despertar Obsessão; Arrogância Diabólica; Estimular Hedonismo; Fruto da Ambição; Ódio Suprimido | 110–111 | Adição pendente; aquisição condicionada ao estigma, não poderes gerais livres |
-| Arma | Garra do Harpia | 112 | Adição pendente; item único e ativação de 2 PE |
-| Equipamentos | Paçoca; Bloody Mary Batizada | 112 | Adição pendente; consumo, recuperação e condições |
-| Itens paranormais | Crânio Dominador; Gaiola do Corvo | 113 | Adição pendente; ativações, alvos e intervalo de 24 h |
-| Itens amaldiçoados | Camiseta Psikolera; Dupla Obsessiva; Armaduras de Guevara | 114–115 | Adição pendente; arma composta, reações e armadura progressiva |
-| Aliados | Ana; Argano; Chispa; Escarlata; Torvo; Coruja; Harpia; Corvo; Papagaio; Pomba; Alê; Caio; Cindy; Eloy; Franco | 116–118 | Adição pendente; bônus e ações com limites próprios |
-| Trilha geral | Performático: Ensaio; Frase de Efeito; Mosh Pit; Rítmo Contagiante | 119 | Adição pendente; Combatente, Especialista e Ocultista; NEX 10/40/65/99 |
-| Regras opcionais | Batalhas de intenções; trocas de recursos; construção de base; minijogos; boas recordações; vínculos e condições | 120–124 | Adição pendente; distinguir regras de mesa e controles da ficha |
-| Veículos | Categorias II/III/IV; 9 regalias; direção; combustível; danos; reparos; motocicleta dos Gaudérios | 125–131 | Adição pendente; sem criar campanhas |
-| Animais | Treinamento; aliados Serpente, Corvo e Gato; progressão de animal como ameaça | 132–134 | Adição pendente |
-| Criação de ameaças | Tabela de valores médios e adaptação para ameaças da realidade | 140–141 | Estruturação pendente; não é lista de criaturas prontas |
+| Poderes de Combatente | Guardião da Tropa; Vitalidade Sofrida | 108 | Integrado |
+| Poderes de Ocultista | Flagelo Bem Aproveitado; Recuperação Flagelante | 108 | Integrado |
+| Poderes gerais | Ambidestria; Entrada Triunfal; Papinho Sedutor | 108–109 | Integrado |
+| Poderes paranormais | Instrumento Elétrico de Combate; Conhecimento de Direção Precognitiva | 109 | Integrado |
+| Poderes de sacrifício | Causar Culpa; Despertar Obsessão; Arrogância Diabólica; Estimular Hedonismo; Fruto da Ambição; Ódio Suprimido | 110–111 | Integrado em grupo próprio ("Poderes de Sacrifício", dentro de Gerais), com o estigma exigido registrado no requisito — não são poderes gerais de escolha livre |
+| Arma | Garra do Harpia | 112 | Integrado, com pixel art |
+| Equipamentos | Paçoca; Bloody Mary Batizada | 112 | Integrado, com pixel art |
+| Itens paranormais | Crânio Dominador; Gaiola do Corvo | 113 | Integrado, com pixel art |
+| Itens amaldiçoados | Camiseta Psikolera; Dupla Obsessiva; Armaduras de Guevara | 114–115 | Integrado, com pixel art |
+| Aliados | Ana; Argano; Chispa; Escarlata; Torvo; Coruja; Harpia; Corvo; Papagaio; Pomba; Alê; Caio; Cindy; Eloy; Franco | 116–118 | Fora do escopo — site não tem interface de Aliados/Ameaças |
+| Trilha geral | Performático: Ensaio; Frase de Efeito; Mosh Pit; Rítmo Contagiante | 119 | Integrado nas três classes (é a primeira trilha geral do sistema) |
+| Regras opcionais | Batalhas de intenções; trocas de recursos; construção de base; minijogos; boas recordações; vínculos e condições | 120–124 | Fora do escopo — regras de mesa |
+| Veículos | Categorias II/III/IV; 9 regalias; direção; combustível; danos; reparos; motocicleta dos Gaudérios | 125–131 | Fora do escopo — subsistema que o site não tem (também bloqueia as 9 regalias do AS5) |
+| Animais | Treinamento; aliados Serpente, Corvo e Gato; progressão de animal como ameaça | 132–134 | Fora do escopo — regras de mesa/aliados |
+| Criação de ameaças | Tabela de valores médios e adaptação para ameaças da realidade | 140–141 | Fora do escopo — ferramenta de mestre |
 
 ## Integração e testes
 
