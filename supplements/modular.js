@@ -8,7 +8,7 @@ const combat = new Set([
 const utility = new Set([
   'Incansável', 'Presteza Atlética', 'Instinto de Fuga', 'Caminho para Forca', 'Ciente das Cicatrizes', 'Engolir o Choro', 'Sacrificar os Joelhos', 'Sem Tempo, Irmão', 'Mochileiro',
   'Conhecimento Aplicado', 'Hacker', 'Mãos Rápidas', 'Mochila de Utilidades', 'Na Trilha Certa', 'Nerd', 'Pensamento Ágil', 'Primeira Impressão', 'Acolher o Terror', 'Flashback', 'Contatos Oportunos', 'Mãos Firmes', 'Disfarce Sutil', 'Esconderijo Desesperado', 'Leitura Fria', 'Plano de Fuga', 'Remoer Memórias', 'Resistir à Pressão',
-  'Camuflar Ocultismo', 'Envolto em Mistério', 'Guiado pelo Paranormal', 'Identificação Paranormal', 'Intuição Paranormal', 'Nos Olhos do Monstro', 'Olhar Sinistro', 'Deixe os Sussurros Guiarem', 'Estalos Macabros', 'Minha Dor me Impulsiona', 'Sentido Premonitório', 'Sincronia Paranormal', 'Acostumado à Maldição de <Elemento>',
+  'Camuflar Ocultismo', 'Criar Selo', 'Envolto em Mistério', 'Guiado pelo Paranormal', 'Identificação Paranormal', 'Intuição Paranormal', 'Nos Olhos do Monstro', 'Olhar Sinistro', 'Deixe os Sussurros Guiarem', 'Estalos Macabros', 'Minha Dor me Impulsiona', 'Sentido Premonitório', 'Sincronia Paranormal', 'Acostumado à Maldição de <Elemento>',
 ]);
 const variable = new Set(['Transcender', 'Treinamento em Perícia', 'Especialista Diletante', 'Dominar Habilidade Ritualística', 'Ferramentas Paranormais']);
 export function modularClassification(entry, character = {}) {
