@@ -1,5 +1,5 @@
-import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=52';
-import { ORIGINS } from './rules.js?v=52';
+import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=53';
+import { ORIGINS } from './rules.js?v=53';
 import { parseUseCost, progressLevel } from './session.js?v=31';
 const names=new Map([...CORE_CLASS_ABILITIES,...allSelectableAbilities(ORIGINS)].map(a=>[a.id,a.name]));
 export function ritualCircleAccess(c){const n=progressLevel(c)*5;return c.classe==='Ocultista'?(n>=85?4:n>=55?3:n>=25?2:1):(n>=75?3:n>=45?2:1);}

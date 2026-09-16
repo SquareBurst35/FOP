@@ -154,6 +154,7 @@ export const CLASSES = {
       "Perseverante",
       "Muambeiro",
       "Granadeiro Blaster",
+      "Monstruoso",
     ],
   },
   Ocultista: {
@@ -174,6 +175,7 @@ export const CLASSES = {
       "Parapsicólogo",
       "Maledictólogo",
       "Criptologista do Oculto",
+      "Monstruoso",
     ],
   },
 };
