@@ -37,7 +37,7 @@ test('AS3–7 records have unique source identities and coexist with the old cat
   // this staging module is intentionally superseded book by book until it is retired.
   for (const [added, old] of [[SUPPLEMENT_ORIGINS,ORIGINS], [SUPPLEMENT_CLASS_POWERS,CLASS_POWERS], [SUPPLEMENT_GENERAL_POWERS,GENERAL_POWERS], [SUPPLEMENT_PARANORMAL_POWERS,PARANORMAL_POWERS], [SUPPLEMENT_TRAILS,TRAIL_ABILITIES], [SUPPLEMENT_RITUALS,RITUALS], [SUPPLEMENT_ITEMS,ITEMS]]) {
     for (const entry of added) {
-      if (entry.source === 'Arquivos Secretos #4' || entry.source === 'Arquivos Secretos #5' || entry.source === 'Arquivos Secretos #7') continue;
+      if (['Arquivos Secretos #4', 'Arquivos Secretos #5', 'Arquivos Secretos #6', 'Arquivos Secretos #7'].includes(entry.source)) continue;
       assert.equal(old.some(e => !e.id?.startsWith('as') && norm(e.name) === norm(entry.name)), false, `Duplicata: ${entry.name}`);
     }
   }
@@ -149,9 +149,10 @@ test('optional tables retain source thresholds and do not change defaults', () =
   assert.equal(dartsScore([10,25,30]),80);
   assert.deepEqual([1,2,3,20].map(modularPowerKind),[null,'utilidade','combate','utilidade']);
   assert.equal(modularPowerAllowed(CLASS_POWERS.find(p=>p.name==='Transcender'),'utilidade'),false);
-  // AS4/AS5 powers are real CLASS_POWERS entries now; the staged modular.js classifier only knows the
-  // as03-06 schema shape, so it is checked only against powers still staged elsewhere.
-  assert.ok(CLASS_POWERS.filter(p=>p.source!=='Arquivos Secretos #4'&&p.source!=='Arquivos Secretos #5').every(p=>modularClassification(p)!=='unclassified'));
+  // AS4/AS5/AS6 powers are real CLASS_POWERS entries now; the staged modular.js classifier only knows
+  // the as03-06 schema shape, so it is checked only against powers still staged elsewhere.
+  const ported=new Set(['Arquivos Secretos #4','Arquivos Secretos #5','Arquivos Secretos #6']);
+  assert.ok(CLASS_POWERS.filter(p=>!ported.has(p.source)).every(p=>modularClassification(p)!=='unclassified'));
   assert.deepEqual(underwaterModifiers({}),{modifiers:[],canCast:true,rangedAllowed:true,damageMultiplier:1});
   const submerged=underwaterModifiers({submerged:true,ranged:true,weaponKind:'bow',damageType:'Corte',noRitualSpeech:true});
   assert.equal(submerged.rangedAllowed,false); assert.equal(submerged.canCast,false); assert.equal(submerged.damageMultiplier,0.5);

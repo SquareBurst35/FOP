@@ -2530,6 +2530,39 @@
     "changedPixels": 5754
   },
   {
+    "appearance": "masculino",
+    "index": 230,
+    "id": "arquivos-secretos-6-paranormais-anel-invertido",
+    "name": "Anel Invertido",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "appearance": "masculino",
+    "index": 231,
+    "id": "arquivos-secretos-6-operacionais-aplicador-de-adrenalina",
+    "name": "Aplicador de Adrenalina",
+    "kind": "wrist",
+    "variant": "wrist-device",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 4862
+  },
+  {
+    "appearance": "masculino",
+    "index": 232,
+    "id": "arquivos-secretos-6-armas-lanca-nitrogenio",
+    "name": "Lança-nitrogênio",
+    "kind": "held",
+    "variant": "flamethrower",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 25726
+  },
+  {
     "appearance": "feminino",
     "index": 0,
     "id": "livro-base-armas-faca",
@@ -5058,5 +5091,38 @@
     "visibility": "body",
     "placements": 1,
     "changedPixels": 9831
+  },
+  {
+    "appearance": "feminino",
+    "index": 230,
+    "id": "arquivos-secretos-6-paranormais-anel-invertido",
+    "name": "Anel Invertido",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9831
+  },
+  {
+    "appearance": "feminino",
+    "index": 231,
+    "id": "arquivos-secretos-6-operacionais-aplicador-de-adrenalina",
+    "name": "Aplicador de Adrenalina",
+    "kind": "wrist",
+    "variant": "wrist-device",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 4950
+  },
+  {
+    "appearance": "feminino",
+    "index": 232,
+    "id": "arquivos-secretos-6-armas-lanca-nitrogenio",
+    "name": "Lança-nitrogênio",
+    "kind": "held",
+    "variant": "flamethrower",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 25557
   }
 ]

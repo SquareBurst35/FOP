@@ -94,6 +94,10 @@ export const ORIGINS = [
 
   { name: "Exorcizado", skills: ["Fortitude", "Ocultismo"], power: "O Que Restou", source: "Arquivos Secretos #7" },
   { name: "Sensitivo Rebelde", skills: ["Intuição", "Vontade"], power: "Sussurros e Vultos", source: "Arquivos Secretos #7" },
+
+  { name: "Cientista Ex-Panacea", skills: ["Atualidades", "Ciências"], power: "Existe uma Explicação", source: "Arquivos Secretos #6" },
+  { name: "Cobaia Sobrevivente", skills: ["Fortitude", "Vontade"], power: "Forças para Enfrentar", source: "Arquivos Secretos #6" },
+  { name: "Segurança Ex-Panacea", skills: ["Luta", "Pontaria"], power: "Técnicas de Contenção", source: "Arquivos Secretos #6" },
 ];
 
 export const CLASSES = {

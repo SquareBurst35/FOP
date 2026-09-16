@@ -38,6 +38,15 @@ for(const [name,summary] of [
  ['Dupla','Acrescenta o efeito de outra granada não amaldiçoada, diferente do efeito principal.'],
  ['Programada','Permite escolher em quantos turnos o efeito da granada será ativado.'],
 ])add(name,'Explosivos',71,summary,{source:'Arquivos Secretos #4'});
+// Arquivos Secretos #6 — medicamentos (cicatrizantes e similares também contam como medicamentos).
+for(const [name,summary] of [
+ ['Emulsificante Químico','O medicamento ganha um efeito adicional: escolha, ao aplicar a modificação, o efeito de outro medicamento de categoria igual ou menor (exceto itens amaldiçoados), diferente do efeito principal; os dois se ativam juntos. Cicatrizantes e similares contam como medicamentos.'],
+ ['Potencializador Químico','Escolha uma melhoria: bônus em testes aumenta em +5; PV temporários aumentam em +2d8; recuperação de PV aumenta em +2d8; ou um efeito de uma vez por cena passa a funcionar duas vezes por cena. Cicatrizantes e similares contam como medicamentos.'],
+])add(name,'Medicamentos',74,summary,{source:'Arquivos Secretos #6'});
+for(const [name,summary] of [
+ ['Aceleração Espiral','Além do efeito normal do medicamento, pode gastar 3 PE para fazer uma única ação padrão adicional, que não pode conjurar rituais; o efeito termina ao usar a ação ou no fim da cena. Ao usar o item, teste Fortitude DT 20 ou um órgão envelhece além do normal e você perde 2d8 PV.'],
+ ['Esforço Espiral','Além do efeito normal do medicamento, recupera 1d8+1 PE. Ao usar o item, teste Fortitude DT 20 ou envelhece 1 ano e fica frustrado até o fim da cena.'],
+])add(name,'Medicamentos',74,summary,{source:'Arquivos Secretos #6',curse:true});
 for(const [target,entries]of[
  ['Armas',[
    ['Antielemento','Contra uma criatura de um elemento sorteado ao criar a maldição (1d4: Conhecimento/Energia/Morte/Sangue), gaste 2 PE ao acertar para causar +4d8 de dano.'],
