@@ -5,8 +5,8 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=55";
-import { ITEMS } from "./items.js?v=55";
+} from "./content.js?v=56";
+import { ITEMS } from "./items.js?v=56";
 import { ORIGINS, SKILLS } from "./rules.js?v=55";
 
 export const CHOICE_TYPE_LABELS = {

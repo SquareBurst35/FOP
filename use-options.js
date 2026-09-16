@@ -1,4 +1,4 @@
-import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=55';
+import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=56';
 import { ORIGINS } from './rules.js?v=55';
 import { parseUseCost, progressLevel } from './session.js?v=31';
 const names=new Map([...CORE_CLASS_ABILITIES,...allSelectableAbilities(ORIGINS)].map(a=>[a.id,a.name]));

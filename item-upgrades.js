@@ -31,7 +31,7 @@ for(const [name,summary] of [
  ['Função Adicional','Concede +2 em uma perícia adicional, à escolha e sujeita à aprovação do mestre.'],
  ['Instrumental','O acessório passa a funcionar como um kit de perícia específico, escolhido ao aplicar a modificação.'],
 ])add(name,'Acessórios',64,summary,{spaces:name==='Discreto'?-1:0});
-add('Lente de Revelação','Câmera de aura paranormal',45,'Aumenta em +10 a DT do efeito e pode causar 6d6 de dano de frio a criaturas com invisibilidade, incorporeidade ou camuflagem.',{source:'Sobrevivendo ao Horror'});
+add('Lente de Revelação','Câmera de aura paranormal',45,'A câmera passa a ver seres invisíveis e incorpóreos e a ignorar a camuflagem deles. Além disso, uma ação padrão e 1 PE fotografam uma criatura em alcance curto: até o fim da cena ela perde camuflagem e invisibilidade e se torna corpórea (Vontade DT PRE evita).',{source:'Sobrevivendo ao Horror'});
 add('Acoplável','Armas',71,'Permite que a arma seja acoplada a outra compatível, combinando seus efeitos conforme a referência da modificação.',{source:'Arquivos Secretos #2'});
 for(const [name,summary] of [
  ['Adesiva','Um acerto contra a Defesa faz o alvo falhar automaticamente na resistência; um erro fixa a granada no espaço. Efeitos contínuos acompanham o alvo até ser removida com ação padrão.'],

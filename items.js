@@ -1,4 +1,4 @@
-import { upgradedItem } from "./item-upgrades.js?v=54";
+import { upgradedItem } from "./item-upgrades.js?v=56";
 import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=55";
 const slug = (value) =>
   String(value)
@@ -40,7 +40,7 @@ const weapon = ({
   range = "—",
   type,
   source = "Livro base",
-  page = source === "Livro base" ? "54–55" : "38",
+  page = source === "Livro base" ? "54–59" : "38",
   summary = "",
 }) =>
   inventoryItem({
@@ -66,7 +66,7 @@ const weapon = ({
 const ammunition = (name, category, summary, source = "Livro base", page = "54–55") =>
   inventoryItem({ name, group: "Munições", category, spaces: 1, summary, source, page });
 
-const utility = (name, group, category, spaces, summary, source = "Livro base", page = "61–63", details = []) =>
+const utility = (name, group, category, spaces, summary, source = "Livro base", page = "61–67", details = []) =>
   inventoryItem({ name, group, category, spaces, summary, source, page, details });
 
 export const INVENTORY_GROUPS = [
@@ -223,10 +223,10 @@ const ORIGINAL_ITEMS = [
   utility("Selo paranormal de 2º círculo", "Paranormais", "II", 1, "Consumível que contém um ritual de 2º círculo e desaparece após a ativação.", "Livro base", "142"),
   utility("Selo paranormal de 3º círculo", "Paranormais", "III", 1, "Consumível que contém um ritual de 3º círculo e desaparece após a ativação.", "Livro base", "142"),
   utility("Selo paranormal de 4º círculo", "Paranormais", "IV", 1, "Consumível que contém um ritual de 4º círculo e desaparece após a ativação.", "Livro base", "142"),
-  utility("Coração pulsante", "Paranormais", "Especial", 1, "Reação: espreme o item para reduzir um dano sofrido à metade. Testa Fortitude DT 15 (+5 por uso adicional no mesmo dia); se falhar, o item é destruído.", "Livro base", "142"),
-  utility("Crânio espiral", "Paranormais", "Especial", 1, "Ação livre: concede uma ação padrão adicional na rodada. Testa Vontade DT 15 (+5 por uso adicional no mesmo dia); se falhar, você ainda recebe o benefício, mas envelhece 1d4 anos e não pode reativá-lo nesse dia.", "Livro base", "142"),
-  utility("Frasco de lodo", "Paranormais", "Especial", 1, "Ação padrão para aplicar num ferimento: se sofrido até 1 rodada atrás, recupera 6d8+20 PV. Em ferimento mais antigo, role 1d6 par para recuperar 3d8+10 PV, ou ímpar para a ferida infeccionar e causar 3d8+10 de dano de Morte. Uma única ativação.", "Livro base", "143"),
-  utility("Pergaminho da pertinácia", "Paranormais", "Especial", 1, "Ação padrão: concede 5 PE temporários até o fim da cena. Testa Ocultismo DT 15 (+5 por uso adicional no mesmo dia); se falhar, o pergaminho se desfaz.", "Livro base", "143"),
+  utility("Coração pulsante", "Paranormais", "Especial", 1, "Reação: espreme o item para reduzir um dano sofrido à metade. Testa Fortitude DT 15 (+5 por uso adicional no mesmo dia); se falhar, o item é destruído.", "Livro base", "148"),
+  utility("Crânio espiral", "Paranormais", "Especial", 1, "Ação livre: concede uma ação padrão adicional na rodada. Testa Vontade DT 15 (+5 por uso adicional no mesmo dia); se falhar, você ainda recebe o benefício, mas envelhece 1d4 anos e não pode reativá-lo nesse dia.", "Livro base", "149"),
+  utility("Frasco de lodo", "Paranormais", "Especial", 1, "Ação padrão para aplicar num ferimento: se sofrido até 1 rodada atrás, recupera 6d8+20 PV. Em ferimento mais antigo, role 1d6 par para recuperar 3d8+10 PV, ou ímpar para a ferida infeccionar e causar 3d8+10 de dano de Morte. Uma única ativação.", "Livro base", "149"),
+  utility("Pergaminho da pertinácia", "Paranormais", "Especial", 1, "Ação padrão: concede 5 PE temporários até o fim da cena. Testa Ocultismo DT 15 (+5 por uso adicional no mesmo dia); se falhar, o pergaminho se desfaz.", "Livro base", "150"),
   utility("Catalisador ampliador", "Paranormais", "I", 0.5, "Consumível ritualístico que aumenta o alcance em um passo ou dobra a área do ritual.", "Sobrevivendo ao Horror", "44"),
   utility("Catalisador perturbador", "Paranormais", "I", 0.5, "Consumível ritualístico que aumenta em +2 a DT de resistência do ritual.", "Sobrevivendo ao Horror", "44"),
   utility("Catalisador potencializador", "Paranormais", "I", 0.5, "Consumível ritualístico que aumenta o dano do ritual em um dado do mesmo tipo.", "Sobrevivendo ao Horror", "44"),
