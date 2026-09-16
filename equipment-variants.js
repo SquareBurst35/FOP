@@ -1,7 +1,7 @@
 // Each entry selects a complete, already-equipped version of the agent.
 // Shared silhouettes describe physical item types; catalog illustrations stay separate.
-import { ITEM_ART } from './item-art.js?v=51';
-import { compositionFor } from './equipment-composition.js?v=51';
+import { ITEM_ART } from './item-art.js?v=52';
+import { compositionFor } from './equipment-composition.js?v=52';
 const groups = {
   knife: ['Faca','Punhal','Baioneta','Faca tática','A Primeira Adaga','Punhal X','Faca Predadora'],
   hammer: ['Martelo','Marreta','Marreta transtornada'],

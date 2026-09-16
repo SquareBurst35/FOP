@@ -558,6 +558,8 @@ export const ORIGIN_POWER_DETAILS = {
   "Registrar Paranormal": ["Uma vez por cena, ação padrão e 2 PE registram uma criatura ou ritual usado na cena, concedendo +5 em testes de Presença contra criaturas registradas. Numa ação de interlúdio, permite memorizar um ritual registrado até o próximo interlúdio, conforme o NEX e o círculo.", "2 PE"],
   "Minha Teoria Absurda": ["Uma vez por missão em que há algo a investigar, gasta 10 minutos para apresentar ao grupo sua tese sobre as respostas prováveis, antes de terem todas as respostas. Se a tese se provar correta ao fim da missão, recebe +3 PE máximos e atuais.", "10 minutos · 1/missão"],
   "Turno Invertido": ["Uma vez por missão, numa cena de interlúdio, recebe os benefícios da ação dormir sem precisar realizá-la; além disso, recebe +2 em testes de resistência contra efeitos que tentem deixá-lo inconsciente.", "1/missão"],
+  "O Que Restou": ["Escolha um elemento (exceto Medo). Recebe resistência a dano 5 contra esse elemento, mas perde 2 SAN na primeira vez que entrar em contato com ele em cada cena (rituais, itens amaldiçoados, criaturas ou poderes paranormais desse elemento).", "Passivo"],
+  "Sussurros e Vultos": ["Ao testar Diplomacia, Enganação, Intimidação ou Intuição, pode perder 2 SAN para receber +5 nesse teste.", "2 SAN"],
 };
 
 export const ORIGIN_BACKGROUNDS = {
@@ -612,6 +614,8 @@ export const ORIGIN_BACKGROUNDS = {
   "Influencer Paranormal": "Você construiu audiência documentando o estranho e o inexplicável, e agora usa esse faro para registrar manifestações reais.",
   "Ufólogo": "Suas pesquisas sobre sinais no céu e seres de outros mundos sempre pareceram absurdas, mas o oculto não mede distâncias e suas teorias insistem em acertar.",
   "Funcionário de Beira de Estrada": "Anos atendendo viajantes em postos de gasolina e paradas de estrada te deixaram craque em lidar com o inesperado nas madrugadas mais estranhas.",
+  "Exorcizado": "Uma grande força sobrenatural já dominou seu corpo para realizar façanhas incompreensíveis, e uma parte dela nunca foi embora de verdade.",
+  "Sensitivo Rebelde": "Por mais que tenha tentado negar e lutar contra sua sensitividade paranormal, as vozes e visões nunca te abandonaram; o sobrenatural sempre foi sua realidade.",
 };
 
 const RITUAL_COSTS = { 1: 1, 2: 3, 3: 6, 4: 10 };
@@ -755,6 +759,9 @@ export const RITUALS = [
 
   // Arquivos Secretos #4
   ritual("Backup", "Energia", 2, "Cria uma cópia do conjurador em um espaço vazio em alcance curto por 24 horas, com movimentos simples e uma frase; a conexão alcança 50 km. Uma reação troca a posição do conjurador com a cópia e custa 2d4 SAN. Dano à cópia ou sair da conexão encerra o ritual.", "Arquivos Secretos #4", { page: "68", execution: "Padrão", range: "Curto", target: "1 espaço vazio", duration: "24 horas", enhancements: ["Discente (+2 PE): duração permanente; uma ação padrão permite usar os sentidos da cópia, ficando cego, surdo e pasmo no corpo original até encerrar a observação.", "Verdadeiro (+5 PE): também permite falar pela cópia e dar-lhe uma aparência conhecida; ao trocar de lugar, pode encerrar o ritual e causar 6d6 de Energia nas duas áreas de alcance curto, reduzido à metade por Reflexos."] }),
+
+  // Arquivos Secretos #7
+  ritual("Vampirismo", "Sangue", 2, "Transforma o corpo de 1 pessoa viva ou morta (que ainda não tenha sido alvo deste ritual) em um banquete até o fim da cena. Quem gastar 1 minuto comendo parte dele escolhe um efeito (o mesmo \"vaso\" não pode ser reaproveitado na mesma pessoa): Visão (+5 em testes de ataque), Audição (aprende um ritual de até 1º círculo que a pessoa conjurava), Paladar (recupera 2d8+2 PV), Olfato (+5 para rastrear um ser ligado à pessoa) ou Tato (fica treinado numa perícia em que a pessoa era treinada, ou +2 se já for treinado).", "Arquivos Secretos #7", { page: "76", execution: "Completa", range: "Toque", target: "1 pessoa", duration: "Cena", enhancements: ["Discente (+5 PE): mesmas escolhas, mas Visão dá +10, Audição libera um ritual de até 2º círculo, Paladar recupera 3d8+3 PV, Olfato dá +10 e Tato torna veterano (ou +2 se já veterano); requer 3º círculo.", "Verdadeiro (+10 PE): mesmas escolhas, mas Visão dá +15, Audição libera um ritual de até 3º círculo, Paladar recupera 4d8+4 PV, Olfato dá +15 e Tato torna expert (ou +2 se já expert); requer 4º círculo e afinidade."] }),
 ];
 
 export const ABILITY_CATEGORIES = ["Sobrevivente", "Combatente", "Especialista", "Ocultista", "Gerais", "Origens", "Poderes Paranormais"];

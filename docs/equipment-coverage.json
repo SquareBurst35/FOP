@@ -2475,6 +2475,61 @@
     "changedPixels": 13643
   },
   {
+    "appearance": "masculino",
+    "index": 225,
+    "id": "arquivos-secretos-7-paranormais-carranca-cacadora",
+    "name": "Carranca Caçadora",
+    "kind": "held",
+    "variant": "skull-charm",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 11921
+  },
+  {
+    "appearance": "masculino",
+    "index": 226,
+    "id": "arquivos-secretos-7-paranormais-cajado-da-cruz-de-sangue",
+    "name": "Cajado da Cruz de Sangue",
+    "kind": "held",
+    "variant": "staff",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 19306
+  },
+  {
+    "appearance": "masculino",
+    "index": 227,
+    "id": "arquivos-secretos-7-paranormais-pe-de-coelho",
+    "name": "Pé de Coelho",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
+    "appearance": "masculino",
+    "index": 228,
+    "id": "arquivos-secretos-7-paranormais-sal-dourado",
+    "name": "Sal Dourado",
+    "kind": "belt",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "masculino",
+    "index": 229,
+    "id": "arquivos-secretos-7-paranormais-terco-maculado",
+    "name": "Terço Maculado",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5754
+  },
+  {
     "appearance": "feminino",
     "index": 0,
     "id": "livro-base-armas-faca",
@@ -4948,5 +5003,60 @@
     "visibility": "body",
     "placements": 1,
     "changedPixels": 12625
+  },
+  {
+    "appearance": "feminino",
+    "index": 225,
+    "id": "arquivos-secretos-7-paranormais-carranca-cacadora",
+    "name": "Carranca Caçadora",
+    "kind": "held",
+    "variant": "skull-charm",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 11526
+  },
+  {
+    "appearance": "feminino",
+    "index": 226,
+    "id": "arquivos-secretos-7-paranormais-cajado-da-cruz-de-sangue",
+    "name": "Cajado da Cruz de Sangue",
+    "kind": "held",
+    "variant": "staff",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 19094
+  },
+  {
+    "appearance": "feminino",
+    "index": 227,
+    "id": "arquivos-secretos-7-paranormais-pe-de-coelho",
+    "name": "Pé de Coelho",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9831
+  },
+  {
+    "appearance": "feminino",
+    "index": 228,
+    "id": "arquivos-secretos-7-paranormais-sal-dourado",
+    "name": "Sal Dourado",
+    "kind": "belt",
+    "variant": "belt-pouch",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 5780
+  },
+  {
+    "appearance": "feminino",
+    "index": 229,
+    "id": "arquivos-secretos-7-paranormais-terco-maculado",
+    "name": "Terço Maculado",
+    "kind": "necklace",
+    "variant": "amulet",
+    "visibility": "body",
+    "placements": 1,
+    "changedPixels": 9831
   }
 ]

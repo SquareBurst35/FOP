@@ -37,7 +37,7 @@ test('AS3–7 records have unique source identities and coexist with the old cat
   // this staging module is intentionally superseded book by book until it is retired.
   for (const [added, old] of [[SUPPLEMENT_ORIGINS,ORIGINS], [SUPPLEMENT_CLASS_POWERS,CLASS_POWERS], [SUPPLEMENT_GENERAL_POWERS,GENERAL_POWERS], [SUPPLEMENT_PARANORMAL_POWERS,PARANORMAL_POWERS], [SUPPLEMENT_TRAILS,TRAIL_ABILITIES], [SUPPLEMENT_RITUALS,RITUALS], [SUPPLEMENT_ITEMS,ITEMS]]) {
     for (const entry of added) {
-      if (entry.source === 'Arquivos Secretos #4' || entry.source === 'Arquivos Secretos #5') continue;
+      if (entry.source === 'Arquivos Secretos #4' || entry.source === 'Arquivos Secretos #5' || entry.source === 'Arquivos Secretos #7') continue;
       assert.equal(old.some(e => !e.id?.startsWith('as') && norm(e.name) === norm(entry.name)), false, `Duplicata: ${entry.name}`);
     }
   }

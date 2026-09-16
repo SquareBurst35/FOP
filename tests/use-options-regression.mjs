@@ -12,7 +12,7 @@ for(const ref of refs){
  assert.equal(entries.length,ref.name==='Amaldiçoar Arma'?4:1,ref.name);
  for(const r of entries){assert.equal(r.circle,ref.circle,r.name);assert.deepEqual(r.useVariants.variants,ref.variants,r.name);const options=ritualUseOptions({classe:'Ocultista',nex:99,afinidadeElemental:r.element},r);assert.equal(options.length,3);for(const v of ref.variants){const choice=options.find(o=>o.label===v.name);assert.equal(choice.cost,({1:1,2:3,3:6,4:10})[r.circle]+v.extra,`${r.name} ${v.name}`);}}
 }
-assert.equal(RITUALS.length,111,'107 choices in current books plus three saved legacy choices plus Backup (AS4)');
+assert.equal(RITUALS.length,112,'107 choices in current books plus three saved legacy choices plus Backup (AS4) plus Vampirismo (AS7)');
 const curse=RITUALS.find(r=>r.name==='Amaldiçoar Arma (Sangue)');
 const novice={classe:'Ocultista',nex:5};
 assert.deepEqual(ritualUseOptions(novice,curse).map(o=>[o.label,o.cost,o.disabled]),[['Normal',1,false],['Discente',3,true],['Verdadeiro',6,true]]);

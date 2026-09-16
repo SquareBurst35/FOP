@@ -91,6 +91,9 @@ export const ORIGINS = [
 
   { name: "Ufólogo", skills: ["Ciências", "Ocultismo"], power: "Minha Teoria Absurda", source: "Arquivos Secretos #5" },
   { name: "Funcionário de Beira de Estrada", skills: ["Fortitude", "Intuição"], power: "Turno Invertido", source: "Arquivos Secretos #5" },
+
+  { name: "Exorcizado", skills: ["Fortitude", "Ocultismo"], power: "O Que Restou", source: "Arquivos Secretos #7" },
+  { name: "Sensitivo Rebelde", skills: ["Intuição", "Vontade"], power: "Sussurros e Vultos", source: "Arquivos Secretos #7" },
 ];
 
 export const CLASSES = {

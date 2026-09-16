@@ -1,5 +1,5 @@
 import { upgradedItem } from "./item-upgrades.js?v=37";
-import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=51";
+import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=52";
 const slug = (value) =>
   String(value)
     .normalize("NFD")
