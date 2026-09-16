@@ -125,19 +125,19 @@ Erratas aplicáveis: não adicionar Dominador de Elemento (substituído por Barr
 
 ## AS #7 — inventário de diferenças identificado
 
-Texto integral das páginas 1–93 lido. Narrativas e ilustrações não serão reproduzidas; registros de regras usam números e descrições neutras resumidas. Todos os registros abaixo aguardam implementação.
+Texto integral das páginas 1–93 lido. Narrativas e ilustrações não serão reproduzidas; registros de regras usam números e descrições neutras resumidas. **Opções de personagem integradas de verdade em rules.js/content.js/additional-items.js em 15/09/2026** (commits `2c31b44` e `2fd8157`), fora do schema abandonado em `supplements/`.
 
-| Categoria | Conteúdo | Página |
-|---|---|---:|
-| Origens | Exorcizado; Sensitivo Rebelde | 80 |
-| Perícia | Religião: Resguardar Espírito | 80 |
-| Ritual | Vampirismo: três versões e cinco efeitos sensoriais | 76–77 |
-| Itens | Carranca Caçadora; Cajado da Cruz de Sangue; Pé de Coelho; Sal Dourado; Terço Maculado | 78–79 |
-| Trilha de Especialista | Monstruoso: Ser Experimentado; Ser Testado; Ser Expurgado; Ser Apavorante, com quatro elementos | 81–84 |
-| Trilha de Ocultista | Monstruoso: Ser Escarificado; Ser Perfurado; Ser Rasgado; Ser Mutilado, com quatro elementos | 85–88 |
-| Ameaças | Raziel; O Verdadeiro Raziel; Alvira; Sabara; Velisar; Zéfero; Incinerado; Stryzga; Apóstata (quatro estágios) | 40–45, 65, 67, 70–73 |
-| Condição progressiva | Mentem Corrumpere, vinculada à Apóstata | 70–71 |
-| Regra opcional não canônica publicada | Regras debaixo d’água; combate submerso; pressão | 92–93 |
+| Categoria | Conteúdo | Página | Situação |
+|---|---|---:|---|
+| Origens | Exorcizado; Sensitivo Rebelde | 80 | Integrado |
+| Perícia | Religião: Resguardar Espírito | 80 | Fora do escopo — não há catálogo de "novos usos de perícia" no site |
+| Ritual | Vampirismo: três versões e cinco efeitos sensoriais | 76–77 | Integrado |
+| Itens | Carranca Caçadora; Cajado da Cruz de Sangue; Pé de Coelho; Sal Dourado; Terço Maculado | 78–79 | Integrado, com pixel art (sprites reaproveitados) |
+| Trilha de Especialista | Monstruoso: Ser Experimentado; Ser Testado; Ser Expurgado; Ser Apavorante, com quatro elementos | 81–84 | Integrado |
+| Trilha de Ocultista | Monstruoso: Ser Escarificado; Ser Perfurado; Ser Rasgado; Ser Mutilado, com quatro elementos | 85–88 | Integrado |
+| Ameaças | Raziel; O Verdadeiro Raziel; Alvira; Sabara; Velisar; Zéfero; Incinerado; Stryzga; Apóstata (quatro estágios) | 40–45, 65, 67, 70–73 | Fora do escopo — site não tem interface de Ameaças |
+| Condição progressiva | Mentem Corrumpere, vinculada à Apóstata | 70–71 | Fora do escopo — site não tem interface de Ameaças |
+| Regra opcional não canônica publicada | Regras debaixo d’água; combate submerso; pressão | 92–93 | Fora do escopo — regra de mesa, não conteúdo de personagem selecionável |
 
 Divergências: Alvira p. 42 referencia Vampirismo como página `@@`; a regra está nas pp. 76–77. Incinerado p. 65 lista imunidade e vulnerabilidade a fogo simultaneamente e resistência/vulnerabilidade balística; Stryzga p. 67 também lista resistência/vulnerabilidade balística. Preservar o conflito e não decidir silenciosamente uma errata não fornecida. As grafias Stryzga/Strzyga e Zéfero/Zéfiro aparecem alternadas; usar uma identidade com aliases. As trilhas Monstruoso são variantes por classe, não duplicatas do Combatente.
 
