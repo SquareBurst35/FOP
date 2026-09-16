@@ -161,7 +161,7 @@ const ORIGINAL_ITEMS = [
   // Livro base — explosivos e itens operacionais
   utility("Granada de atordoamento", "Explosivos", "0", 1, "Consumível de raio de 6 m: atordoa por 1 rodada; Fortitude reduz para ofuscado e surdo por 1 rodada."),
   utility("Granada de fragmentação", "Explosivos", "I", 1, "Consumível de raio de 6 m que causa 8d6 de dano de perfuração; Reflexos reduz o dano à metade."),
-  utility("Granada de fumaça", "Explosivos", "0", 1, "Cria por duas rodadas uma área de fumaça que bloqueia a visão."),
+  utility("Granada de fumaça", "Explosivos", "0", 1, "Arremessada em alcance médio, afeta um raio de 6m; seres na área ficam cegos e sob camuflagem total. A fumaça dura 2 rodadas.", "Livro base", "64"),
   utility("Granada incendiária", "Explosivos", "I", 1, "Consumível de área que causa 6d6 de fogo e pode deixar alvos em chamas; Reflexos reduz o efeito."),
   utility("Mina antipessoal", "Explosivos", "I", 1, "Instalar exige ação completa e Tática DT 15; ao detonar (ação padrão em alcance longo), causa 12d6 de dano de perfuração num cone de 6 m; Reflexos reduz à metade."),
   utility("Algemas", "Operacionais", "0", 1, "Restrição metálica: prender os dois pulsos aplica -5 em testes que usem as mãos e impede conjurar; escapar exige Acrobacia DT 30."),
