@@ -5,7 +5,7 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=41";
+} from "./content.js?v=42";
 import { ITEMS } from "./items.js?v=37";
 import { ORIGINS, SKILLS } from "./rules.js?v=32";
 
