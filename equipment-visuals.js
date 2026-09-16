@@ -1,6 +1,6 @@
-import { compositionFor, fittedArt } from './equipment-composition.js?v=54';
-import { artForItem } from "./item-art.js?v=54";
-import { placementFor, BODY_POINTS } from "./paperdoll-renderer.js?v=54";
+import { compositionFor, fittedArt } from './equipment-composition.js?v=55';
+import { artForItem } from "./item-art.js?v=55";
+import { placementFor, BODY_POINTS } from "./paperdoll-renderer.js?v=55";
 
 // Presentation preferences only. No character resources or rule calculations change here.
 export const EQUIPMENT_SLOTS = [

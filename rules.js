@@ -139,6 +139,7 @@ export const CLASSES = {
       "Agente Secreto",
       "Caçador",
       "Monstruoso",
+      "Performático",
     ],
   },
   Especialista: {
@@ -159,6 +160,7 @@ export const CLASSES = {
       "Muambeiro",
       "Granadeiro Blaster",
       "Monstruoso",
+      "Performático",
     ],
   },
   Ocultista: {
@@ -180,6 +182,7 @@ export const CLASSES = {
       "Maledictólogo",
       "Criptologista do Oculto",
       "Monstruoso",
+      "Performático",
     ],
   },
 };
