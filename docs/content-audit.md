@@ -100,26 +100,26 @@ Divergências: p. 39 remete Trêmulo a AS #05 p. 124, página inexistente; a reg
 
 ## AS #6 — inventário de diferenças identificado
 
-Texto integral das páginas 1–84 lido. O arquivo fornecido é a **versão 1.1**, conforme expediente e erratas das páginas 83–84. Todos os registros abaixo ainda aguardam comparação e implementação.
+Texto integral das páginas 1–84 lido. O arquivo fornecido é a **versão 1.1**, conforme expediente e erratas das páginas 83–84. **Opções de personagem integradas de verdade em rules.js/content.js/additional-items.js/item-upgrades.js em 16/09/2026** (commit `f8e73e6`), já com as erratas aplicadas, fora do schema abandonado em `supplements/`.
 
-| Categoria | Conteúdo | Página |
-|---|---|---:|
-| Origens | Cientista Ex-Panacea; Cobaia Sobrevivente; Segurança Ex-Panacea | 66 |
-| Combatente | Análise Combativa; Especialista em Proteção Leve | 67 |
-| Especialista | Doutor em Emergências; Farmacêutico de Campo; Médico da Salvação; Resgatar da Morte; Veterano da Equipe de Trauma | 68 |
-| Ocultista | Barreira do Oculto; Grão-Mestre em Elemento | 69 |
-| Geral | Adaptação Climática; Especialista em Armas Improvisadas; Muito Sorrateiro | 70 |
-| Paranormais | Escudo Espiral Temporal; Grilhões de Lodo; Salto de Dados | 71 |
-| Ritual | Hesitação Forçada (Conhecimento), três versões | 72 |
-| Itens | Anel Invertido; Aplicador de Adrenalina; Lança-nitrogênio | 73 |
-| Maldições de medicamentos | Aceleração Espiral; Esforço Espiral | 74 |
-| Modificações de medicamentos | Emulsificante Químico; Potencializador Químico | 74 |
-| Doenças | Crise Alérgica; Crise Hipertensiva; Crise Hipocondríaca; Infecção Cerebral; Infecção Generalizada | 75 |
-| Venenos (dados abstratos de jogo) | Batracotoxina; Cianeto de Potássio; Gás Neurotóxico; Ricina; Toxina Cardiotóxica | 76 |
-| Regra opcional | Categoria de veneno por DT | 76 |
-| Regra opcional não canônica publicada | Evolução Modular: poderes de utilidade/combate alternados; Versatilidade restrita à primeira habilidade de outra trilha | 80–81 |
-| Aliados | Alice Cruzes; Ketan Arjuna; Laila Verdante; Dr. Neruda | 28, 33, 37, 41 |
-| Ameaças | Alice Cruzes; Ketan Arjuna; Laila Verdante; Dr. Neruda; Cientista da Panacea; Manda-chuva da Panacea; Segurança da Panacea; Hikikomori; Marca-Passo; Estímulo; Experimento Ssabáka | 28, 33, 37, 41, 56–63 |
+| Categoria | Conteúdo | Página | Situação |
+|---|---|---:|---|
+| Origens | Cientista Ex-Panacea; Cobaia Sobrevivente; Segurança Ex-Panacea | 66 | Integrado |
+| Combatente | Análise Combativa; Especialista em Proteção Leve | 67 | Integrado |
+| Especialista | Doutor em Emergências; Farmacêutico de Campo; Médico da Salvação; Resgatar da Morte; Veterano da Equipe de Trauma | 68 | Integrado |
+| Ocultista | Barreira do Oculto; Grão-Mestre em Elemento | 69 | Integrado (Dominador de Elemento **não** foi adicionado, conforme errata) |
+| Geral | Adaptação Climática; Especialista em Armas Improvisadas; Muito Sorrateiro | 70 | Integrado |
+| Paranormais | Escudo Espiral Temporal; Grilhões de Lodo; Salto de Dados | 71 | Integrado |
+| Ritual | Hesitação Forçada (Conhecimento), três versões | 72 | Integrado, sem o elemento Sangue (errata) |
+| Itens | Anel Invertido; Aplicador de Adrenalina; Lança-nitrogênio | 73 | Integrado, com pixel art (sprites reaproveitados) |
+| Maldições de medicamentos | Aceleração Espiral; Esforço Espiral | 74 | Integrado em item-upgrades.js |
+| Modificações de medicamentos | Emulsificante Químico; Potencializador Químico | 74 | Integrado em item-upgrades.js |
+| Doenças | Crise Alérgica; Crise Hipertensiva; Crise Hipocondríaca; Infecção Cerebral; Infecção Generalizada | 75 | Fora do escopo — tabela de mesa/mestre, não opção de personagem |
+| Venenos (dados abstratos de jogo) | Batracotoxina; Cianeto de Potássio; Gás Neurotóxico; Ricina; Toxina Cardiotóxica | 76 | Fora do escopo — tabela de mesa/mestre |
+| Regra opcional | Categoria de veneno por DT | 76 | Fora do escopo — regra de mesa |
+| Regra opcional não canônica publicada | Evolução Modular: poderes de utilidade/combate alternados; Versatilidade restrita à primeira habilidade de outra trilha | 80–81 | Fora do escopo — regra opcional não canônica |
+| Aliados | Alice Cruzes; Ketan Arjuna; Laila Verdante; Dr. Neruda | 28, 33, 37, 41 | Fora do escopo — site não tem interface de Ameaças/Aliados |
+| Ameaças | Alice Cruzes; Ketan Arjuna; Laila Verdante; Dr. Neruda; Cientista da Panacea; Manda-chuva da Panacea; Segurança da Panacea; Hikikomori; Marca-Passo; Estímulo; Experimento Ssabáka | 28, 33, 37, 41, 56–63 | Fora do escopo — site não tem interface de Ameaças |
 
 Erratas aplicáveis: não adicionar Dominador de Elemento (substituído por Barreira do Oculto); não atribuir Sangue ao ritual Hesitação Forçada; Hikikomori, Marca-Passo e Estímulo têm Sangue secundário. O texto remete venenos à p. 77, mas a tabela está na p. 76. A Crise Hipocondríaca não fornece perícia/DT própria; não inventar esse valor. Salto de Dados necessita restauração mecânica limitada à ficha, preservando identidade, conta e dados de sincronização.
 
