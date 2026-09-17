@@ -67,8 +67,8 @@ mestre, não uma ameaça catalogável) → capítulo 8 (294).
 |---|---|---|
 | Sangue | 12 de 12 | **Completa em 17/09/2026**: Aberração de Carne (p.182), Aniquilação (p.185), Carente (p.188), Dama de Sangue (p.190), Enpap-X (p.192), Kerberos (p.194), Minotauro (p.197), Mulher Afogada (p.199), Titã de Sangue (p.201), Zumbi de Sangue (p.202), Zumbi de Sangue Bestial (p.203), O Diabo (p.205). |
 | Morte | 12 de 12 | **Completa em 17/09/2026**: Esqueleto de Lodo (p.208), Aracnasita (p.208), Carniçal Preto da Morte (p.210), Ceifador Espiral (p.212), Enraizado (p.214), Escutado (p.215), Marionete (p.218), Múmia Xipófaga (p.220), Nidere (p.222), Sempiternal (p.225), Succ (p.227), O Deus da Morte (p.230). |
-| Conhecimento | — | Não iniciado — próxima seção, começa na p.232 (primeira ameaça: Anjo) |
-| Energia | — | Não iniciado |
+| Conhecimento | 12 de 12 | **Completa em 17/09/2026**: Existido (p.232), Anjo (p.233), Bicho-Papão (p.236), Espreitador (p.238), O Comunicador (p.239 — nome real é uma sequência de símbolos impronunciável no livro; batizei funcionalmente), Lembrado (p.243), Ocioso (p.244), Parasita de Culpa (p.245), Rastejador Sombrio (p.248), Silhueta (p.250), Vulto (p.251), Máscara do Desespero (p.253, Enigma de Medo na p.255). |
+| Energia | — | Não iniciado — próxima seção, começa na p.256 (primeira ameaça: Anárquico) |
 | Realidade (mundana) | — | Não iniciado; confirmar categoria/rótulo usado pelo livro para esse grupo antes de catalogar (todos os exemplos feitos até agora são "Criatura" ou "Relíquia"; ainda não vimos como o livro rotula uma ameaça mundana) |
 
 **Lição aprendida catalogando Sangue**: o primeiro escaneamento
@@ -111,13 +111,37 @@ Enigma de Medo do Diabo" — bate exatamente com a pista de que a
 resposta para derrotar o Diabo está numa "manifestação de Morte com
 força equivalente" a ele.
 
+**Achado catalogando Conhecimento — a cadeia de Enigmas de Medo entre os
+"chefes" de cada elemento é real e intencional no livro, não coincidência:**
+O Diabo (Sangue) só é derrotado por uma manifestação de Morte equivalente
+a ele; o Deus da Morte (Morte) confirma isso com a habilidade "Destruir o
+Diabo"; a Máscara do Desespero (Conhecimento) pode ser derrotada pela
+brutalidade do próprio Diabo *ou* abalando o Equilíbrio pelo Medo; e a
+Máscara, por sua vez, é a única capaz de resolver o Enigma de Medo de
+"O Anfitrião" — uma ameaça ainda não catalogada, quase certamente o
+"chefe" da seção de Energia (a próxima). Vale conferir essa referência
+cruzada ao catalogar Energia, e não tratá-la como um erro se aparecer.
+
+Repete-se o padrão já visto no Diabo: **Máscara do Desespero também
+tinha o Enigma de Medo de verdade numa página seguinte** (p.255) — a
+p.254 só tinha uma habilidade passiva mencionando o enigma de raspão
+("Destronar o Anfitrião"), sem detalhar o dela própria. Sempre checar a
+página seguinte de um "chefe" (VD 350+) antes de fechar a ficha.
+
+Também nesta leva: "O Comunicador" é o nome que dei a uma ameaça cujo
+nome verdadeiro, no livro, é escrito inteiramente numa fonte de símbolos
+alienígenas impronunciáveis (decisão de design do próprio livro, não
+falha de extração) — não é um nome inventado, é só um rótulo funcional
+pra caber no catálogo.
+
 ## Ordem de continuação sugerida
 
-1. Criaturas de Conhecimento (p.232–253), mesmo método: renderizar cada
+1. Criaturas de Energia (p.256–281), mesmo método: renderizar cada
    página com `python scripts/pdf-read.py render`, nunca confiar só no
-   texto extraído nem no scan automático de "VD", e sempre conferir a
-   página seguinte de ameaças fortes/com Medo antes de fechar a ficha.
-2. Energia (254–281), Realidade (282–289).
+   texto extraído nem no scan automático de "VD", sempre conferir a
+   página seguinte de ameaças fortes/com Medo antes de fechar a ficha, e
+   ficar atento a uma ameaça chamada "O Anfitrião" (ver achado acima).
+2. Realidade (282–289).
 3. Sobrevivendo ao Horror, depois Arquivos Secretos #1–7 (nenhum
    inventariado ainda para ameaças; `docs/content-audit.md` já mapeou
    *onde* estão as ameaças de cada AS, mas não suas fichas mecânicas).
