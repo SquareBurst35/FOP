@@ -89,38 +89,38 @@ const SKILL_GROUP_NAMES = Object.fromEntries(
   Object.entries(ATTRIBUTE_LABELS).map(([key, code]) => [code, ATTRIBUTE_NAMES[key]]),
 );
 
-// Original line-art glyphs, hand-drawn from the geometric descriptions of each
-// element's in-universe symbol (Ordem Paranormal Wiki, "Símbolos Ocultistas"),
-// never traced from official art. Decorative; no gameplay meaning.
+// Original line-art glyphs, redrawn from the real in-universe symbol of each
+// element (Ordem Paranormal Wiki, "Símbolos Ocultistas" — Sangue.png,
+// Morte.png, Conhecimento.png, Energia.png, Medo.png), reinterpreted as clean
+// single-stroke icons in this site's own visual language, never a pixel trace
+// of the official art. Decorative; no gameplay meaning.
 const ELEMENT_GLYPHS = {
   sangue: `
-    <path pathLength="70" d="M12 3 L12 21"/>
-    <path pathLength="70" d="M12 10 L8.5 13.5 M12 10 L15.5 13.5"/>
-    <path pathLength="70" d="M12 21 L9.5 18 M12 21 L14.5 18"/>
+    <path pathLength="70" d="M12 3 L12 20"/>
+    <path pathLength="70" d="M7.5 10 L16.5 10 M7.5 10 L8.3 11.6 M16.5 10 L15.7 11.6"/>
+    <path pathLength="70" d="M9.5 17 L14.5 17 M9.5 17 L10.1 18.3 M14.5 17 L13.9 18.3"/>
   `,
   morte: `
-    <path pathLength="70" d="M12 4 L12 20"/>
-    <path pathLength="70" d="M12 12c0-2.2 1.8-4 4-4s3.6 1.8 3.2 3.8c-.4 2-2.4 3.2-4.4 2.6-1.6-.5-2.4-2.1-1.7-3.4"/>
-    <path pathLength="70" d="M12 12 L16.5 7.5"/>
-    <path pathLength="70" d="M12 12 L18 12.5"/>
+    <path pathLength="70" d="M12 12c.3-2 2.2-3.6 4.2-3 2.3.7 3.3 3.3 1.8 5.3-1.3 1.7-3.8 1.9-5.2.4-1.1-1.2-1-3 .3-3.8"/>
+    <circle pathLength="70" cx="12" cy="12" r="0.7"/>
+    <path pathLength="70" d="M12 12 L12 4"/>
+    <path pathLength="70" d="M12 12 L6.3 7.3"/>
+    <path pathLength="70" d="M12 12 L6.2 16"/>
+    <path pathLength="70" d="M12 12 L14.8 20"/>
   `,
   conhecimento: `
-    <path pathLength="70" d="M6 7 L6 5 L8 5"/>
-    <path pathLength="70" d="M18 7 L18 5 L16 5"/>
-    <path pathLength="70" d="M6 17 L6 19 L8 19"/>
-    <path pathLength="70" d="M18 17 L18 19 L16 19"/>
-    <path pathLength="70" d="M11 11 L13 13 M13 11 L11 13"/>
+    <path pathLength="70" d="M18 12 L20.5 12 M16.2 7.8 L18 6 M12 6 L12 3.5 M7.8 7.8 L6 6 M6 12 L3.5 12 M7.8 16.2 L6 18 M12 18 L12 20.5 M16.2 16.2 L18 18"/>
   `,
   energia: `
-    <path pathLength="70" d="M5.5 7 L12 18 L18.5 7"/>
-    <path pathLength="70" d="M8.5 18 L12 9 L15.5 18"/>
-    <path pathLength="70" d="M10 4 L12.5 9 L10.5 12 L14 19"/>
+    <path pathLength="70" d="M5.5 19 L12 11.5 L18.5 19"/>
+    <path pathLength="70" d="M5.5 19 L4.4 17.7 M18.5 19 L19.6 17.7"/>
+    <path pathLength="70" d="M9.3 12.8c.2-3.3 1-6.2 2.5-8.3.6 2.6.4 5.8 2.5 7.7"/>
   `,
   medo: `
-    <path pathLength="70" d="M9 20c0-8 0-13 3.2-13.4 2.6-.3 3.6 1.6 2 3-1 .9-2.4.9-3-.1"/>
-    <circle pathLength="70" cx="14.2" cy="9" r="0.9"/>
-    <path pathLength="70" d="M5 13.5c3-2 11-2 14 0"/>
-    <circle pathLength="70" cx="12" cy="12.7" r="0.9"/>
+    <path pathLength="70" d="M13.2 20c-3-3-3.6-9-2.6-12 .8-2.3 3-3 4.1-1.8 1 1.1.3 3-1.2 2.6"/>
+    <circle pathLength="70" cx="10.2" cy="6.9" r="0.7"/>
+    <path pathLength="70" d="M6.3 10.3c2.6-1.5 7.3-.8 10.2 2.5"/>
+    <circle pathLength="70" cx="16.2" cy="12.6" r="0.7"/>
   `,
 };
 
