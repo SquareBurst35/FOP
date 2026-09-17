@@ -42,7 +42,6 @@ const REPAINTING_CONTROLS = [
   "[data-level-up-choice]",
 ].join(",");
 
-let tabAnimationPending = false;
 let dialogResume = null;
 let suppressTimer = 0;
 
@@ -69,10 +68,8 @@ function rememberDialog(target) {
 function handleInteraction(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target) return;
-  if (event.type === "click" && target.closest("[data-sheet-tab]")) {
-    tabAnimationPending = true;
-    return;
-  }
+  // A animação de chegada do conteúdo é decidida em app.js pela chave de view;
+  // aqui só cuidamos dos diálogos, que re-renderizam a cada clique interno.
   if (event.type === "change" || target.closest(REPAINTING_CONTROLS)) {
     rememberDialog(target);
     suppressReplayedAnimations();
@@ -80,13 +77,6 @@ function handleInteraction(event) {
 }
 
 function restoreInteractionState() {
-  if (tabAnimationPending) {
-    const content = document.querySelector(".sheet-tab-content");
-    if (content) {
-      content.classList.add("tab-enter");
-      tabAnimationPending = false;
-    }
-  }
   if (!dialogResume) return;
   const dialog = document.getElementById(dialogResume.id);
   if (dialog?.open) {

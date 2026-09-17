@@ -189,6 +189,7 @@ let abilityChoiceState = null;
 let spendState = null;
 let lastViewKey = "";
 let viewEnterTimer;
+let sheetTabDirection = "";
 
 const ALL_ABILITIES = allSelectableAbilities(ORIGINS);
 const ABILITY_BY_ID = new Map(
@@ -198,6 +199,21 @@ const RITUAL_BY_ID = new Map(RITUALS.map((entry) => [entry.id, entry]));
 
 homeButton.addEventListener("click", () => navigate("home"));
 window.addEventListener("hashchange", renderRoute);
+trackTopbarHeight();
+
+// O cabeçalho é sticky e muda de altura (no celular os botões quebram em
+// linhas). Quem cola embaixo dele precisa do valor real, não de um chute:
+// com 64px fixos a barra de abas ficava escondida atrás do cabeçalho mobile.
+function trackTopbarHeight() {
+  const topbar = document.querySelector(".topbar");
+  if (typeof topbar?.offsetHeight !== "number") return;
+  const publish = () => {
+    document.documentElement.style.setProperty("--topbar-height", `${Math.round(topbar.offsetHeight)}px`);
+  };
+  publish();
+  if (typeof window.ResizeObserver === "function") new ResizeObserver(publish).observe(topbar);
+  else window.addEventListener("resize", publish);
+}
 
 function createBlankCharacter() {
   const character = {
@@ -445,7 +461,9 @@ function enterClass(viewKey) {
   // fill-mode da animação congela o transform e engole o hover.
   window.clearTimeout(viewEnterTimer);
   viewEnterTimer = window.setTimeout(() => {
-    document.querySelectorAll(".view-enter").forEach((element) => element.classList.remove("view-enter"));
+    document.querySelectorAll(".view-enter").forEach((element) => {
+      element.classList.remove("view-enter", "from-next", "from-prev");
+    });
   }, 2000);
   return " view-enter";
 }
@@ -1135,7 +1153,7 @@ function renderSheet(id) {
             ([key, label]) => `<button type="button" data-sheet-tab="${key}" class="${activeSheetTab === key ? "active" : ""}" aria-current="${activeSheetTab === key ? "page" : "false"}">${label}</button>`,
           ).join("")}
         </nav>
-        <div class="sheet-tab-content${enterClass(`ficha:${character.id}:${activeSheetTab}`)}">${renderSheetTab(character)}</div>
+        <div class="sheet-tab-content${sheetTabContentClasses(character)}">${renderSheetTab(character)}</div>
       </section>
     </section>
     ${renderOptionalRulesDialog(character)}
@@ -1148,6 +1166,43 @@ function renderSheet(id) {
   `;
 
   bindSheetInteractions(character);
+}
+
+// A aba nova entra pelo lado de onde veio: trocar de aba é movimento lateral
+// entre irmãos, não conteúdo caindo do nada.
+function sheetTabContentClasses(character) {
+  const enter = enterClass(`ficha:${character.id}:${activeSheetTab}`);
+  const direction = enter && sheetTabDirection ? ` from-${sheetTabDirection}` : "";
+  sheetTabDirection = "";
+  return `${enter}${direction}`;
+}
+
+// Sem isso a troca de aba deixa a barra de abas fora da tela: abas curtas
+// encolhem a página e o navegador corta o scroll onde der.
+function anchorSheetTabs() {
+  const nav = document.querySelector(".sheet-tabs");
+  // Só roda com DOM de verdade; nos testes os elementos são mocks sem medidas.
+  if (typeof window.scrollTo !== "function" || typeof nav?.offsetTop !== "number") return;
+  const topbar = document.querySelector(".topbar");
+  const topbarHeight = typeof topbar?.offsetHeight === "number" ? topbar.offsetHeight : 0;
+  // Posição no documento, somando offsetTop: medida independente de scroll.
+  // Misturar getBoundingClientRect com window.scrollY dá alvo errado no
+  // instante da troca, porque a página encolhe antes do scroll ser corrigido.
+  const top = Math.max(0, documentTop(nav) - (topbarHeight + 14));
+  // Instantâneo de propósito: o scroll suave é opcional (navegador/SO podem
+  // ignorá-lo) e competiria com o slide lateral do conteúdo, que é quem dá a
+  // sensação de movimento aqui.
+  window.scrollTo({ top, behavior: "auto" });
+}
+
+function documentTop(element) {
+  let top = 0;
+  let node = element;
+  while (node && typeof node.offsetTop === "number") {
+    top += node.offsetTop;
+    node = node.offsetParent;
+  }
+  return top;
 }
 
 function renderSheetTab(character) {
@@ -3205,8 +3260,14 @@ function bindSheetInteractions(character) {
 
   document.querySelectorAll("[data-sheet-tab]").forEach((button) => {
     button.addEventListener("click", () => {
-      activeSheetTab = button.dataset.sheetTab;
+      const target = button.dataset.sheetTab;
+      if (target === activeSheetTab) return;
+      const from = SHEET_TABS.findIndex(([key]) => key === activeSheetTab);
+      const to = SHEET_TABS.findIndex(([key]) => key === target);
+      sheetTabDirection = to > from ? "next" : "prev";
+      activeSheetTab = target;
       renderSheet(character.id);
+      anchorSheetTabs();
     });
   });
 

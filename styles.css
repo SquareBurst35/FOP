@@ -451,7 +451,7 @@ h3 {
 .wizard-sidebar {
   align-self: start;
   position: sticky;
-  top: 94px;
+  top: calc(var(--topbar-height, 76px) + 18px);
 }
 
 .wizard-steps {
@@ -1131,7 +1131,7 @@ fieldset.skill-choice-block {
 .sheet-sidebar {
   align-self: start;
   position: sticky;
-  top: 94px;
+  top: calc(var(--topbar-height, 76px) + 18px);
 }
 
 .agent-identity {
@@ -2537,9 +2537,10 @@ fieldset.skill-choice-block {
   animation: none;
 }
 
+/* Diálogos re-renderizam a cada clique interno e replayariam o dialog-enter.
+   O conteúdo da aba não entra aqui: quem decide isso é a chave de view. */
 .suppress-ui-replay .picker-dialog[open],
-.suppress-ui-replay .optional-rules-dialog[open],
-.suppress-ui-replay .sheet-tab-content {
+.suppress-ui-replay .optional-rules-dialog[open] {
   animation: none !important;
 }
 
@@ -3502,8 +3503,32 @@ body:has(dialog[open]) {
   left: 12%;
 }
 
+.sheet-tab-content {
+  /* Abas curtas (Anotações) encolhiam o painel ~1800px em relação às longas
+     (Perícias), e o navegador cortava o scroll no meio do nada. */
+  min-height: min(62vh, 560px);
+}
+
 .sheet-tab-content.view-enter {
   animation: content-reveal 360ms var(--motion) both;
+}
+
+.sheet-tab-content.view-enter.from-next {
+  animation: tab-slide-next 280ms var(--motion) both;
+}
+
+.sheet-tab-content.view-enter.from-prev {
+  animation: tab-slide-prev 280ms var(--motion) both;
+}
+
+@keyframes tab-slide-next {
+  from { opacity: 0; transform: translateX(26px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tab-slide-prev {
+  from { opacity: 0; transform: translateX(-26px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .sheet-section {
@@ -4176,7 +4201,9 @@ body:has(dialog[open]) {
   .sheet-tabs {
     position: sticky;
     z-index: 8;
-    top: 64px;
+    /* Altura real do cabeçalho: no celular ele quebra em linhas e um valor
+       fixo deixava a barra de abas escondida atrás dele. */
+    top: calc(var(--topbar-height, 64px) + 4px);
     margin: 0 0 12px;
     padding: 7px 4px 0;
     background: rgba(9, 10, 12, 0.96);
