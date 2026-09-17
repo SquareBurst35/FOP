@@ -11,6 +11,12 @@
         ],
         "createdAt": "2026-09-17T01:00:11.971Z",
         "reason": "DESIGN.md's own named rule (A Regra do Brilho, Nao da Sombra / glow-not-shadow) makes colored glow the site's deliberate elevation language, confirmed during /impeccable document"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-09-17T01:05:44.047Z",
+        "reason": "DESIGN.md documents Inter as the single deliberate face for the whole interface (Named Rule: no second display font), confirmed during /impeccable document"
       }
     ]
   }
