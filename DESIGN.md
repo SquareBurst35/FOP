@@ -152,7 +152,7 @@ Estas cinco cores pertencem ao próprio sistema de Ordem Paranormal (Sangue, Mor
 ### Named Rules
 **A Regra do Sussurro e do Grito.** Um título nunca usa uppercase nem tracking largo; um rótulo secundário nunca deixa de usar. A hierarquia é sempre essa oposição de voz, não apenas tamanho.
 
-**A Exceção do Livro-Razão.** Só o cabeçalho do painel de equipamento (`.paperdoll-panel h3`) troca para serifada (`Georgia, "Times New Roman", serif`). É a única quebra da regra de fonte única no sistema inteiro, e existe só ali para marcar aquele painel como um objeto físico dentro do arquivo digital.
+**A Exceção do Livro-Razão.** Só dois elementos do painel de equipamento trocam para serifada (`Georgia, "Times New Roman", serif`): o cabeçalho (`.paperdoll-panel h3`) e a marca de slot preenchido (`.paperdoll-slot-mark`). É a única quebra da regra de fonte única no sistema inteiro, e existe só ali para marcar aquele painel como um objeto físico dentro do arquivo digital. Fora do paperdoll, todo numeral (incluindo o da constelação de atributos) segue a Regra do Numeral: Inter, peso 900, `tabular-nums`.
 
 ## Layout
 

@@ -17,6 +17,12 @@
         "value": "inter",
         "createdAt": "2026-09-17T01:05:44.047Z",
         "reason": "DESIGN.md documents Inter as the single deliberate face for the whole interface (Named Rule: no second display font), confirmed during /impeccable document"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "georgia",
+        "createdAt": "2026-09-17T09:31:00.641Z",
+        "reason": "Only remaining Georgia usage is the documented paperdoll ledger exception (DESIGN.md, A Excecao do Livro-Razao); the stray attribute-number usage was fixed to Inter this session"
       }
     ]
   }

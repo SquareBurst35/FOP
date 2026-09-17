@@ -3996,7 +3996,7 @@ function liveResource(label, key, current, max) {
     ? clamp((numberOr(current, 0) / numberOr(max, 1)) * 100, 0, 100)
     : 0;
   return `
-    <div class="live-resource resource-${escapeAttribute(key)}" style="--resource-level: ${percentage}%">
+    <div class="live-resource resource-${escapeAttribute(key)}" style="--resource-level: ${percentage / 100}">
       <div class="live-resource-head">
         <strong>${label}</strong>
         <span class="muted small">máx. ${numberOr(max, 0)}</span>
