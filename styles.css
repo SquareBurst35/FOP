@@ -3281,20 +3281,9 @@ body:has(dialog[open]) {
   text-shadow: 0 0 18px rgba(217, 35, 50, 0.2);
 }
 
-.attribute-budget {
-  border-radius: 5px;
-  background: rgba(5, 7, 9, 0.72);
-  box-shadow: inset 3px 0 var(--warning);
-}
-
-.attribute-budget.complete {
-  box-shadow: inset 3px 0 var(--green);
-}
-
 .wizard-step.active {
   border-color: rgba(217, 35, 50, 0.28);
   background: linear-gradient(90deg, rgba(217, 35, 50, 0.16), transparent);
-  box-shadow: inset 2px 0 var(--red);
 }
 
 .field input,
