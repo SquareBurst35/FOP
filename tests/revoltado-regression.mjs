@@ -11,6 +11,7 @@ import * as progression from '../progression.js';
 import * as choices from '../choices.js';
 import * as useOptions from '../use-options.js';
 import * as upgrades from '../item-upgrades.js';
+import * as threats from '../threats.js';
 import { CharacterStore, encodeDocument, decodeDocument } from '../character-sync.js';
 
 function agent(determination=false) {
@@ -86,7 +87,7 @@ test('creation choices, panel, skill totals and distance toggle are connected to
   const element=key=>{if(!elements.has(key))elements.set(key,{innerHTML:'',textContent:'',value:'',scrollTop:0,dataset:{},listeners:{},classList:{add(){},remove(){}},addEventListener(type,fn){this.listeners[type]=fn;},focus(){},scrollIntoView(){},querySelector(){return null;},querySelectorAll(){return[];}});return elements.get(key);};
   const document={querySelector:element,querySelectorAll:()=>[],getElementById:element};
   const window={location:{hash:''},scrollY:0,addEventListener(){},scrollTo(){},setTimeout(){},clearTimeout(){}};
-  const context=vm.createContext({...rules,...content,...session,...items,...progression,...choices,...useOptions,...upgrades,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:storage()});
+  const context=vm.createContext({...rules,...content,...session,...items,...progression,...choices,...useOptions,...upgrades,...threats,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:storage()});
   const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?from\s+"[^"]+";\r?\n/gm,'');
   vm.runInContext(app,context);
   context.c=agent(true);context.c.antesSoSemAliados=true;context.c.grausPericia.Luta=5;context.c.outrosBonusPericia={Luta:3};

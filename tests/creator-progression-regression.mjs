@@ -9,6 +9,7 @@ import * as items from '../items.js';
 import * as progression from '../progression.js';
 import * as choices from '../choices.js';
 import * as session from '../session.js';
+import * as threats from '../threats.js';
 import { webcrypto } from 'node:crypto';
 
 const source=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?from\s+"[^"]+";\r?\n/gm,'');
@@ -20,7 +21,7 @@ function boot(className,nex,trail='') {
   };
   const document={querySelector:element,querySelectorAll:()=>[],getElementById:element};
   const window={location:{hash:''},scrollY:0,addEventListener(){},scrollTo(){},setTimeout(){},clearTimeout(){}};
-  const context=vm.createContext({...rules,...content,...items,...progression,...choices,...session,...useOptions,...upgrades,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
+  const context=vm.createContext({...rules,...content,...items,...progression,...choices,...session,...useOptions,...upgrades,...threats,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
   vm.runInContext(source,context);
   const run=code=>vm.runInContext(code,context);
   const data={classe:className,nex,nivel:nex/5,origem:'Acadêmico',trilha:trail,nome:'Agente de teste',atributos:{agilidade:1,forca:1,intelecto:3,presenca:2,vigor:2}};

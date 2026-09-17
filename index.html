@@ -9,19 +9,22 @@
     />
     <meta name="theme-color" content="#0a0b0d" />
     <title>FOP — Fichas Ordem Paranormal</title>
-    <link rel="stylesheet" href="styles.css?v=40" />
+    <link rel="stylesheet" href="styles.css?v=41" />
     <link rel="stylesheet" href="account.css?v=25" />
     <link rel="stylesheet" href="home.css?v=29" />
   </head>
   <body>
     <header class="topbar">
-      <button class="brand" id="home-button" type="button" aria-label="Ir para o início">
-        <span class="brand-mark" aria-hidden="true">FOP</span>
-        <span class="brand-copy">
-          <strong>Fichas Ordem Paranormal</strong>
-          <small>Arquivo de agentes</small>
-        </span>
-      </button>
+      <div class="topbar-nav-group">
+        <button class="brand" id="home-button" type="button" aria-label="Ir para o início">
+          <span class="brand-mark" aria-hidden="true">FOP</span>
+          <span class="brand-copy">
+            <strong>Fichas Ordem Paranormal</strong>
+            <small>Arquivo de agentes</small>
+          </span>
+        </button>
+        <button class="nav-link" id="threats-nav-button" type="button">Ameaças</button>
+      </div>
       <div class="header-account-area">
         <div id="header-actions" class="header-actions"></div>
         <div id="account-controls" class="account-controls" aria-label="Conta e sincronização"></div>
@@ -38,7 +41,7 @@
       Projeto de fã não oficial. Nenhum texto integral dos livros é distribuído.
     </footer>
 
-    <script type="module" src="app.js?v=72"></script>
+    <script type="module" src="app.js?v=74"></script>
     <script type="module" src="inventory-ui.js?v=56"></script>
     <script type="module" src="account-ui.js?v=25"></script>
   </body>

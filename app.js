@@ -44,6 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=56";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=1";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=55";
 import {
   CHOICE_TYPE_LABELS,
@@ -190,6 +191,9 @@ let spendState = null;
 let lastViewKey = "";
 let viewEnterTimer;
 let sheetTabDirection = "";
+let activeThreatElement = THREAT_ELEMENT_ORDER[0];
+let threatSearch = "";
+let activeThreatTab = "status";
 
 const ALL_ABILITIES = allSelectableAbilities(ORIGINS);
 const ABILITY_BY_ID = new Map(
@@ -198,6 +202,7 @@ const ABILITY_BY_ID = new Map(
 const RITUAL_BY_ID = new Map(RITUALS.map((entry) => [entry.id, entry]));
 
 homeButton.addEventListener("click", () => navigate("home"));
+document.querySelector("#threats-nav-button")?.addEventListener("click", () => navigate("ameacas"));
 window.addEventListener("hashchange", renderRoute);
 trackTopbarHeight();
 
@@ -484,6 +489,10 @@ function renderRoute() {
     renderCreator();
   } else if (route.page === "ficha" && route.id) {
     renderSheet(route.id);
+  } else if (route.page === "ameacas" && route.id) {
+    renderThreatSheet(route.id);
+  } else if (route.page === "ameacas") {
+    renderThreats();
   } else {
     creatorState = null;
     creatorProgress = null;
@@ -593,6 +602,311 @@ function renderCharacterGrid(characters) {
         )
         .join("")}
     </section>
+  `;
+}
+
+// --- Ameaças (fichas de mestre) --------------------------------------
+
+function threatPortraitSvg(entry) {
+  // O símbolo do elemento identifica a ameaça — mais simples do que um
+  // retrato por criatura, e reaproveita o glifo que já existe no resto do site.
+  return elementGlyph(entry.element) || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>`;
+}
+
+function threatMatchesSearch(entry, query) {
+  const normalized = normalizeSearch(query);
+  if (!normalized) return true;
+  const haystack = normalizeSearch(`${entry.name} ${entry.element} ${entry.secondaryElements.join(" ")} ${entry.category}`);
+  return haystack.includes(normalized);
+}
+
+function formatTest(value) {
+  if (!value) return "—";
+  const bonus = value.bonus > 0 ? `+${value.bonus}` : value.bonus < 0 ? `${value.bonus}` : "+0";
+  return `${value.dice}d20${bonus}`;
+}
+
+function threatElementCounts() {
+  const counts = {};
+  for (const entry of THREATS) counts[entry.element] = (counts[entry.element] || 0) + 1;
+  return counts;
+}
+
+function renderThreats() {
+  headerActions.innerHTML = "";
+  const counts = threatElementCounts();
+  const filtered = THREATS.filter((entry) => entry.element === activeThreatElement).filter((entry) => threatMatchesSearch(entry, threatSearch));
+
+  app.innerHTML = `
+    <div class="agent-home threats-home${enterClass("ameacas")}">
+      <section class="page-heading home-heading" aria-labelledby="threats-title">
+        <div>
+          <p class="eyebrow">Central de operações · mestre</p>
+          <h1 id="threats-title">Ameaças</h1>
+          <p class="muted">Fichas de combate prontas para o mestre consultar na mesa. ${THREATS.length} catalogadas até agora — o arquivo cresce livro por livro.</p>
+        </div>
+      </section>
+
+      <div class="threat-element-tabs" role="tablist" aria-label="Elemento da ameaça">
+        ${THREAT_ELEMENT_ORDER.map(
+          (element) => `
+          <button type="button" class="threat-element-tab${element === activeThreatElement ? " active" : ""}" data-threat-element="${escapeAttribute(element)}" role="tab" aria-selected="${element === activeThreatElement}">
+            ${elementGlyph(element) || `<svg class="element-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="7"/></svg>`}
+            <span>${escapeHtml(element)}</span>
+            <small>${counts[element] || 0}</small>
+          </button>
+        `,
+        ).join("")}
+      </div>
+
+      <label class="picker-search threat-search"><span aria-hidden="true">⌕</span><input id="threat-search" value="${escapeAttribute(threatSearch)}" placeholder="Buscar ameaça" autocomplete="off" /></label>
+
+      <div id="threat-results">${renderThreatResults(filtered)}</div>
+    </div>
+  `;
+
+  document.querySelectorAll("[data-threat-element]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeThreatElement = button.dataset.threatElement;
+      threatSearch = "";
+      renderThreats();
+    });
+  });
+  document.querySelector("#threat-search")?.addEventListener("input", (event) => {
+    threatSearch = event.target.value;
+    const results = document.querySelector("#threat-results");
+    if (!results) return;
+    const next = THREATS.filter((entry) => entry.element === activeThreatElement).filter((entry) => threatMatchesSearch(entry, threatSearch));
+    results.innerHTML = renderThreatResults(next);
+    bindThreatCardLinks();
+  });
+  bindThreatCardLinks();
+}
+
+function renderThreatResults(list) {
+  if (!list.length) {
+    return `<p class="muted threat-empty">Nenhuma ameaça catalogada ainda para este filtro — o arquivo está sendo construído livro por livro.</p>`;
+  }
+  return `
+    <div class="threat-grid">
+      ${list
+        .map(
+          (entry) => `
+        <article class="threat-card">
+          <div class="threat-card-portrait" aria-hidden="true">${threatPortraitSvg(entry)}</div>
+          <div class="threat-card-body">
+            <h3>${escapeHtml(entry.name)}</h3>
+            <p class="muted small">VD ${entry.vd}<br>${escapeHtml(entry.category)} · ${escapeHtml(entry.size)}</p>
+          </div>
+          <button class="button primary compact" type="button" data-open-threat="${entry.id}">Ficha</button>
+        </article>
+      `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function bindThreatCardLinks() {
+  document.querySelectorAll("[data-open-threat]").forEach((button) => {
+    button.addEventListener("click", () => navigate(`ameacas/${button.dataset.openThreat}`));
+  });
+}
+
+const THREAT_SHEET_TABS = [
+  ["status", "Status"],
+  ["combate", "Combate"],
+  ["descricao", "Descrição"],
+];
+
+function renderThreatSheet(id) {
+  const entry = THREAT_BY_ID.get(id);
+  if (!entry) {
+    showToast("Ameaça não encontrada.");
+    navigate("ameacas");
+    return;
+  }
+
+  headerActions.innerHTML = `
+    <button class="button ghost compact" id="back-threats" type="button">Ameaças</button>
+  `;
+
+  app.innerHTML = `
+    <section class="sheet-layout threat-sheet">
+      <aside class="sheet-sidebar panel threat-sidebar">
+        <div class="threat-portrait-large" aria-hidden="true">${threatPortraitSvg(entry)}</div>
+        <p class="eyebrow">${escapeHtml(entry.source)}${entry.page ? ` · p.${escapeHtml(entry.page)}` : ""}</p>
+        <h1>${escapeHtml(entry.name)}</h1>
+        <div class="badge-row">
+          <span class="badge red">VD ${entry.vd}</span>
+          <span class="badge">${escapeHtml(entry.category)}</span>
+          <span class="badge">${escapeHtml(entry.size)}</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge threat-element-badge">${elementGlyph(entry.element)}${escapeHtml(entry.element)}</span>
+          ${entry.secondaryElements.map((element) => `<span class="badge threat-element-badge">${elementGlyph(element)}${escapeHtml(element)}</span>`).join("")}
+        </div>
+        <p class="muted threat-flavor">${escapeHtml(entry.descricao)}</p>
+      </aside>
+
+      <div class="sheet-main">
+        <nav class="sheet-tabs" role="tablist" aria-label="Seções da ameaça">
+          ${THREAT_SHEET_TABS.map(
+            ([key, label]) => `
+            <button type="button" class="sheet-tab${key === activeThreatTab ? " active" : ""}" data-threat-tab="${key}" role="tab" aria-selected="${key === activeThreatTab}">${label}</button>
+          `,
+          ).join("")}
+        </nav>
+        <div class="sheet-tab-content${enterClass(`ameaca:${entry.id}:${activeThreatTab}`)}">
+          ${activeThreatTab === "status" ? renderThreatStatusTab(entry) : ""}
+          ${activeThreatTab === "combate" ? renderThreatCombatTab(entry) : ""}
+          ${activeThreatTab === "descricao" ? renderThreatDescriptionTab(entry) : ""}
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.querySelector("#back-threats")?.addEventListener("click", () => navigate("ameacas"));
+  document.querySelectorAll("[data-threat-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.threatTab;
+      if (target === activeThreatTab) return;
+      activeThreatTab = target;
+      renderThreatSheet(id);
+      anchorSheetTabs();
+    });
+  });
+}
+
+function renderThreatStatusTab(entry) {
+  const resistList = entry.resistencias.length
+    ? entry.resistencias.map((group) => `${group.tipos.join(", ")} ${group.valor}`).join(" · ")
+    : "Nenhuma";
+  const immuneDano = entry.imunidadesDano.length ? entry.imunidadesDano.join(", ") : "";
+  const immuneCond = entry.imunidadesCondicoes.length ? entry.imunidadesCondicoes.join(", ") : "";
+
+  return `
+    <div class="threat-status-grid">
+      <div class="threat-stat-block panel-subtle">
+        <h3>Atributos</h3>
+        <div class="attribute-mini-row">
+          ${["agi", "for", "int", "pre", "vig"]
+            .map((key) => `<span class="attribute-mini"><strong>${entry.atributos[key]}</strong><small>${key.toUpperCase()}</small></span>`)
+            .join("")}
+        </div>
+      </div>
+
+      <div class="threat-stat-block panel-subtle">
+        <h3>Defesas</h3>
+        <p><strong>Defesa</strong> ${entry.defesa}</p>
+        <p><strong>Fortitude</strong> ${formatTest(entry.fortitude)}</p>
+        <p><strong>Reflexos</strong> ${formatTest(entry.reflexos)}</p>
+        <p><strong>Vontade</strong> ${formatTest(entry.vontade)}</p>
+      </div>
+
+      <div class="threat-stat-block panel-subtle">
+        <h3>Sentidos</h3>
+        <p><strong>Percepção</strong> ${formatTest(entry.percepcao)}</p>
+        <p><strong>Iniciativa</strong> ${formatTest(entry.iniciativa)}</p>
+        ${entry.sentidosExtras.map((nota) => `<p class="muted small">${escapeHtml(nota)}</p>`).join("")}
+      </div>
+
+      <div class="threat-stat-block panel-subtle">
+        <h3>Pontos de vida</h3>
+        <p class="threat-pv"><strong>${entry.pontosDeVida}</strong><span class="muted small">${entry.machucadoEm} machucado</span></p>
+        <p class="muted small"><strong>Resistências</strong> ${escapeHtml(resistList)}</p>
+        ${entry.vulnerabilidades.length ? `<p class="muted small"><strong>Vulnerabilidades</strong> ${escapeHtml(entry.vulnerabilidades.join(", "))}</p>` : ""}
+        ${immuneDano ? `<p class="muted small"><strong>Imunidades a dano</strong> ${escapeHtml(immuneDano)}</p>` : ""}
+        ${immuneCond ? `<p class="muted small"><strong>Imunidades a condições</strong> ${escapeHtml(immuneCond)}</p>` : ""}
+      </div>
+
+      ${
+        entry.pericias.length
+          ? `<div class="threat-stat-block panel-subtle">
+              <h3>Perícias</h3>
+              ${entry.pericias.map((p) => `<p><strong>${escapeHtml(p.nome)}</strong> ${formatTest(p.teste)}</p>`).join("")}
+            </div>`
+          : ""
+      }
+
+      <div class="threat-stat-block panel-subtle">
+        <h3>Deslocamento</h3>
+        <p>${entry.deslocamentoMetros}m · ${entry.deslocamentoQuadrados} quadrados</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderThreatCombatTab(entry) {
+  const presenca = entry.presencaPerturbadora
+    ? `<div class="threat-presence panel-subtle">
+        <h3>Presença perturbadora</h3>
+        <p>DT ${entry.presencaPerturbadora.dt} · ${escapeHtml(entry.presencaPerturbadora.dado)} ${escapeHtml(entry.presencaPerturbadora.tipo)} · NEX ${entry.presencaPerturbadora.imuneDesdeNex}%+ é imune</p>
+      </div>`
+    : "";
+
+  const enigma = entry.enigmaDoMedo
+    ? `<div class="threat-presence panel-subtle">
+        <h3>Enigma de Medo</h3>
+        <p>${escapeHtml(entry.enigmaDoMedo)}</p>
+      </div>`
+    : "";
+
+  const passivas = entry.habilidadesPassivas.length
+    ? `<div class="threat-abilities">
+        <h3>Habilidades</h3>
+        ${entry.habilidadesPassivas
+          .map(
+            (habilidade) => `
+          <details class="entry-card threat-ability-card">
+            <summary><strong>${escapeHtml(habilidade.nome)}</strong></summary>
+            <p>${escapeHtml(habilidade.descricao)}</p>
+          </details>
+        `,
+          )
+          .join("")}
+      </div>`
+    : "";
+
+  const acoes = `
+    <div class="threat-actions">
+      <h3>Ações</h3>
+      ${entry.acoes
+        .map(
+          (acao) => `
+        <details class="entry-card threat-action-card">
+          <summary><span class="threat-action-type">${escapeHtml(acao.tipo)}</span> <strong>${escapeHtml(acao.nome)}</strong></summary>
+          ${
+            acao.ataques
+              ? acao.ataques
+                  .map(
+                    (ataque) => `
+                <div class="threat-attack-row">
+                  <p><strong>${escapeHtml(ataque.nome)}</strong> <span class="muted small">${escapeHtml(ataque.execucao)}</span></p>
+                  <p class="muted small">Teste ${formatTest(ataque.teste)} · Dano ${escapeHtml(ataque.dano.formula)} ${escapeHtml(ataque.dano.tipo)}</p>
+                </div>
+              `,
+                  )
+                  .join("")
+              : ""
+          }
+          ${acao.descricao ? `<p>${escapeHtml(acao.descricao)}</p>` : ""}
+        </details>
+      `,
+        )
+        .join("")}
+    </div>
+  `;
+
+  return `<div class="threat-combat-layout">${presenca}${enigma}${passivas}${acoes}</div>`;
+}
+
+function renderThreatDescriptionTab(entry) {
+  return `
+    <div class="threat-description panel-subtle">
+      <p>${escapeHtml(entry.descricao)}</p>
+      <p class="muted small">Fonte: ${escapeHtml(entry.source)}${entry.page ? `, p.${escapeHtml(entry.page)}` : ""}. Resumo mecânico em redação própria — nenhum texto do livro é reproduzido.</p>
+    </div>
   `;
 }
 
