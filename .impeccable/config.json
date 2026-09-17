@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-09-17T01:00:11.971Z",
+        "reason": "DESIGN.md's own named rule (A Regra do Brilho, Nao da Sombra / glow-not-shadow) makes colored glow the site's deliberate elevation language, confirmed during /impeccable document"
+      }
+    ]
+  }
+}

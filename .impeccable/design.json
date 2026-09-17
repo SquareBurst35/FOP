@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-16T00:00:00.000Z",
+  "title": "Design System: FOP — Fichas Ordem Paranormal",
+  "extensions": {
+    "colorMeta": {
+      "red": {
+        "role": "primary",
+        "displayName": "Vermelho-Sangue",
+        "canonical": "#d92332",
+        "tonalRamp": ["#2a0509", "#4a0a12", "#6f0f1a", "#8f101d", "#d92332", "#ff3c4b", "#ff7d86", "#ffd6d9"]
+      },
+      "cyan": {
+        "role": "secondary",
+        "displayName": "Ciano Espectral",
+        "canonical": "#6dd7e3",
+        "tonalRamp": ["#062326", "#0c3d42", "#155a61", "#2c8b93", "#4fb6bf", "#6dd7e3", "#a4e8ef", "#d8f7fa"]
+      },
+      "blood": { "role": "tertiary", "displayName": "Sangue (elemento)", "canonical": "#df2938" },
+      "death": { "role": "tertiary", "displayName": "Morte (elemento)", "canonical": "#aeb4b7" },
+      "knowledge": {
+        "role": "tertiary",
+        "displayName": "Conhecimento (elemento)",
+        "canonical": "#d5aa55",
+        "tonalRamp": ["#2c2211", "#4a3a1c", "#6e5729", "#977939", "#d5aa55", "#e3c07f", "#eed5a6", "#f8ecd3"]
+      },
+      "energy": {
+        "role": "tertiary",
+        "displayName": "Energia (elemento)",
+        "canonical": "#a453ff",
+        "tonalRamp": ["#1f0c3d", "#33155f", "#4c1f8a", "#6c2fbb", "#a453ff", "#c187ff", "#dcb9ff", "#f2e3ff"]
+      },
+      "fear": { "role": "tertiary", "displayName": "Medo (elemento)", "canonical": "#d9f7ff" },
+      "parchment-gold": {
+        "role": "signature",
+        "displayName": "Dourado-Pergaminho",
+        "canonical": "#b8a970",
+        "tonalRamp": ["#2b2412", "#453a1d", "#665628", "#8a7238", "#b8a970", "#cdc08f", "#e0d7b3", "#f2ecd9"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Título de página/seção principal; peso pesado com tracking negativo, sem uppercase." },
+      "body": { "displayName": "Corpo", "purpose": "Parágrafos de descrição mecânica de habilidades, rituais e itens." },
+      "label": { "displayName": "Rótulo", "purpose": "Eyebrows, rótulos de campo, badges, cabeçalhos de cartão — a voz arquivística uppercase do sistema." },
+      "numeral": { "displayName": "Numeral", "purpose": "Valores de PV/PE/Sanidade e resultados calculados; sempre tabular-nums para não 'dançar' ao mudar." }
+    },
+    "shadows": [
+      { "name": "panel-ambient", "value": "0 22px 65px rgba(0, 0, 0, 0.48)", "purpose": "Sombra padrão preta de cartões e painéis (var --shadow)." },
+      { "name": "card-ambient", "value": "0 10px 30px rgba(0, 0, 0, 0.22)", "purpose": "Variante mais leve para os cartões da lista de personagens." },
+      { "name": "focus-glow", "value": "0 0 0 3px rgba(217, 35, 50, 0.1), 0 0 24px rgba(217, 35, 50, 0.08)", "purpose": "Campo de formulário focado — único caso de glow colorido em vez de sombra preta." },
+      { "name": "resource-glow", "value": "0 0 9px var(--resource-color)", "purpose": "Barra de PV/PE/Sanidade/PD/PP preenchida brilha na cor do próprio recurso." }
+    ],
+    "motion": [
+      { "name": "motion-standard", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Curva de easing padrão do sistema (var --motion), usada em hover, abas e medidores de recurso." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "820px" },
+      { "name": "mobile", "value": "600px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal — salvar, confirmar, criar.",
+      "html": "<button class=\"ds-btn-primary\">Salvar Ficha</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid #ef4954; border-radius: 7px; background: linear-gradient(180deg, #e93440, #b91828); color: #f3f1eb; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 760; box-shadow: 0 8px 24px rgba(185, 24, 40, 0.25); cursor: pointer; transition: 140ms ease; } .ds-btn-primary:hover { background: linear-gradient(180deg, #f1424e, #c61d2d); transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: 3px solid rgba(126, 208, 214, 0.42); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ação secundária — cancelar, fechar, voltar.",
+      "html": "<button class=\"ds-btn-ghost\">Cancelar</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid #292e33; border-radius: 7px; background: transparent; color: #f3f1eb; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 760; cursor: pointer; transition: 140ms ease; } .ds-btn-ghost:hover { border-color: #535b63; transform: translateY(-1px); } .ds-btn-ghost:focus-visible { outline: 3px solid rgba(126, 208, 214, 0.42); outline-offset: 2px; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Etiqueta compacta — NEX, custo, tag de fonte/livro.",
+      "html": "<span class=\"ds-badge ds-badge-red\">NEX 35%</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border: 1px solid #292e33; border-radius: 999px; background: rgba(255, 255, 255, 0.03); color: #a6a9aa; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 0.75rem; font-weight: 700; } .ds-badge-red { border-color: rgba(226, 46, 58, 0.38); background: rgba(217, 35, 50, 0.13); color: #ff9ca4; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "field-input",
+      "description": "Campo de formulário com rótulo uppercase e glow de foco vermelho.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Nome do Agente</span><input class=\"ds-field-input\" type=\"text\" placeholder=\"Ex.: Marcus Veil\" /></label>",
+      "css": ".ds-field { display: grid; gap: 7px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-field-label { color: #a6a9aa; font-size: 0.82rem; font-weight: 760; letter-spacing: 0.04em; text-transform: uppercase; } .ds-field-input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #292e33; border-radius: 6px; background: rgba(5, 7, 9, 0.82); color: #f3f1eb; font: inherit; transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease; } .ds-field-input:hover { border-color: #535b63; } .ds-field-input:focus { outline: none; border-color: rgba(217, 35, 50, 0.7); background: #090b0d; box-shadow: 0 0 0 3px rgba(217, 35, 50, 0.1), 0 0 24px rgba(217, 35, 50, 0.08); }"
+    },
+    {
+      "name": "Sheet Tabs",
+      "kind": "nav",
+      "refersTo": "sheet-tabs",
+      "description": "Navegação por abas da ficha, com sublinhado vermelho brilhante deslizante.",
+      "html": "<nav class=\"ds-tabs\"><button class=\"ds-tab active\">Atributos</button><button class=\"ds-tab\">Perícias</button><button class=\"ds-tab\">Inventário</button></nav>",
+      "css": ".ds-tabs { display: flex; gap: 4px; padding: 8px 8px 0; border-bottom: 1px solid #292e33; font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-tab { position: relative; appearance: none; flex: 0 0 auto; padding: 10px 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #a6a9aa; cursor: pointer; font-size: 0.84rem; font-weight: 800; letter-spacing: 0.035em; transition: color 180ms ease, background 180ms ease; } .ds-tab:hover { color: #f3f1eb; } .ds-tab.active { color: #fff; background: linear-gradient(to top, rgba(217, 35, 50, 0.09), transparent); } .ds-tab.active::after { content: ''; position: absolute; right: 12%; left: 12%; bottom: -2px; height: 2px; background: #ff3c4b; box-shadow: 0 0 12px rgba(255, 60, 75, 0.72); }"
+    },
+    {
+      "name": "Entry Card",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Componente assinatura: accordion de ritual/poder/item do catálogo, com mecânica completa revelada ao abrir.",
+      "html": "<details class=\"ds-entry-card\"><summary class=\"ds-entry-summary\"><span class=\"ds-entry-title\"><strong>Amaldiçoar Tecnologia</strong><small>Ritual de Energia · 1º círculo</small></span><span class=\"ds-entry-side\"><span class=\"ds-badge\">2 PE</span><span class=\"ds-chevron\">⌄</span></span></summary><div class=\"ds-entry-body\"><p>Execução: ação padrão. Alcance: toque. Um dispositivo eletrônico afetado falha de forma imprevisível pelo resto da cena.</p></div></details>",
+      "css": ".ds-entry-card { overflow: hidden; border: 1px solid #292e33; border-radius: 10px; background: #0d0f12; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f3f1eb; } .ds-entry-card[open] { border-color: #535b63; background: #111419; } .ds-entry-summary { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 13px; list-style: none; cursor: pointer; } .ds-entry-summary::-webkit-details-marker { display: none; } .ds-entry-title { display: grid; min-width: 0; } .ds-entry-title small { color: #a6a9aa; font-size: 0.74rem; } .ds-entry-side { display: flex; align-items: center; gap: 8px; } .ds-chevron { color: #d92332; font-size: 1.3rem; transition: transform 140ms ease; } .ds-entry-card[open] .ds-chevron { transform: rotate(180deg); } .ds-entry-body { padding: 0 13px 14px; border-top: 1px solid #292e33; color: #a6a9aa; font-size: 0.92rem; line-height: 1.5; } .ds-entry-body p { margin: 13px 0 0; } .ds-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border: 1px solid #292e33; border-radius: 999px; background: rgba(255, 255, 255, 0.03); color: #a6a9aa; font-size: 0.75rem; font-weight: 700; }"
+    },
+    {
+      "name": "Resource Meter",
+      "kind": "custom",
+      "refersTo": "resource-meter",
+      "description": "Componente assinatura: barra de PV/PE/Sanidade/PD/PP colorida pelo elemento paranormal correspondente, brilhando na própria cor.",
+      "html": "<div class=\"ds-resource\"><div class=\"ds-resource-head\"><strong>PV</strong><span>24 / 30</span></div><div class=\"ds-resource-meter\"><span style=\"width: 80%\"></span></div></div>",
+      "css": ".ds-resource { --resource-color: #df2938; overflow: hidden; border-radius: 7px; padding: 10px 12px; background: linear-gradient(115deg, color-mix(in srgb, var(--resource-color), transparent 92%), rgba(255, 255, 255, 0.018)); font-family: Inter, ui-sans-serif, system-ui, sans-serif; transition: border-color 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-resource-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; } .ds-resource-head strong { color: var(--resource-color); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; } .ds-resource-head span { color: #a6a9aa; font-size: 0.82rem; font-weight: 900; font-variant-numeric: tabular-nums; } .ds-resource-meter { height: 3px; overflow: hidden; border-radius: 99px; background: rgba(255, 255, 255, 0.065); } .ds-resource-meter span { display: block; height: 100%; border-radius: inherit; background: var(--resource-color); box-shadow: 0 0 9px var(--resource-color); transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1); }"
+    },
+    {
+      "name": "Paperdoll Panel",
+      "kind": "custom",
+      "refersTo": "paperdoll-panel",
+      "description": "Componente assinatura: painel de equipamento com paleta dourado-pergaminho e título serifado, o 'livro-razão' dentro do arquivo digital. Mostrado aqui sem o canvas de sprite ao vivo.",
+      "html": "<div class=\"ds-paperdoll\"><header class=\"ds-paperdoll-head\"><span class=\"ds-paperdoll-kicker\">Equipamento</span><span class=\"ds-paperdoll-state\">4/9 espaços</span></header><div class=\"ds-paperdoll-slot\"><span class=\"ds-paperdoll-slot-mark\">✓</span><span><strong>Arma principal</strong><small>Pistola tática</small></span></div></div>",
+      "css": ".ds-paperdoll { overflow: hidden; border: 1px solid rgba(176, 164, 111, 0.32); border-radius: 8px; background: linear-gradient(rgba(10, 11, 9, 0.65), rgba(10, 11, 9, 0.65)), repeating-linear-gradient(0deg, transparent 0 23px, rgba(220, 204, 132, 0.035) 23px 24px), #17170f; box-shadow: inset 0 0 44px rgba(0, 0, 0, 0.48); font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #c6bc91; } .ds-paperdoll-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 15px; border-bottom: 1px solid rgba(176, 164, 111, 0.24); background: rgba(5, 7, 7, 0.58); } .ds-paperdoll-kicker { color: #b8a970; font-size: 0.875rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; } .ds-paperdoll-state { padding: 5px 8px; border: 1px solid rgba(194, 178, 111, 0.28); border-radius: 4px; color: #c6bc91; font-size: 0.875rem; font-weight: 800; } .ds-paperdoll-slot { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 2px 8px; margin: 14px; padding: 9px 10px; border: 1px solid rgba(176, 164, 111, 0.19); border-radius: 5px; background: rgba(8, 10, 9, 0.6); color: #eee8d5; } .ds-paperdoll-slot-mark { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(194, 178, 111, 0.4); color: #b8a970; } .ds-paperdoll-slot small { color: #8a8262; font-size: 0.76rem; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Arquivo Amaldiçoado",
+    "overview": "Cada ficha do FOP se comporta como um dossiê confidencial que a Ordo Realitas mantém sobre um agente: fundo quase preto, nevoeiro lento e composto ao redor da tela inicial, um selo oculto desenhado à mão (assets/archive-seal.svg, círculos quebrados e glifos originais) ecoado no próprio brand-mark do topo. O vermelho-sangue não decora — é o carimbo de alerta do arquivo: ações primárias, avisos e o indicador de foco em campos de formulário usam a mesma cor de \"isto importa agora\". Fora isso, o sistema é deliberadamente contido: superfícies escuras quase planas, uma paleta neutra de cinzas frios, e o vermelho reaparecendo com rara disciplina.\n\nO tom é investigativo e tenso, nunca festivo. Isto é explicitamente não uma ficha de fantasia colorida e whimsical (o oposto do estilo D&D Beyond) e não um dashboard SaaS genérico — não há cartões pastel, ícones fofos ou gradientes multicoloridos decorativos. A tensão é sugerida, não gritada: nevoeiro que se move devagar, brilho vermelho pontual em vez de alarme piscando, glifos ocultos quebrados em vez de completos.\n\nDentro desse mundo escuro vive uma exceção deliberada: o painel do boneco de equipamento (paperdoll) muda de paleta para um dourado-pergaminho envelhecido com títulos em serifada, como se fosse a página de um livro-razão físico dentro do dossiê digital — o \"arquivo dentro do arquivo\".",
+    "keyCharacteristics": [
+      "Fundo quase preto (#060708) com nevoeiro/textura sutil, nunca uma superfície limpa e clara.",
+      "Vermelho-sangue como único sinal de urgência/ação primária; todo o resto é neutro.",
+      "As cinco cores dos elementos paranormais do próprio jogo (Sangue, Morte, Conhecimento, Energia, Medo) codificam os recursos da ficha (PV, PE, Sanidade, PD, PP) e os rituais — nunca são usadas como decoração arbitrária.",
+      "Superfícies quase planas; profundidade é sugerida por brilho colorido (glow), não por sombra empilhada.",
+      "Um selo oculto original e quebrado é o motivo geométrico recorrente (círculos incompletos, quadrados sobrepostos, glifos radiais).",
+      "Rótulos secundários gritam em versalete rastreado (uppercase, letter-spacing largo); títulos principais sussurram com tracking negativo e peso pesado."
+    ],
+    "rules": [
+      { "name": "A Regra do Selo Único", "body": "O vermelho-sangue é reservado para ação/alerta/foco. Nenhum outro elemento de UI genérico pode usar essa cor — sua raridade é o que faz o olhar ir direto a ela.", "section": "colors" },
+      { "name": "A Regra da Paleta Elemental", "body": "Sangue, Morte, Conhecimento, Energia e Medo só podem colorir algo que seja, de fato, aquele elemento paranormal ou o recurso da ficha com o mesmo nome. Nunca usar essas cores como acento decorativo genérico fora desse contexto.", "section": "colors" },
+      { "name": "A Regra do Sussurro e do Grito", "body": "Um título nunca usa uppercase nem tracking largo; um rótulo secundário nunca deixa de usar. A hierarquia é sempre essa oposição de voz, não apenas tamanho.", "section": "typography" },
+      { "name": "A Exceção do Livro-Razão", "body": "Só o cabeçalho do painel de equipamento (.paperdoll-panel h3) troca para serifada (Georgia, \"Times New Roman\", serif). É a única quebra da regra de fonte única no sistema inteiro.", "section": "typography" },
+      { "name": "A Regra do Container Único", "body": "Nenhuma tela foge do container de 1120px centralizado; telas mais densas usam colunas internas em vez de alargar o container.", "section": "layout" },
+      { "name": "A Regra do Brilho, Não da Sombra", "body": "Uma superfície nunca ganha profundidade empilhando sombras escuras entre camadas. Se algo precisa parecer ativo ou em foco, a resposta é um glow colorido, não mais elevação.", "section": "elevation" },
+      { "name": "A Regra do Pixel Intacto", "body": "Toda arte do boneco de equipamento e dos ícones de item usa image-rendering: pixelated. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como ilustração vetorial.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reservar vermelho-sangue exclusivamente para ação primária, alerta e foco — nunca decoração.",
+      "Do usar as cinco cores de elemento paranormal (Sangue, Morte, Conhecimento, Energia, Medo) só quando o conteúdo é literalmente daquele elemento ou daquele recurso da ficha.",
+      "Do manter superfícies quase planas e expressar estado/interatividade como brilho colorido, não como sombra empilhada.",
+      "Do opor título quieto (peso pesado, tracking negativo, sem uppercase) a rótulo gritado (uppercase, tracking largo) para toda nova hierarquia de texto.",
+      "Do renderizar toda arte pixel (paperdoll, ícones de item) com image-rendering: pixelated, nunca suavizada.",
+      "Do respeitar prefers-reduced-motion desligando nevoeiro/transformações de hover, como home.css já faz."
+    ],
+    "donts": [
+      "Don't introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, com a única exceção documentada do cabeçalho do paperdoll.",
+      "Don't adicionar cores saturadas/pastel fora da paleta estabelecida (vermelho, ciano, os cinco elementos, neutros) — isso quebra o tom investigativo e tenso confirmado para o produto.",
+      "Don't empilhar sombras escuras entre camadas para simular profundidade; a resposta certa é glow, não elevação.",
+      "Don't tratar o painel de equipamento como só mais um cartão escuro — sua paleta dourado-pergaminho e a serifada no título são intencionais e não devem vazar para o resto da interface."
+    ]
+  }
+}

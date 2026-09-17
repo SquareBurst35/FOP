@@ -84,6 +84,11 @@ const ATTRIBUTE_NAMES = {
   vigor: "Vigor",
 };
 
+const SKILL_GROUP_ORDER = Object.keys(ATTRIBUTE_LABELS).map((key) => ATTRIBUTE_LABELS[key]);
+const SKILL_GROUP_NAMES = Object.fromEntries(
+  Object.entries(ATTRIBUTE_LABELS).map(([key, code]) => [code, ATTRIBUTE_NAMES[key]]),
+);
+
 const PARANORMAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
 
 const NON_USABLE_ABILITY_NAMES = new Set([
@@ -521,7 +526,10 @@ function renderCreator() {
   headerActions.innerHTML = `
     <button class="button ghost compact" id="cancel-creator" type="button">Cancelar</button>
   `;
-  document.querySelector("#cancel-creator").addEventListener("click", () => navigate("home"));
+  document.querySelector("#cancel-creator").addEventListener("click", () => {
+    if (currentStep > 0 && !window.confirm("Descartar este agente? O progresso não será salvo.")) return;
+    navigate("home");
+  });
 
   app.innerHTML = `
     <section class="wizard-shell">
@@ -631,11 +639,11 @@ function renderCreatorStep() {
       <h1>Recursos principais</h1>
       <p class="muted">Estes valores foram calculados usando classe, NEX e atributos. Na ficha, apenas os valores atuais mudam durante a sessão.</p>
       <div class="resource-grid">
-        ${calculatedResource("PV", derived.pvMax)}
+        ${calculatedResource("PV", "pv", derived.pvMax)}
         ${
           derived.usesDetermination
-            ? calculatedResource("PD", derived.pdMax)
-            : `${calculatedResource("PE", derived.peMax)}${calculatedResource("SAN", derived.sanMax)}`
+            ? calculatedResource("PD", "pd", derived.pdMax)
+            : `${calculatedResource("PE", "pe", derived.peMax)}${calculatedResource("SAN", "san", derived.sanMax)}`
         }
       </div>
       <div class="calculation-box">
@@ -3618,6 +3626,16 @@ function renderSkillChecklist({ title, source, selected = [], required, blocked 
   if (required === 0) return "";
   const selectedSet = new Set(selected);
   const limitReached = selectedSet.size >= required;
+  const renderOption = (skill) => {
+    const checked = selectedSet.has(skill);
+    const disabled = blocked.has(skill) || (!checked && limitReached);
+    return `
+      <label class="skill-option ${checked ? "selected" : ""} ${disabled && !checked ? "disabled" : ""}">
+        <input type="checkbox" value="${escapeAttribute(skill)}" data-${source}-skill ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} />
+        <span>${escapeHtml(skill)}</span>
+      </label>
+    `;
+  };
   return `
     <fieldset class="skill-choice-block">
       <legend>${escapeHtml(title)}</legend>
@@ -3625,18 +3643,16 @@ function renderSkillChecklist({ title, source, selected = [], required, blocked 
         <span class="muted small">Escolha ${required}</span>
         <strong class="skill-counter ${selectedSet.size === required ? "complete" : ""}">${selectedSet.size}/${required}</strong>
       </div>
-      <div class="skill-grid">
-        ${SKILLS.map((skill) => {
-          const checked = selectedSet.has(skill);
-          const disabled = blocked.has(skill) || (!checked && limitReached);
-          return `
-            <label class="skill-option ${checked ? "selected" : ""} ${disabled && !checked ? "disabled" : ""}">
-              <input type="checkbox" value="${escapeAttribute(skill)}" data-${source}-skill ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} />
-              <span>${escapeHtml(skill)}</span>
-            </label>
-          `;
-        }).join("")}
-      </div>
+      ${SKILL_GROUP_ORDER.map((code) => {
+        const skillsInGroup = SKILLS.filter((skill) => SKILL_ATTRIBUTES[skill] === code);
+        if (!skillsInGroup.length) return "";
+        return `
+          <div class="skill-group">
+            <p class="skill-group-label">${SKILL_GROUP_NAMES[code]}</p>
+            <div class="skill-grid">${skillsInGroup.map(renderOption).join("")}</div>
+          </div>
+        `;
+      }).join("")}
     </fieldset>
   `;
 }
@@ -3678,9 +3694,9 @@ function resourceFields(label, key, current, max) {
   `;
 }
 
-function calculatedResource(label, value) {
+function calculatedResource(label, key, value) {
   return `
-    <div class="resource-card calculated">
+    <div class="resource-card calculated resource-${escapeAttribute(key)}">
       <header><strong>${label}</strong><span class="badge">Automático</span></header>
       <div class="calculated-value">${numberOr(value, 0)}</div>
     </div>
