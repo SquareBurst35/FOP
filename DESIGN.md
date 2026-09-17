@@ -222,6 +222,15 @@ Cada um dos cinco elementos paranormais (Sangue, Morte, Conhecimento, Energia, M
 ### Paperdoll Panel (componente assinatura)
 O único painel do sistema com paleta própria: dourado-pergaminho (`#b8a970` / `rgba(176,164,111,…)`) sobre fundo verde-oliva quase preto (`#17170f`), com textura de linhas horizontais finas simulando papel riscado e uma sombra interna profunda (`inset 0 0 44px rgba(0,0,0,0.48)`) que aproxima o painel de uma página de livro-razão física. Título em serifada (ver Typography). O boneco em pixel art fica ao centro (`image-rendering: pixelated`, sombra projetada suave), ladeado por slots de equipamento em grade; cada slot preenchido ganha uma borda/realce dourados.
 
+### Cast Flourish (momento assinatura)
+Ao conjurar um ritual (confirmar o gasto no diálogo de uso), o glifo do elemento correspondente aparece grande (até 220px) no centro da tela por ~950ms: se desenha, acende com um pop de escala e glow intenso na cor do elemento, e dissipa — com um leve véu radial da mesma cor lavando a tela por trás. Elemento `#cast-flourish`, fixo, `aria-hidden`, `pointer-events: none` — nunca bloqueia a interface, só reage ao "Confirmar uso" de um ritual (não de uma habilidade comum). Reaproveita `geometry-trace` para o traço do glifo, mesma disciplina dos Element Glyphs.
+
+### Level-Up Ceremony (momento assinatura)
+Confirmar uma evolução de nível/estágio dispara uma cerimônia de ~2s: fundo escurece em vinheta, um anel vermelho brilhante gira e se assenta, e "Nível X" + "NEX Y%" aparecem no centro antes de tudo se dissipar. É deliberadamente o momento mais teatral do site — evoluir é raro e merece mais que um número mudando silenciosamente. Elemento `#level-up-ceremony`, mesma disciplina de não bloquear interação (`pointer-events: none`) e não substituir o toast de confirmação, que continua aparecendo normalmente.
+
+### Selo Vivo (home)
+O selo de fundo da tela inicial (`archive-seal.svg`) não é mais estático: gira quase imperceptivelmente (240s por volta completa) e respira um brilho vermelho sutil (16s, opacidade .13↔.22) — como algo antigo ainda desperto, guardando o arquivo. O nevoeiro continua com seu próprio movimento independente (`archive-mist`); os dois nunca se sincronizam, para não parecer um efeito único coreografado, e sim duas camadas vivas por conta própria.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -233,6 +242,7 @@ O único painel do sistema com paleta própria: dourado-pergaminho (`#b8a970` / 
 - **Do** respeitar `prefers-reduced-motion` desligando nevoeiro/transformações de hover, como `home.css` já faz.
 - **Do** identificar um elemento paranormal pelo glifo original (`elementGlyph()`), nunca só por uma tarja lateral colorida.
 - **Do** revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (`content-reveal`, 360-420ms, curva `--motion`) — nunca um corte seco.
+- **Do** reservar o tratamento de tela-cheia (Cast Flourish, Level-Up Ceremony) só para os momentos de fato raros e importantes (conjurar, evoluir) — nunca para ações rotineiras (salvar campo, marcar checkbox).
 
 ### Don't:
 - **Don't** introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, com a única exceção documentada do cabeçalho do paperdoll.

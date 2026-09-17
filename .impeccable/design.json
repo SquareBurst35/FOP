@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-17T00:00:00.000Z",
+  "generatedAt": "2026-09-17T06:00:00.000Z",
   "title": "Design System: FOP — Fichas Ordem Paranormal",
   "extensions": {
     "colorMeta": {
@@ -153,7 +153,8 @@
       { "name": "A Regra do Container Único", "body": "Nenhuma tela foge do container de 1120px centralizado; telas mais densas usam colunas internas em vez de alargar o container.", "section": "layout" },
       { "name": "A Regra do Brilho, Não da Sombra", "body": "Uma superfície nunca ganha profundidade empilhando sombras escuras entre camadas. Se algo precisa parecer ativo ou em foco, a resposta é um glow colorido, não mais elevação.", "section": "elevation" },
       { "name": "A Regra do Pixel Intacto", "body": "Toda arte do boneco de equipamento e dos ícones de item usa image-rendering: pixelated. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como ilustração vetorial.", "section": "elevation" },
-      { "name": "A Regra do Glifo do Elemento", "body": "Um elemento paranormal é identificado pelo glifo original (elementGlyph()), nunca só por uma tarja lateral colorida. Border-left/border-right grosso como tarja de identidade é banido — é o tell mais reconhecível de UI genérica gerada por IA.", "section": "components" }
+      { "name": "A Regra do Glifo do Elemento", "body": "Um elemento paranormal é identificado pelo glifo original (elementGlyph()), nunca só por uma tarja lateral colorida. Border-left/border-right grosso como tarja de identidade é banido — é o tell mais reconhecível de UI genérica gerada por IA.", "section": "components" },
+      { "name": "A Regra do Momento Raro", "body": "Tratamento de tela-cheia (Cast Flourish ao conjurar, Level-Up Ceremony ao evoluir) é reservado só para eventos de fato raros e importantes. Nunca usar esse nível de teatralidade para uma ação rotineira.", "section": "components" }
     ],
     "dos": [
       "Do reservar vermelho-sangue exclusivamente para ação primária, alerta e foco — nunca decoração.",
@@ -163,7 +164,8 @@
       "Do renderizar toda arte pixel (paperdoll, ícones de item) com image-rendering: pixelated, nunca suavizada.",
       "Do respeitar prefers-reduced-motion desligando nevoeiro/transformações de hover, como home.css já faz.",
       "Do identificar um elemento paranormal pelo glifo original (elementGlyph()), nunca só por uma tarja lateral colorida.",
-      "Do revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (content-reveal, 360-420ms, curva --motion) — nunca um corte seco."
+      "Do revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (content-reveal, 360-420ms, curva --motion) — nunca um corte seco.",
+      "Do reservar o tratamento de tela-cheia (Cast Flourish, Level-Up Ceremony) só para os momentos de fato raros e importantes — nunca para ações rotineiras."
     ],
     "donts": [
       "Don't introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, com a única exceção documentada do cabeçalho do paperdoll.",

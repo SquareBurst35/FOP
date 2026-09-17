@@ -32,7 +32,7 @@ body:has(.agent-home) .account-controls .button:last-child:not([hidden]) { grid-
 body:has(.agent-home) .account-controls .button:disabled { opacity: .55; cursor: wait; transform: none; }
 body:has(.agent-home) #app { padding-top: 44px; }
 
-/* One slow composited fog layer; all linework and texture remain still. */
+/* Fog drifts; the seal itself now turns almost imperceptibly and breathes with a slow glow, like something ancient still watching. */
 body:has(.agent-home) {
   isolation: isolate;
   background:
@@ -61,8 +61,18 @@ body:has(.agent-home)::after {
   border-radius: 0;
   background: url("assets/archive-seal.svg") center / contain no-repeat;
   box-shadow: none;
-  opacity: .17;
-  transform: rotate(-14deg);
+  transform-origin: 50% 50%;
+  animation: archive-seal-turn 240s linear infinite, archive-seal-breathe 16s ease-in-out infinite;
+}
+
+@keyframes archive-seal-turn {
+  from { transform: rotate(-14deg); }
+  to { transform: rotate(346deg); }
+}
+
+@keyframes archive-seal-breathe {
+  0%, 100% { opacity: .13; filter: drop-shadow(0 0 0 transparent); }
+  50% { opacity: .22; filter: drop-shadow(0 0 40px rgba(217, 35, 50, 0.14)); }
 }
 body:has(.agent-home) .topbar {
   background: linear-gradient(110deg, #100d0ff5, #0b0c0df5);
@@ -183,6 +193,7 @@ body:has(.agent-home) .site-footer { background: #09090b9c; }
 
 @media (prefers-reduced-motion: reduce) {
   body:has(.agent-home)::before { animation: none; transform: none; opacity: .65; }
+  body:has(.agent-home)::after { animation: none; transform: rotate(-14deg); opacity: .17; }
   body:has(.agent-home) .brand:hover .brand-mark { transform: none; }
   .agent-home .character-card:hover, .agent-home .button:hover, .agent-home .button:active { transform: none; }
 }

@@ -164,8 +164,12 @@ const app = document.querySelector("#app");
 const headerActions = document.querySelector("#header-actions");
 const homeButton = document.querySelector("#home-button");
 const toastElement = document.querySelector("#toast");
+const castFlourishElement = document.querySelector("#cast-flourish");
+const levelUpCeremonyElement = document.querySelector("#level-up-ceremony");
 
 let toastTimer;
+let castFlourishTimer;
+let levelUpCeremonyTimer;
 let creatorState = null;
 let creatorProgress = null;
 let currentStep = 0;
@@ -1913,6 +1917,7 @@ function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, 
   renderSheet(character.id);
   const resourceLabel = result.record.resource ? ` e gastou ${result.record.cost} ${result.record.resource}` : "";
   showToast(`${result.record.name} usado${resourceLabel}.`);
+  if (type === "ritual") playCastFlourish(entry.element);
 }
 
 function reopenSpendDialog(character) {
@@ -3111,6 +3116,8 @@ function applyLevelUp(character) {
   activeSheetTab = "resumo";
   renderSheet(saved.id);
   showToast(`Evolução para o nível ${plan.toLevel} aplicada.`);
+  const ceremonyLabel = isSurvivorCharacter(saved) ? `Estágio ${survivorStage(saved)}` : `Nível ${characterLevel(saved)}`;
+  playLevelUpCeremony(ceremonyLabel, saved.nex);
 }
 
 function reopenLevelUp(character, { scrollTop = 0, focusSelector = "" } = {}) {
@@ -4019,6 +4026,43 @@ function showToast(message) {
   toastElement.textContent = message;
   toastElement.classList.add("show");
   toastTimer = window.setTimeout(() => toastElement.classList.remove("show"), 2400);
+}
+
+function playCastFlourish(element) {
+  const slug = normalizeSearch(element);
+  const paths = ELEMENT_GLYPHS[slug];
+  if (!castFlourishElement || !paths) return;
+  const glowVar = {
+    sangue: "var(--blood)",
+    morte: "var(--death)",
+    conhecimento: "var(--knowledge)",
+    energia: "var(--energy)",
+    medo: "var(--fear)",
+  }[slug];
+  castFlourishElement.style.setProperty("--cast-color", glowVar);
+  castFlourishElement.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  castFlourishElement.classList.remove("play");
+  void castFlourishElement.offsetWidth;
+  castFlourishElement.classList.add("play");
+  window.clearTimeout(castFlourishTimer);
+  castFlourishTimer = window.setTimeout(() => castFlourishElement.classList.remove("play"), 1000);
+}
+
+function playLevelUpCeremony(label, nex) {
+  if (!levelUpCeremonyElement) return;
+  levelUpCeremonyElement.innerHTML = `
+    <div class="ceremony-ring"></div>
+    <div class="ceremony-content">
+      <p class="ceremony-kicker">Evolução registrada</p>
+      <strong class="ceremony-level">${escapeHtml(label)}</strong>
+      <span class="ceremony-nex">NEX ${numberOr(nex, 0)}%</span>
+    </div>
+  `;
+  levelUpCeremonyElement.classList.remove("play");
+  void levelUpCeremonyElement.offsetWidth;
+  levelUpCeremonyElement.classList.add("play");
+  window.clearTimeout(levelUpCeremonyTimer);
+  levelUpCeremonyTimer = window.setTimeout(() => levelUpCeremonyElement.classList.remove("play"), 2050);
 }
 
 function initials(name) {
