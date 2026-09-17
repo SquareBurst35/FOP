@@ -65,34 +65,33 @@ mestre, não uma ameaça catalogável) → capítulo 8 (294).
 
 | Seção | Catalogadas | Situação |
 |---|---|---|
-| Sangue | Aberração de Carne (p.182), Carente (p.188) | 2 feitas; **Aniquilação (p.185–187) já foi lida e transcrita nesta sessão mas ainda não está em `threats.js`** — é a próxima a entrar. Restam mais criaturas até a p.207. |
-| Morte | — | Não iniciado |
+| Sangue | 12 de 12 | **Completa em 17/09/2026**: Aberração de Carne (p.182), Aniquilação (p.185), Carente (p.188), Dama de Sangue (p.190), Enpap-X (p.192), Kerberos (p.194), Minotauro (p.197), Mulher Afogada (p.199), Titã de Sangue (p.201), Zumbi de Sangue (p.202), Zumbi de Sangue Bestial (p.203), O Diabo (p.205). |
+| Morte | — | Não iniciado — próxima seção, começa na p.208 |
 | Conhecimento | — | Não iniciado |
 | Energia | — | Não iniciado |
-| Realidade (mundana) | — | Não iniciado; confirmar categoria/rótulo usado pelo livro para esse grupo antes de catalogar (os dois exemplos feitos são "Criatura", ainda não vimos como o livro rotula uma ameaça mundana) |
+| Realidade (mundana) | — | Não iniciado; confirmar categoria/rótulo usado pelo livro para esse grupo antes de catalogar (todos os exemplos feitos até agora são "Criatura"; ainda não vimos como o livro rotula uma ameaça mundana) |
 
-### Dados já extraídos e prontos para virar entrada (não perder)
+**Lição aprendida catalogando Sangue**: o primeiro escaneamento
+automático da seção (por regex de "VD") errou a contagem — a página do
+Kerberos (194) tem o nome num tratamento gráfico que não extrai como
+texto, então o script achou o VD mas não o nome, e eu quase concluí que
+era continuação da criatura anterior (Enpap-X). Só renderizando cada
+página como imagem e olhando é que apareceu. **Não confiar em scan de
+texto para decidir quantas criaturas uma seção tem — sempre renderizar
+e olhar página por página**, mesmo que pareça repetitivo.
 
-**Aniquilação** — Sangue, Criatura Colossal, VD 380, p.185–187.
-- Presença Perturbadora: DT 45, 9d8 mental (NEX de imunidade não anotado — conferir de novo)
-- Percepção 5d20+20, Iniciativa 4d20+20
-- Defesa 58, Fortitude 4d20+25, Reflexos 5d20+30, Vontade 4d20+20 *(conferir visualmente — veio da extração de texto da v1, antes do método de render; os campos de Reflexos/Vontade/Iniciativa são justamente os que o ícone de d20 pode esconder um "+0")*
-- PV 1200 (600 machucado), Resistências Dano 50, Vulnerabilidades Morte
-- Atributos AGI 5, FOR 5, INT 3, PRE 4, VIG 5; Perícias Atletismo 5d20+20
-- Deslocamento 15m | 10 quadrados
-- Ações: Garras (corpo a corpo x2, teste 5d20+40, dano 4d10+30 Sangue), Tentáculos Espinhentos (corpo a corpo x2, teste 5d20+40, dano 2d12+30 Sangue), Disparo de Espinhos (distância x3, médio, teste 4d20+40, dano 2d10+20 Sangue), Reação Instinto Aniquilador, Reação Agarrão (teste +50, até 4 agarrados), Movimento Apertar e Destruir, Movimento Bater as Asas (8d6 mental, empurra 6m, atordoa 1 rodada, Fortitude DT 40 reduz/evita), Movimento Estrangulamento Final (Reflexos DT 30 evita), Completa Tempestade de Espinhos (20d6+20 Sangue, Reflexos DT 40 reduz à metade, 1x/cena)
-- Enigma de Medo: desconhecido; ao resolver, perde resistência a dano e Tempestade de Espinhos
-
-**Antes de adicionar**: reler p.185–187 com `pdf-read.py render` (não
-apenas texto) para confirmar Reflexos/Vontade/Iniciativa e o NEX de
-imunidade da Presença Perturbadora, do mesmo jeito que foi necessário
-para Aberração de Carne e Carente.
+Duas ameaças (Aniquilação e O Diabo) não têm limite de NEX na Presença
+Perturbadora — afetam qualquer agente, independente do NEX. Isso é dado
+real do livro, não uma lacuna: o schema trata `imuneDesdeNex: null`
+como "nenhum NEX concede imunidade", e a UI já mostra essa frase em vez
+de inventar um número.
 
 ## Ordem de continuação sugerida
 
-1. Confirmar e adicionar Aniquilação.
-2. Terminar Criaturas de Sangue (até p.207).
-3. Morte, Conhecimento, Energia, Realidade — mesma mecânica.
-4. Sobrevivendo ao Horror, depois Arquivos Secretos #1–7 (nenhum
+1. Criaturas de Morte (p.208–231), mesmo método: renderizar cada página
+   com `python scripts/pdf-read.py render`, nunca confiar só no texto
+   extraído nem no scan automático de "VD".
+2. Conhecimento (232–253), Energia (254–281), Realidade (282–289).
+3. Sobrevivendo ao Horror, depois Arquivos Secretos #1–7 (nenhum
    inventariado ainda para ameaças; `docs/content-audit.md` já mapeou
    *onde* estão as ameaças de cada AS, mas não suas fichas mecânicas).

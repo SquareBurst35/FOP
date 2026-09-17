@@ -42,6 +42,11 @@ rodapé e compare).
 import sys
 import fitz  # pymupdf
 
+# Windows' console codepage (cp1252) can't encode the private-use-area glyphs
+# this book uses for its bullet/dice icons (e.g. U+F077); force UTF-8 so
+# printing or redirecting to a file doesn't crash on them.
+sys.stdout.reconfigure(encoding="utf-8")
+
 def cmd_find(pdf_path, terms):
     doc = fitz.open(pdf_path)
     needles = [t.lower() for t in terms]

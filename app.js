@@ -44,7 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=56";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=1";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=2";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=55";
 import {
   CHOICE_TYPE_LABELS,
@@ -841,7 +841,7 @@ function renderThreatCombatTab(entry) {
   const presenca = entry.presencaPerturbadora
     ? `<div class="threat-presence panel-subtle">
         <h3>Presença perturbadora</h3>
-        <p>DT ${entry.presencaPerturbadora.dt} · ${escapeHtml(entry.presencaPerturbadora.dado)} ${escapeHtml(entry.presencaPerturbadora.tipo)} · NEX ${entry.presencaPerturbadora.imuneDesdeNex}%+ é imune</p>
+        <p>DT ${entry.presencaPerturbadora.dt} · ${escapeHtml(entry.presencaPerturbadora.dado)} ${escapeHtml(entry.presencaPerturbadora.tipo)}${entry.presencaPerturbadora.imuneDesdeNex != null ? ` · NEX ${entry.presencaPerturbadora.imuneDesdeNex}%+ é imune` : " · nenhum NEX concede imunidade"}</p>
       </div>`
     : "";
 
@@ -883,7 +883,7 @@ function renderThreatCombatTab(entry) {
                     (ataque) => `
                 <div class="threat-attack-row">
                   <p><strong>${escapeHtml(ataque.nome)}</strong> <span class="muted small">${escapeHtml(ataque.execucao)}</span></p>
-                  <p class="muted small">Teste ${formatTest(ataque.teste)} · Dano ${escapeHtml(ataque.dano.formula)} ${escapeHtml(ataque.dano.tipo)}</p>
+                  <p class="muted small">Teste ${formatTest(ataque.teste)}${ataque.critico ? ` · Crítico ${escapeHtml(ataque.critico)}` : ""} · Dano ${escapeHtml(ataque.dano.formula)} ${escapeHtml(ataque.dano.tipo)}</p>
                 </div>
               `,
                   )
