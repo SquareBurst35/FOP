@@ -502,7 +502,7 @@ h3 {
   min-height: 540px;
 }
 
-.wizard-step-content.step-enter {
+.wizard-step-content.view-enter {
   animation: content-reveal 360ms var(--motion) both;
 }
 
@@ -3078,8 +3078,7 @@ body:has(dialog[open]) {
   width: 20px;
   height: 20px;
   color: var(--muted);
-  animation: glyph-flare 950ms var(--motion) both;
-  animation-delay: var(--glyph-delay, 0ms);
+  filter: drop-shadow(0 0 4px var(--glyph-glow, currentColor));
   transition: transform 200ms var(--motion), filter 200ms var(--motion);
 }
 
@@ -3087,6 +3086,15 @@ body:has(dialog[open]) {
 .element-glyph circle {
   stroke-width: 1.6;
   stroke-dasharray: 70;
+}
+
+.view-enter .element-glyph {
+  animation: glyph-flare 950ms var(--motion) both;
+  animation-delay: var(--glyph-delay, 0ms);
+}
+
+.view-enter .element-glyph path,
+.view-enter .element-glyph circle {
   animation: geometry-trace 780ms var(--motion) both;
   animation-delay: var(--glyph-delay, 0ms);
 }
@@ -3335,6 +3343,9 @@ body:has(dialog[open]) {
 
 .character-card {
   transition: border-color 240ms ease, transform 280ms var(--motion), box-shadow 280ms ease;
+}
+
+.character-grid.view-enter .character-card {
   animation: content-reveal 420ms var(--motion) both;
 }
 
@@ -3491,7 +3502,7 @@ body:has(dialog[open]) {
   left: 12%;
 }
 
-.sheet-tab-content.tab-enter {
+.sheet-tab-content.view-enter {
   animation: content-reveal 360ms var(--motion) both;
 }
 
@@ -3715,6 +3726,10 @@ body:has(dialog[open]) {
   stroke-width: 1.35;
   vector-effect: non-scaling-stroke;
   stroke-dasharray: 4 5;
+}
+
+.view-enter .attribute-geometry path,
+.view-enter .attribute-geometry circle {
   animation: geometry-trace 900ms var(--motion) both;
 }
 
@@ -3806,14 +3821,17 @@ body:has(dialog[open]) {
   border-radius: 50%;
   background: radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.055), transparent 55%), #07090b;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.035), 0 0 0 6px rgba(217, 35, 50, 0.11), inset 0 0 28px rgba(0, 0, 0, 0.86), 0 8px 24px rgba(0, 0, 0, 0.5);
-  animation: seal-arrive 550ms var(--motion) both;
   transition: border-color 220ms ease, box-shadow 240ms ease, transform 260ms var(--motion);
 }
 
-.attribute-node:nth-of-type(4) .attribute-ring { animation-delay: 40ms; }
-.attribute-node:nth-of-type(5) .attribute-ring { animation-delay: 80ms; }
-.attribute-node:nth-of-type(6) .attribute-ring { animation-delay: 120ms; }
-.attribute-node:nth-of-type(7) .attribute-ring { animation-delay: 160ms; }
+.view-enter .attribute-ring {
+  animation: seal-arrive 550ms var(--motion) both;
+}
+
+.view-enter .attribute-node:nth-of-type(4) .attribute-ring { animation-delay: 40ms; }
+.view-enter .attribute-node:nth-of-type(5) .attribute-ring { animation-delay: 80ms; }
+.view-enter .attribute-node:nth-of-type(6) .attribute-ring { animation-delay: 120ms; }
+.view-enter .attribute-node:nth-of-type(7) .attribute-ring { animation-delay: 160ms; }
 
 .attribute-ring::before {
   position: absolute;

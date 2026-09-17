@@ -187,6 +187,8 @@ let itemSearch = "";
 let levelUpState = null;
 let abilityChoiceState = null;
 let spendState = null;
+let lastViewKey = "";
+let viewEnterTimer;
 
 const ALL_ABILITIES = allSelectableAbilities(ORIGINS);
 const ABILITY_BY_ID = new Map(
@@ -433,6 +435,21 @@ function navigate(route) {
   else window.location.hash = nextHash;
 }
 
+// Toda escolha (marcar uma perícia, mexer num atributo) re-renderiza a tela
+// inteira. As animações de chegada só devem tocar quando o jogador realmente
+// chega a algum lugar novo — senão cada clique vira uma piscada.
+function enterClass(viewKey) {
+  if (viewKey === lastViewKey) return "";
+  lastViewKey = viewKey;
+  // A marca sai depois que a chegada termina: enquanto ela existe, o
+  // fill-mode da animação congela o transform e engole o hover.
+  window.clearTimeout(viewEnterTimer);
+  viewEnterTimer = window.setTimeout(() => {
+    document.querySelectorAll(".view-enter").forEach((element) => element.classList.remove("view-enter"));
+  }, 2000);
+  return " view-enter";
+}
+
 function currentRoute() {
   const hash = window.location.hash.replace(/^#/, "");
   if (!hash) return { page: "home" };
@@ -528,7 +545,7 @@ function renderEmptyState() {
 
 function renderCharacterGrid(characters) {
   return `
-    <section class="character-grid" aria-label="Personagens salvos">
+    <section class="character-grid${enterClass("home")}" aria-label="Personagens salvos">
       ${characters
         .sort((a, b) => new Date(b.atualizadoEm) - new Date(a.atualizadoEm))
         .map(
@@ -598,7 +615,7 @@ function renderCreator() {
       </aside>
 
       <section class="wizard-content panel">
-        <div class="wizard-step-content step-enter">${renderCreatorStep()}</div>
+        <div class="wizard-step-content${enterClass(`criar:${currentStep}`)}">${renderCreatorStep()}</div>
         <nav class="wizard-nav" aria-label="Etapas da criação">
           <button class="button ghost" id="previous-step" type="button" ${currentStep === 0 ? "disabled" : ""}>Voltar</button>
           <button class="button primary" id="next-step" type="button">${currentStep === STEPS.length - 1 ? "Salvar ficha" : "Continuar"}</button>
@@ -1118,7 +1135,7 @@ function renderSheet(id) {
             ([key, label]) => `<button type="button" data-sheet-tab="${key}" class="${activeSheetTab === key ? "active" : ""}" aria-current="${activeSheetTab === key ? "page" : "false"}">${label}</button>`,
           ).join("")}
         </nav>
-        <div class="sheet-tab-content tab-enter">${renderSheetTab(character)}</div>
+        <div class="sheet-tab-content${enterClass(`ficha:${character.id}:${activeSheetTab}`)}">${renderSheetTab(character)}</div>
       </section>
     </section>
     ${renderOptionalRulesDialog(character)}
