@@ -180,6 +180,7 @@ let abilitySearch = "";
 let activeRitualCircle = 1;
 let activeRitualElement = "Conhecimento";
 let ritualSearch = "";
+let levelUpRitualSearch = "";
 let activeItemGroup = "Armas";
 let activeItemSource = "Todos";
 let itemSearch = "";
@@ -924,6 +925,7 @@ function ensureCreatorProgress() {
 
 function prepareCreatorLevel() {
   if (creatorProgress.complete) { levelUpState = null; return; }
+  levelUpRitualSearch = "";
   const draft = creatorProgress.draft;
   levelUpState = {
     mode: "creation", characterId: draft.id, step: 2,
@@ -2082,6 +2084,7 @@ function renderItemPickerResults() {
 const LEVEL_UP_STEPS = ["Progressão", "Ganhos", "Escolhas", "Revisão"];
 
 function startLevelUp(character) {
+  levelUpRitualSearch = "";
   if (isSurvivorCharacter(character)) {
     const fromStage = survivorStage(character);
     if (fromStage >= SURVIVOR_STAGE_CAP) return showToast("Este sobrevivente já chegou ao estágio 5.");
@@ -2788,7 +2791,44 @@ function renderLevelUpRitualChoices(character, plan) {
   const required = requiredLevelUpRitualPicks(character, plan);
   if (!required) return renderUnavailableChoice("Novo ritual da classe", "Todos os rituais permitidos já estão na ficha; a evolução continua sem travar.");
   const validSelected = levelUpState.ritualIds.filter((id) => available.some((entry) => entry.id === id));
-  return `<fieldset class="level-up-choice-block"><legend>Novos rituais conhecidos</legend><div class="skill-choice-head"><p class="muted small">Escolha ${required}. Círculos liberados: 1º ao ${plan.ritualCircle}º.</p><strong class="skill-counter ${validSelected.length === required ? "complete" : ""}">${validSelected.length}/${required}</strong></div><div class="level-up-ritual-groups">${RITUAL_CIRCLES.filter((circle) => circle <= plan.ritualCircle).map((circle) => `<details class="level-up-catalog-group" ${circle === plan.ritualCircle ? "open" : ""}><summary>${circle}º círculo <span>${available.filter((entry) => entry.circle === circle).length} opções</span></summary><div class="level-up-option-list">${available.filter((entry) => entry.circle === circle).map((entry) => { const checked = validSelected.includes(entry.id); const disabled = !checked && validSelected.length >= required; return `<label class="ability-choice-card ritual-choice ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="checkbox" value="${escapeAttribute(entry.id)}" data-level-up-ritual ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em></span></label>`; }).join("")}</div></details>`).join("")}</div></fieldset>`;
+  return `<fieldset class="level-up-choice-block"><legend>Novos rituais conhecidos</legend><div class="skill-choice-head"><p class="muted small">Escolha ${required}. Círculos liberados: 1º ao ${plan.ritualCircle}º.</p><strong class="skill-counter ${validSelected.length === required ? "complete" : ""}">${validSelected.length}/${required}</strong></div><label class="picker-search level-up-ritual-search"><span aria-hidden="true">⌕</span><input id="level-up-ritual-search" value="${escapeAttribute(levelUpRitualSearch)}" placeholder="Buscar ritual" autocomplete="off" /></label><div id="level-up-ritual-choices">${renderLevelUpRitualChoiceBody(available, required, validSelected, plan.ritualCircle)}</div></fieldset>`;
+}
+
+function renderLevelUpRitualChoiceBody(available, required, validSelected, defaultOpenCircle) {
+  const query = normalizeSearch(levelUpRitualSearch);
+  const filtered = query ? available.filter((entry) => normalizeSearch(`${entry.name} ${entry.summary}`).includes(query)) : available;
+  const circles = RITUAL_CIRCLES.filter((circle) => filtered.some((entry) => entry.circle === circle));
+  return `
+    <div class="level-up-ritual-groups">
+      ${circles.length ? circles.map((circle) => {
+        const inCircle = filtered.filter((entry) => entry.circle === circle);
+        const elements = RITUAL_ELEMENTS.filter((element) => inCircle.some((entry) => (entry.elements ?? [entry.element]).includes(element)));
+        return `<details class="level-up-catalog-group" ${circle === defaultOpenCircle || query ? "open" : ""}><summary>${circle}º círculo <span>${inCircle.length} opções</span></summary><div class="level-up-ritual-elements">${elements.map((element) => `<div class="skill-group"><p class="skill-group-label">${elementGlyph(element)}${escapeHtml(element)}</p><div class="level-up-option-list">${inCircle.filter((entry) => (entry.elements ?? [entry.element]).includes(element)).map((entry) => renderLevelUpRitualOption(entry, validSelected, required)).join("")}</div></div>`).join("")}</div></details>`;
+      }).join("") : `<p class="muted small level-up-ritual-empty">Nenhum ritual encontrado${levelUpRitualSearch ? ` para "${escapeHtml(levelUpRitualSearch)}"` : ""}.</p>`}
+    </div>
+  `;
+}
+
+function renderLevelUpRitualOption(entry, validSelected, required) {
+  const checked = validSelected.includes(entry.id);
+  const disabled = !checked && validSelected.length >= required;
+  return `<label class="ability-choice-card ritual-choice ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="checkbox" value="${escapeAttribute(entry.id)}" data-level-up-ritual ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em></span></label>`;
+}
+
+function bindLevelUpRitualSearch(character) {
+  const input = document.querySelector("#level-up-ritual-search");
+  if (!input) return;
+  input.addEventListener("input", (event) => {
+    levelUpRitualSearch = event.target.value;
+    const plan = currentLevelUpPlan(character);
+    const container = document.querySelector("#level-up-ritual-choices");
+    if (!plan || !container) return;
+    const available = availableLevelUpRituals(character, plan);
+    const required = requiredLevelUpRitualPicks(character, plan);
+    const validSelected = levelUpState.ritualIds.filter((id) => available.some((entry) => entry.id === id));
+    container.innerHTML = renderLevelUpRitualChoiceBody(available, required, validSelected, plan.ritualCircle);
+    bindLevelUpArray(character, "[data-level-up-ritual]", "ritualIds", () => requiredLevelUpRitualPicks(character, plan));
+  });
 }
 
 function renderLevelUpReview(character, plan) {
@@ -3015,6 +3055,7 @@ function bindLevelUpDialog(character) {
     const plan = currentLevelUpPlan(character);
     return plan ? requiredLevelUpRitualPicks(character, plan) : 0;
   });
+  bindLevelUpRitualSearch(character);
   document.querySelectorAll("[data-level-up-structured-choice]").forEach((input) => input.addEventListener("change", () => {
     const scrollTop = currentLevelUpScrollTop();
     const ownerId = input.dataset.choiceOwner;
@@ -3755,7 +3796,17 @@ function calculatedResource(label, key, value) {
 }
 
 function renderOriginOptions(selected) {
-  const sources = [...new Set(ORIGINS.map((origin) => origin.source))];
+  const rawSources = [...new Set(ORIGINS.map((origin) => origin.source))];
+  const archiveNumber = (source) => Number(source.match(/^Arquivos Secretos #(\d+)$/)?.[1]);
+  const sources = [...rawSources].sort((a, b) => {
+    const na = archiveNumber(a);
+    const nb = archiveNumber(b);
+    const aIsArchive = Number.isFinite(na);
+    const bIsArchive = Number.isFinite(nb);
+    if (aIsArchive && bIsArchive) return na - nb;
+    if (aIsArchive !== bIsArchive) return aIsArchive ? 1 : -1;
+    return 0;
+  });
   return `
     <option value="">Selecione</option>
     ${sources
