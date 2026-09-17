@@ -66,10 +66,10 @@ mestre, não uma ameaça catalogável) → capítulo 8 (294).
 | Seção | Catalogadas | Situação |
 |---|---|---|
 | Sangue | 12 de 12 | **Completa em 17/09/2026**: Aberração de Carne (p.182), Aniquilação (p.185), Carente (p.188), Dama de Sangue (p.190), Enpap-X (p.192), Kerberos (p.194), Minotauro (p.197), Mulher Afogada (p.199), Titã de Sangue (p.201), Zumbi de Sangue (p.202), Zumbi de Sangue Bestial (p.203), O Diabo (p.205). |
-| Morte | — | Não iniciado — próxima seção, começa na p.208 |
-| Conhecimento | — | Não iniciado |
+| Morte | 12 de 12 | **Completa em 17/09/2026**: Esqueleto de Lodo (p.208), Aracnasita (p.208), Carniçal Preto da Morte (p.210), Ceifador Espiral (p.212), Enraizado (p.214), Escutado (p.215), Marionete (p.218), Múmia Xipófaga (p.220), Nidere (p.222), Sempiternal (p.225), Succ (p.227), O Deus da Morte (p.230). |
+| Conhecimento | — | Não iniciado — próxima seção, começa na p.232 (primeira ameaça: Anjo) |
 | Energia | — | Não iniciado |
-| Realidade (mundana) | — | Não iniciado; confirmar categoria/rótulo usado pelo livro para esse grupo antes de catalogar (todos os exemplos feitos até agora são "Criatura"; ainda não vimos como o livro rotula uma ameaça mundana) |
+| Realidade (mundana) | — | Não iniciado; confirmar categoria/rótulo usado pelo livro para esse grupo antes de catalogar (todos os exemplos feitos até agora são "Criatura" ou "Relíquia"; ainda não vimos como o livro rotula uma ameaça mundana) |
 
 **Lição aprendida catalogando Sangue**: o primeiro escaneamento
 automático da seção (por regex de "VD") errou a contagem — a página do
@@ -80,18 +80,44 @@ página como imagem e olhando é que apareceu. **Não confiar em scan de
 texto para decidir quantas criaturas uma seção tem — sempre renderizar
 e olhar página por página**, mesmo que pareça repetitivo.
 
-Duas ameaças (Aniquilação e O Diabo) não têm limite de NEX na Presença
-Perturbadora — afetam qualquer agente, independente do NEX. Isso é dado
-real do livro, não uma lacuna: o schema trata `imuneDesdeNex: null`
-como "nenhum NEX concede imunidade", e a UI já mostra essa frase em vez
-de inventar um número.
+**Lição aprendida catalogando O Diabo (Sangue)**: uma ameaça de VD alto
+pode ter a ficha de ações e o Enigma de Medo **numa página seguinte**,
+separada da página com a barra lateral de atributos — só percebi porque
+fui conferir o índice de "CRIATURAS DE" antes de começar Morte e vi uma
+entrada "ENIGMA DE MEDO" numa página que eu não tinha renderizado. O
+Diabo original ficou faltando 3 ações (Senhor do Sangue, Pacto, Desejos
+de Sangue) e um Enigma de Medo bem mais rico do que o que eu tinha
+registrado — corrigido depois de reler a p.207. **Para ameaças fortes
+(VD 300+) ou com caixa "ENIGMA DE MEDO" faltando, sempre renderizar
+também a página seguinte antes de considerar a ficha completa.**
+
+Quatro ameaças (Aniquilação, O Diabo, Ceifador Espiral, Sempiternal,
+O Deus da Morte) não têm limite de NEX na Presença Perturbadora —
+afetam qualquer agente, independente do NEX. Isso é dado real do
+livro, não uma lacuna: o schema trata `imuneDesdeNex: null` como
+"nenhum NEX concede imunidade", e a UI já mostra essa frase em vez de
+inventar um número.
+
+Sempiternal é a única ameaça catalogada até agora cujo "machucado" não
+é simplesmente metade dos PV (990 PV, mas 445 machucado, não 495) — o
+`threat()` helper computa a metade por padrão, mas aceita
+`machucadoEm` explícito pra sobrescrever quando o livro diz outro
+valor. Sempre conferir esse número, não assumir a fórmula.
+
+O Deus da Morte confirma, por referência cruzada, minha leitura do
+Enigma de Medo do Diabo desta sessão: sua habilidade "Destruir o
+Diabo" diz que ele é "a única coisa capaz de causar a solução do
+Enigma de Medo do Diabo" — bate exatamente com a pista de que a
+resposta para derrotar o Diabo está numa "manifestação de Morte com
+força equivalente" a ele.
 
 ## Ordem de continuação sugerida
 
-1. Criaturas de Morte (p.208–231), mesmo método: renderizar cada página
-   com `python scripts/pdf-read.py render`, nunca confiar só no texto
-   extraído nem no scan automático de "VD".
-2. Conhecimento (232–253), Energia (254–281), Realidade (282–289).
+1. Criaturas de Conhecimento (p.232–253), mesmo método: renderizar cada
+   página com `python scripts/pdf-read.py render`, nunca confiar só no
+   texto extraído nem no scan automático de "VD", e sempre conferir a
+   página seguinte de ameaças fortes/com Medo antes de fechar a ficha.
+2. Energia (254–281), Realidade (282–289).
 3. Sobrevivendo ao Horror, depois Arquivos Secretos #1–7 (nenhum
    inventariado ainda para ameaças; `docs/content-audit.md` já mapeou
    *onde* estão as ameaças de cada AS, mas não suas fichas mecânicas).

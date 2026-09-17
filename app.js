@@ -44,7 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=56";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=2";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=3";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=55";
 import {
   CHOICE_TYPE_LABELS,
@@ -632,10 +632,18 @@ function threatElementCounts() {
   return counts;
 }
 
+function filteredThreats() {
+  // Maior VD primeiro: numa mesa, é a primeira pergunta do mestre ("isso é
+  // pesado demais pro grupo?"), então a ameaça mais forte fica no topo.
+  return THREATS.filter((entry) => entry.element === activeThreatElement)
+    .filter((entry) => threatMatchesSearch(entry, threatSearch))
+    .sort((a, b) => b.vd - a.vd);
+}
+
 function renderThreats() {
   headerActions.innerHTML = "";
   const counts = threatElementCounts();
-  const filtered = THREATS.filter((entry) => entry.element === activeThreatElement).filter((entry) => threatMatchesSearch(entry, threatSearch));
+  const filtered = filteredThreats();
 
   app.innerHTML = `
     <div class="agent-home threats-home${enterClass("ameacas")}">
@@ -676,8 +684,7 @@ function renderThreats() {
     threatSearch = event.target.value;
     const results = document.querySelector("#threat-results");
     if (!results) return;
-    const next = THREATS.filter((entry) => entry.element === activeThreatElement).filter((entry) => threatMatchesSearch(entry, threatSearch));
-    results.innerHTML = renderThreatResults(next);
+    results.innerHTML = renderThreatResults(filteredThreats());
     bindThreatCardLinks();
   });
   bindThreatCardLinks();
