@@ -64,21 +64,23 @@ Leitura textual integral concluída nos cinco PDFs. Conferir tabelas e integraç
 
 ## AS #4 — inventário de diferenças identificado
 
+**Opções de personagem integradas de verdade em rules.js/content.js/additional-items.js/item-upgrades.js em 15/09/2026** (commit `a35329f`), fora do schema abandonado em `supplements/`. Esta seção ficou marcada "Pendente" por muito tempo depois da integração — corrigido em 17/09/2026 após conferir cada nome contra o catálogo publicado.
+
 | Categoria | Conteúdo | Página | Situação |
 |---|---|---:|---|
-| Origens | Caçador de Recompensas; Influencer Paranormal | 64 | Comparação/implementação pendente |
-| Perícia | Tecnologia: Obter Informações | 64 | Pendente; ação completa, DT 5, informação adicional a cada 5 |
-| Combatente | Chuva de Balas; Combatente Esforçado; Treinamento Militarizado | 65 | Pendente |
-| Especialista | Análise Conturbada; Profissão Perigo; Quase Novo | 65 | Pendente |
-| Ocultista | Explorador da Névoa; Sinestesia Paranormal; Terrores Noturnos | 66 | Pendente |
-| Geral | Gororoba; Ruído Branco; Uma Última Olhada | 66–67 | Pendente |
-| Paranormais | Foco Gravitacional; Sobrepor Imprevisível; Traço de Inconsistência | 67 | Pendente, incluindo afinidades |
-| Ritual | Backup, normal/discente/verdadeiro | 68 | Pendente |
-| Trilha de Especialista | Granadeiro Blaster: Meus Bebês; Fogo Amigo; O Calor do Momento; Memória Muscular | 69 | Pendente |
-| Itens | Granada de Gás Lacrimogêneo; Granada de Tinta; Granada Ctrl+C Ctrl+V; Lançador de Granadas; variantes 40 mm | 70–71 | Pendente |
-| Modificações | Adesiva; Dupla; Programada (granadas) | 71 | Pendente; categoria +I, sem acúmulo de iguais |
-| Regra opcional | Hacking: PS, dados virtuais, cinco ações e quatro imprevistos | 72–73 | Pendente |
-| Ameaças | Assistente de Produção; Produtor; Diretor; Simulacro (Troyan, Krypto, Vvorm, Botnetz) | 55–61 | Estruturação pendente |
+| Origens | Caçador de Recompensas; Influencer Paranormal | 64 | Integrado |
+| Perícia | Tecnologia: Obter Informações | 64 | Fora do escopo — não há catálogo de "novos usos de perícia" no site |
+| Combatente | Chuva de Balas; Combatente Esforçado; Treinamento Militarizado | 65 | Integrado |
+| Especialista | Análise Conturbada; Profissão Perigo; Quase Novo | 65 | Integrado |
+| Ocultista | Explorador da Névoa; Sinestesia Paranormal; Terrores Noturnos | 66 | Integrado |
+| Geral | Gororoba; Ruído Branco; Uma Última Olhada | 66–67 | Integrado |
+| Paranormais | Foco Gravitacional; Sobrepor Imprevisível; Traço de Inconsistência | 67 | Integrado, incluindo afinidades |
+| Ritual | Backup, normal/discente/verdadeiro | 68 | Integrado |
+| Trilha de Especialista | Granadeiro Blaster: Meus Bebês; Fogo Amigo; O Calor do Momento; Memória Muscular | 69 | Integrado |
+| Itens | Granada de Gás Lacrimogêneo; Granada de Tinta; Granada Ctrl+C Ctrl+V; Lançador de Granadas, com as granadas de 40 mm descritas no próprio item | 70–71 | Integrado, com pixel art (sprites reaproveitados) |
+| Modificações | Adesiva; Dupla; Programada (granadas) | 71 | Integrado em item-upgrades.js |
+| Regra opcional | Hacking: PS, dados virtuais, cinco ações e quatro imprevistos | 72–73 | Fora do escopo — subsistema que o site não implementa (mesma decisão de veículos e combate submerso) |
+| Ameaças | Assistente de Produção; Produtor; Diretor; Simulacro (Troyan, Krypto, Vvorm, Botnetz) | 55–61 | Fora do escopo — site não tem interface de Ameaças |
 
 ## AS #5 — inventário de diferenças identificado
 
