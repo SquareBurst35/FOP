@@ -124,11 +124,12 @@ const ELEMENT_GLYPHS = {
   `,
 };
 
-function elementGlyph(element) {
+function elementGlyph(element, delayMs = 0) {
   const slug = normalizeSearch(element);
   const paths = ELEMENT_GLYPHS[slug];
   if (!paths) return "";
-  return `<svg class="element-glyph element-glyph-${slug}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  const delayStyle = delayMs ? ` style="--glyph-delay: ${delayMs}ms"` : "";
+  return `<svg class="element-glyph element-glyph-${slug}"${delayStyle} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 }
 
 const PARANORMAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
@@ -1471,14 +1472,14 @@ function renderRitualsTab(character) {
         <button class="button primary compact" id="open-ritual-picker" type="button">+ Adicionar ritual</button>
       </div>
       <div class="entry-list ritual-selected-list">
-        ${selected.length ? selected.map((entry) => renderRitualCard(entry, { removable: true, character })).join("") : emptyCollection("Nenhum ritual adicionado à ficha.")}
+        ${selected.length ? selected.map((entry, index) => renderRitualCard(entry, { removable: true, character, index })).join("") : emptyCollection("Nenhum ritual adicionado à ficha.")}
       </div>
     </section>
     ${notesSection("Notas de rituais", "rituaisNotas", character.rituaisNotas, "DT, aprimoramentos, componentes e lembretes.")}
   `;
 }
 
-function renderRitualCard(entry, { removable = false, picker = false, character = null } = {}) {
+function renderRitualCard(entry, { removable = false, picker = false, character = null, index = 0 } = {}) {
   const selectedCharacter = character ?? (currentRoute().page === "ficha" ? getCharacter(currentRoute().id) : null);
   const selected = Boolean(selectedCharacter?.rituaisSelecionados?.includes(entry.id));
   const action = picker
@@ -1486,11 +1487,12 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
     : removable
       ? `<button class="entry-remove" type="button" data-ritual-toggle="${entry.id}">Remover</button>`
       : "";
+  const glyphDelay = Math.min(index, 10) * 70;
   return `
     <div class="entry-card-shell">
       <details class="entry-card ritual-card element-${normalizeSearch(entry.element)}">
         <summary>
-          <span class="ritual-card-title">${elementGlyph(entry.element)}<span class="ritual-card-title-text"><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small></span></span>
+          <span class="ritual-card-title">${elementGlyph(entry.element, glyphDelay)}<span class="ritual-card-title-text"><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small></span></span>
           <span class="entry-summary-side"><span class="badge">${escapeHtml(entry.cost)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
         </summary>
         <div class="entry-body">
@@ -1528,7 +1530,7 @@ function renderRitualDialog(character) {
           ${RITUAL_CIRCLES.map((circle) => `<button type="button" data-ritual-circle="${circle}" class="${circle === activeRitualCircle ? "active" : ""}">${circle}º círculo</button>`).join("")}
         </div>
         <div class="picker-groups element-groups">
-          ${RITUAL_ELEMENTS.map((element) => `<button type="button" data-ritual-element="${escapeAttribute(element)}" class="${element === activeRitualElement ? "active" : ""}">${elementGlyph(element)}${escapeHtml(element)}</button>`).join("")}
+          ${RITUAL_ELEMENTS.map((element, index) => `<button type="button" data-ritual-element="${escapeAttribute(element)}" class="${element === activeRitualElement ? "active" : ""}">${elementGlyph(element, index * 60)}${escapeHtml(element)}</button>`).join("")}
         </div>
         <label class="picker-search"><span aria-hidden="true">⌕</span><input id="ritual-search" value="${escapeAttribute(ritualSearch)}" placeholder="Buscar ritual" autocomplete="off" /></label>
         <p class="catalog-note">Resumo mecânico em redação própria. O valor exibido é o custo-base do ${activeRitualCircle}º círculo; versões Discente e Verdadeiro podem alterar custo e efeito.</p>
@@ -1547,7 +1549,7 @@ function renderRitualPickerResults() {
       (!query || normalizeSearch(`${entry.name} ${(entry.aliases ?? []).join(" ")} ${entry.summary}`).includes(query)),
   );
   return entries.length
-    ? entries.map((entry) => renderRitualCard(entry, { picker: true })).join("")
+    ? entries.map((entry, index) => renderRitualCard(entry, { picker: true, index })).join("")
     : emptyCollection("Nenhum ritual encontrado neste círculo e elemento.");
 }
 

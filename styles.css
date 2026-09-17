@@ -3071,23 +3071,48 @@ body:has(dialog[open]) {
 
 .element-glyph {
   flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   color: var(--muted);
+  animation: glyph-flare 950ms var(--motion) both;
+  animation-delay: var(--glyph-delay, 0ms);
+  transition: transform 200ms var(--motion), filter 200ms var(--motion);
 }
 
 .element-glyph path,
 .element-glyph circle {
   stroke-width: 1.6;
   stroke-dasharray: 70;
-  animation: geometry-trace 700ms var(--motion) both;
+  animation: geometry-trace 780ms var(--motion) both;
+  animation-delay: var(--glyph-delay, 0ms);
 }
 
-.element-glyph-sangue { color: var(--blood); filter: drop-shadow(0 0 4px rgba(223, 41, 56, 0.45)); }
-.element-glyph-morte { color: var(--death); filter: drop-shadow(0 0 4px rgba(174, 180, 183, 0.35)); }
-.element-glyph-conhecimento { color: var(--knowledge); filter: drop-shadow(0 0 4px rgba(213, 170, 85, 0.4)); }
-.element-glyph-energia { color: var(--energy); filter: drop-shadow(0 0 4px rgba(164, 83, 255, 0.45)); }
-.element-glyph-medo { color: var(--fear); filter: drop-shadow(0 0 4px rgba(217, 247, 255, 0.4)); }
+@keyframes glyph-flare {
+  0%, 60% { filter: drop-shadow(0 0 0 transparent); transform: scale(0.86) rotate(-6deg); }
+  82% { filter: drop-shadow(0 0 11px var(--glyph-glow, currentColor)); transform: scale(1.16) rotate(2deg); }
+  100% { filter: drop-shadow(0 0 4px var(--glyph-glow, currentColor)); transform: scale(1) rotate(0); }
+}
+
+@keyframes glyph-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--glyph-glow, currentColor)); }
+  50% { filter: drop-shadow(0 0 12px var(--glyph-glow, currentColor)); }
+}
+
+.entry-card.ritual-card summary:hover .element-glyph {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 9px var(--glyph-glow, currentColor));
+}
+
+.entry-card.ritual-card[open] .element-glyph {
+  animation: glyph-pulse 2.4s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.element-glyph-sangue { color: var(--blood); --glyph-glow: rgba(223, 41, 56, 0.55); }
+.element-glyph-morte { color: var(--death); --glyph-glow: rgba(174, 180, 183, 0.42); }
+.element-glyph-conhecimento { color: var(--knowledge); --glyph-glow: rgba(213, 170, 85, 0.5); }
+.element-glyph-energia { color: var(--energy); --glyph-glow: rgba(164, 83, 255, 0.55); }
+.element-glyph-medo { color: var(--fear); --glyph-glow: rgba(217, 247, 255, 0.5); }
 
 .toast {
   position: fixed;
