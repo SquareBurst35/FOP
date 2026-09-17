@@ -214,6 +214,9 @@ O `<details>` accordion é o componente mais repetido do site: toda entrada de r
 ### Resource Meter (componente assinatura)
 Cada recurso da ficha (PV, PE, Sanidade, PD, PP) é um `live-resource` cujo `--resource-color` muda conforme o elemento paranormal correspondente (Sangue/Ciano/Conhecimento/Energia/rosa). Uma barra fina de 3px, cantos em pílula, preenche proporcionalmente e brilha na própria cor (`box-shadow: 0 0 9px var(--resource-color)`), com transição de largura em 420ms na curva `--motion`. É a aplicação mais literal da Regra do Brilho.
 
+### Element Glyphs (componente assinatura)
+Cada um dos cinco elementos paranormais (Sangue, Morte, Conhecimento, Energia, Medo) tem um glifo original de 18px (`elementGlyph()` em `app.js`, traço único, `stroke-linecap/linejoin: round`), desenhado a partir da descrição geométrica do símbolo real de cada elemento no universo de Ordem Paranormal (Ordem Paranormal Wiki, "Símbolos Ocultistas") — nunca copiado de arte oficial, sempre uma interpretação original em linha. Substitui a antiga borda lateral colorida (`border-left`) nos cartões de ritual e nos botões de filtro por elemento: o glifo é a identidade visual do elemento, a cor é reforço, não o contrário. Ao aparecer, cada traço se desenha (`stroke-dasharray`/`pathLength` + animação `geometry-trace`, reaproveitada da constelação de atributos), nunca aparece "pronto".
+
 ### Paperdoll Panel (componente assinatura)
 O único painel do sistema com paleta própria: dourado-pergaminho (`#b8a970` / `rgba(176,164,111,…)`) sobre fundo verde-oliva quase preto (`#17170f`), com textura de linhas horizontais finas simulando papel riscado e uma sombra interna profunda (`inset 0 0 44px rgba(0,0,0,0.48)`) que aproxima o painel de uma página de livro-razão física. Título em serifada (ver Typography). O boneco em pixel art fica ao centro (`image-rendering: pixelated`, sombra projetada suave), ladeado por slots de equipamento em grade; cada slot preenchido ganha uma borda/realce dourados.
 
@@ -226,9 +229,12 @@ O único painel do sistema com paleta própria: dourado-pergaminho (`#b8a970` / 
 - **Do** opor título quieto (peso pesado, tracking negativo, sem uppercase) a rótulo gritado (uppercase, tracking largo) para toda nova hierarquia de texto.
 - **Do** renderizar toda arte pixel (paperdoll, ícones de item) com `image-rendering: pixelated`, nunca suavizada.
 - **Do** respeitar `prefers-reduced-motion` desligando nevoeiro/transformações de hover, como `home.css` já faz.
+- **Do** identificar um elemento paranormal pelo glifo original (`elementGlyph()`), nunca só por uma tarja lateral colorida.
+- **Do** revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (`content-reveal`, 360-420ms, curva `--motion`) — nunca um corte seco.
 
 ### Don't:
 - **Don't** introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, com a única exceção documentada do cabeçalho do paperdoll.
 - **Don't** adicionar cores saturadas/pastel fora da paleta estabelecida (vermelho, ciano, os cinco elementos, neutros) — isso quebra o tom investigativo e tenso confirmado para o produto.
 - **Don't** empilhar sombras escuras entre camadas para simular profundidade; a resposta certa é glow, não elevação.
+- **Don't** usar `border-left`/`border-right` grosso como tarja de identidade em card, callout ou alerta — é o "tell" mais reconhecível de UI genérica gerada por IA; a resposta certa é o glifo do elemento, um glow, ou um fundo tingido uniforme (como os cartões de aviso vermelhos, que usam borda fina de 1px em todo o contorno).
 - **Don't** tratar o painel de equipamento como só mais um cartão escuro — sua paleta dourado-pergaminho e a serifada no título são intencionais e não devem vazar para o resto da interface, nem o resto da interface deve emprestar essa paleta.

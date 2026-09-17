@@ -89,6 +89,48 @@ const SKILL_GROUP_NAMES = Object.fromEntries(
   Object.entries(ATTRIBUTE_LABELS).map(([key, code]) => [code, ATTRIBUTE_NAMES[key]]),
 );
 
+// Original line-art glyphs, hand-drawn from the geometric descriptions of each
+// element's in-universe symbol (Ordem Paranormal Wiki, "Símbolos Ocultistas"),
+// never traced from official art. Decorative; no gameplay meaning.
+const ELEMENT_GLYPHS = {
+  sangue: `
+    <path pathLength="70" d="M12 3 L12 21"/>
+    <path pathLength="70" d="M12 10 L8.5 13.5 M12 10 L15.5 13.5"/>
+    <path pathLength="70" d="M12 21 L9.5 18 M12 21 L14.5 18"/>
+  `,
+  morte: `
+    <path pathLength="70" d="M12 4 L12 20"/>
+    <path pathLength="70" d="M12 12c0-2.2 1.8-4 4-4s3.6 1.8 3.2 3.8c-.4 2-2.4 3.2-4.4 2.6-1.6-.5-2.4-2.1-1.7-3.4"/>
+    <path pathLength="70" d="M12 12 L16.5 7.5"/>
+    <path pathLength="70" d="M12 12 L18 12.5"/>
+  `,
+  conhecimento: `
+    <path pathLength="70" d="M6 7 L6 5 L8 5"/>
+    <path pathLength="70" d="M18 7 L18 5 L16 5"/>
+    <path pathLength="70" d="M6 17 L6 19 L8 19"/>
+    <path pathLength="70" d="M18 17 L18 19 L16 19"/>
+    <path pathLength="70" d="M11 11 L13 13 M13 11 L11 13"/>
+  `,
+  energia: `
+    <path pathLength="70" d="M5.5 7 L12 18 L18.5 7"/>
+    <path pathLength="70" d="M8.5 18 L12 9 L15.5 18"/>
+    <path pathLength="70" d="M10 4 L12.5 9 L10.5 12 L14 19"/>
+  `,
+  medo: `
+    <path pathLength="70" d="M9 20c0-8 0-13 3.2-13.4 2.6-.3 3.6 1.6 2 3-1 .9-2.4.9-3-.1"/>
+    <circle pathLength="70" cx="14.2" cy="9" r="0.9"/>
+    <path pathLength="70" d="M5 13.5c3-2 11-2 14 0"/>
+    <circle pathLength="70" cx="12" cy="12.7" r="0.9"/>
+  `,
+};
+
+function elementGlyph(element) {
+  const slug = normalizeSearch(element);
+  const paths = ELEMENT_GLYPHS[slug];
+  if (!paths) return "";
+  return `<svg class="element-glyph element-glyph-${slug}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+}
+
 const PARANORMAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
 
 const NON_USABLE_ABILITY_NAMES = new Set([
@@ -484,8 +526,8 @@ function renderCharacterGrid(characters) {
       ${characters
         .sort((a, b) => new Date(b.atualizadoEm) - new Date(a.atualizadoEm))
         .map(
-          (character) => `
-            <article class="character-card">
+          (character, index) => `
+            <article class="character-card" style="animation-delay: ${Math.min(index, 8) * 45}ms">
               <div class="character-card-head">
                 <div class="avatar" aria-hidden="true">${escapeHtml(initials(character.nome))}</div>
                 <div>
@@ -550,7 +592,7 @@ function renderCreator() {
       </aside>
 
       <section class="wizard-content panel">
-        ${renderCreatorStep()}
+        <div class="wizard-step-content step-enter">${renderCreatorStep()}</div>
         <nav class="wizard-nav" aria-label="Etapas da criação">
           <button class="button ghost" id="previous-step" type="button" ${currentStep === 0 ? "disabled" : ""}>Voltar</button>
           <button class="button primary" id="next-step" type="button">${currentStep === STEPS.length - 1 ? "Salvar ficha" : "Continuar"}</button>
@@ -1069,7 +1111,7 @@ function renderSheet(id) {
             ([key, label]) => `<button type="button" data-sheet-tab="${key}" class="${activeSheetTab === key ? "active" : ""}" aria-current="${activeSheetTab === key ? "page" : "false"}">${label}</button>`,
           ).join("")}
         </nav>
-        <div class="sheet-tab-content">${renderSheetTab(character)}</div>
+        <div class="sheet-tab-content tab-enter">${renderSheetTab(character)}</div>
       </section>
     </section>
     ${renderOptionalRulesDialog(character)}
@@ -1448,7 +1490,7 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
     <div class="entry-card-shell">
       <details class="entry-card ritual-card element-${normalizeSearch(entry.element)}">
         <summary>
-          <span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small></span>
+          <span class="ritual-card-title">${elementGlyph(entry.element)}<span class="ritual-card-title-text"><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small></span></span>
           <span class="entry-summary-side"><span class="badge">${escapeHtml(entry.cost)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
         </summary>
         <div class="entry-body">
@@ -1486,7 +1528,7 @@ function renderRitualDialog(character) {
           ${RITUAL_CIRCLES.map((circle) => `<button type="button" data-ritual-circle="${circle}" class="${circle === activeRitualCircle ? "active" : ""}">${circle}º círculo</button>`).join("")}
         </div>
         <div class="picker-groups element-groups">
-          ${RITUAL_ELEMENTS.map((element) => `<button type="button" data-ritual-element="${escapeAttribute(element)}" class="${element === activeRitualElement ? "active" : ""}">${escapeHtml(element)}</button>`).join("")}
+          ${RITUAL_ELEMENTS.map((element) => `<button type="button" data-ritual-element="${escapeAttribute(element)}" class="${element === activeRitualElement ? "active" : ""}">${elementGlyph(element)}${escapeHtml(element)}</button>`).join("")}
         </div>
         <label class="picker-search"><span aria-hidden="true">⌕</span><input id="ritual-search" value="${escapeAttribute(ritualSearch)}" placeholder="Buscar ritual" autocomplete="off" /></label>
         <p class="catalog-note">Resumo mecânico em redação própria. O valor exibido é o custo-base do ${activeRitualCircle}º círculo; versões Discente e Verdadeiro podem alterar custo e efeito.</p>

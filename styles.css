@@ -502,6 +502,10 @@ h3 {
   min-height: 540px;
 }
 
+.wizard-step-content.step-enter {
+  animation: content-reveal 360ms var(--motion) both;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1976,7 +1980,7 @@ fieldset.skill-choice-block {
 
 .origin-power-description {
   padding: 12px;
-  border-left: 3px solid var(--red);
+  border: 1px solid rgba(217, 35, 50, 0.32);
   border-radius: 7px;
   background: var(--red-soft);
 }
@@ -2579,7 +2583,7 @@ fieldset.skill-choice-block {
 .level-up-route small, .level-up-lock small { color: var(--muted); }
 .level-up-route > b { color: var(--red-bright); font-size: 1.5rem; }
 .level-up-lock { margin: 22px 0; }
-.level-up-note { margin: 18px 0 0; padding: 10px 12px; border-left: 3px solid var(--red); background: rgba(226,46,58,.06); }
+.level-up-note { margin: 18px 0 0; padding: 10px 12px; border: 1px solid rgba(217, 35, 50, 0.32); border-radius: 7px; background: rgba(226,46,58,.06); }
 .class-choice-grid, .attribute-choice-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
 .attribute-choice-grid { grid-template-columns: repeat(5,minmax(0,1fr)); }
 .level-choice-card { display: grid; min-width: 0; gap: 5px; padding: 13px; border: 1px solid var(--border); border-radius: 10px; background: #0d0f12; cursor: pointer; }
@@ -2759,7 +2763,8 @@ fieldset.skill-choice-block {
   gap: 2px;
   margin: 4px 0 0;
   padding: 10px;
-  border-left: 3px solid var(--red);
+  border: 1px solid rgba(217, 35, 50, 0.32);
+  border-radius: 7px;
   background: var(--red-soft);
 }
 
@@ -3052,30 +3057,37 @@ body:has(dialog[open]) {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.ritual-card {
-  border-left-width: 3px;
+.entry-card.ritual-card summary > span.ritual-card-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
 }
 
-.ritual-card.element-conhecimento {
-  border-left-color: #e5e5e5;
+.ritual-card-title-text {
+  display: grid;
+  min-width: 0;
 }
 
-.ritual-card.element-energia {
-  border-left-color: #a764ff;
+.element-glyph {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
 }
 
-.ritual-card.element-morte {
-  border-left-color: #666f78;
+.element-glyph path,
+.element-glyph circle {
+  stroke-width: 1.6;
+  stroke-dasharray: 70;
+  animation: geometry-trace 700ms var(--motion) both;
 }
 
-.ritual-card.element-sangue {
-  border-left-color: #df2935;
-}
-
-.ritual-card.element-medo {
-  border-left-color: #f4f4f4;
-  box-shadow: inset 2px 0 10px rgba(255, 255, 255, 0.04);
-}
+.element-glyph-sangue { color: var(--blood); filter: drop-shadow(0 0 4px rgba(223, 41, 56, 0.45)); }
+.element-glyph-morte { color: var(--death); filter: drop-shadow(0 0 4px rgba(174, 180, 183, 0.35)); }
+.element-glyph-conhecimento { color: var(--knowledge); filter: drop-shadow(0 0 4px rgba(213, 170, 85, 0.4)); }
+.element-glyph-energia { color: var(--energy); filter: drop-shadow(0 0 4px rgba(164, 83, 255, 0.45)); }
+.element-glyph-medo { color: var(--fear); filter: drop-shadow(0 0 4px rgba(217, 247, 255, 0.4)); }
 
 .toast {
   position: fixed;
@@ -3156,6 +3168,7 @@ body:has(dialog[open]) {
 
 .character-card {
   transition: border-color 240ms ease, transform 280ms var(--motion), box-shadow 280ms ease;
+  animation: content-reveal 420ms var(--motion) both;
 }
 
 .character-card:hover {
@@ -3367,6 +3380,17 @@ body:has(dialog[open]) {
   transform: translateY(-1px);
 }
 
+.element-groups button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.element-groups button .element-glyph {
+  width: 14px;
+  height: 14px;
+}
+
 .element-groups button:nth-child(1) { --element-accent: var(--knowledge); }
 .element-groups button:nth-child(2) { --element-accent: var(--energy); }
 .element-groups button:nth-child(3) { --element-accent: var(--death); }
@@ -3411,12 +3435,19 @@ body:has(dialog[open]) {
   border-radius: 99px;
   background: var(--blood);
   box-shadow: 0 0 8px color-mix(in srgb, var(--blood), transparent 40%);
+  animation: spectrum-pulse 3.2s ease-in-out infinite;
+  animation-delay: 0s;
 }
 
-.element-spectrum i:nth-child(2) { background: var(--death); box-shadow: 0 0 8px rgba(174, 180, 183, 0.45); }
-.element-spectrum i:nth-child(3) { background: var(--knowledge); box-shadow: 0 0 8px rgba(213, 170, 85, 0.48); }
-.element-spectrum i:nth-child(4) { background: var(--energy); box-shadow: 0 0 8px rgba(164, 83, 255, 0.55); }
-.element-spectrum i:nth-child(5) { background: var(--fear); box-shadow: 0 0 8px rgba(217, 247, 255, 0.55); }
+.element-spectrum i:nth-child(2) { background: var(--death); box-shadow: 0 0 8px rgba(174, 180, 183, 0.45); animation-delay: 0.25s; }
+.element-spectrum i:nth-child(3) { background: var(--knowledge); box-shadow: 0 0 8px rgba(213, 170, 85, 0.48); animation-delay: 0.5s; }
+.element-spectrum i:nth-child(4) { background: var(--energy); box-shadow: 0 0 8px rgba(164, 83, 255, 0.55); animation-delay: 0.75s; }
+.element-spectrum i:nth-child(5) { background: var(--fear); box-shadow: 0 0 8px rgba(217, 247, 255, 0.55); animation-delay: 1s; }
+
+@keyframes spectrum-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
 
 .live-resource {
   --resource-color: var(--cyan);
@@ -3493,12 +3524,6 @@ body:has(dialog[open]) {
 .chevron {
   transition: color 160ms ease, transform 280ms var(--motion);
 }
-
-.ritual-card.element-conhecimento { border-left-color: var(--knowledge); }
-.ritual-card.element-energia { border-left-color: var(--energy); }
-.ritual-card.element-morte { border-left-color: var(--death); }
-.ritual-card.element-sangue { border-left-color: var(--blood); }
-.ritual-card.element-medo { border-left-color: var(--fear); }
 
 .ritual-card.element-conhecimento[open] { box-shadow: inset 3px 0 20px rgba(213, 170, 85, 0.08), 0 14px 34px rgba(0, 0, 0, 0.28); }
 .ritual-card.element-energia[open] { box-shadow: inset 3px 0 20px rgba(164, 83, 255, 0.09), 0 14px 34px rgba(0, 0, 0, 0.28); }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-16T00:00:00.000Z",
+  "generatedAt": "2026-09-17T00:00:00.000Z",
   "title": "Design System: FOP — Fichas Ordem Paranormal",
   "extensions": {
     "colorMeta": {
@@ -51,7 +51,9 @@
       { "name": "resource-glow", "value": "0 0 9px var(--resource-color)", "purpose": "Barra de PV/PE/Sanidade/PD/PP preenchida brilha na cor do próprio recurso." }
     ],
     "motion": [
-      { "name": "motion-standard", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Curva de easing padrão do sistema (var --motion), usada em hover, abas e medidores de recurso." }
+      { "name": "motion-standard", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Curva de easing padrão do sistema (var --motion), usada em hover, abas e medidores de recurso." },
+      { "name": "content-reveal", "value": "360-420ms opacity+translateY(7px) both, curva motion-standard", "purpose": "Chegada de conteúdo novo: troca de aba da ficha, avanço de passo no wizard, cartões de personagem na home (com stagger de 45ms por índice)." },
+      { "name": "geometry-trace", "value": "700-900ms stroke-dashoffset (via pathLength) both, curva motion-standard", "purpose": "Traço se desenhando: geometria da constelação de atributos e os glifos de elemento (elementGlyph())." }
     ],
     "breakpoints": [
       { "name": "tablet", "value": "820px" },
@@ -116,6 +118,14 @@
       "css": ".ds-resource { --resource-color: #df2938; overflow: hidden; border-radius: 7px; padding: 10px 12px; background: linear-gradient(115deg, color-mix(in srgb, var(--resource-color), transparent 92%), rgba(255, 255, 255, 0.018)); font-family: Inter, ui-sans-serif, system-ui, sans-serif; transition: border-color 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-resource-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; } .ds-resource-head strong { color: var(--resource-color); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; } .ds-resource-head span { color: #a6a9aa; font-size: 0.82rem; font-weight: 900; font-variant-numeric: tabular-nums; } .ds-resource-meter { height: 3px; overflow: hidden; border-radius: 99px; background: rgba(255, 255, 255, 0.065); } .ds-resource-meter span { display: block; height: 100%; border-radius: inherit; background: var(--resource-color); box-shadow: 0 0 9px var(--resource-color); transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1); }"
     },
     {
+      "name": "Element Glyph",
+      "kind": "custom",
+      "refersTo": "element-glyph",
+      "description": "Componente assinatura: glifo de 18px original por elemento paranormal (Sangue/Morte/Conhecimento/Energia/Medo), desenhado a partir da descrição geométrica do símbolo real de cada elemento; substitui a antiga tarja lateral colorida nos cartões de ritual. O traço se desenha ao aparecer.",
+      "html": "<svg class=\"ds-element-glyph\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path pathLength=\"70\" d=\"M5.5 7 L12 18 L18.5 7\"/><path pathLength=\"70\" d=\"M8.5 18 L12 9 L15.5 18\"/><path pathLength=\"70\" d=\"M10 4 L12.5 9 L10.5 12 L14 19\"/></svg>",
+      "css": ".ds-element-glyph { width: 18px; height: 18px; color: #a453ff; filter: drop-shadow(0 0 4px rgba(164, 83, 255, 0.45)); } .ds-element-glyph path { stroke-width: 1.6; stroke-dasharray: 70; animation: ds-geometry-trace 700ms cubic-bezier(0.22, 1, 0.36, 1) both; } @keyframes ds-geometry-trace { from { opacity: 0; stroke-dashoffset: 70; } to { opacity: 1; stroke-dashoffset: 0; } }"
+    },
+    {
       "name": "Paperdoll Panel",
       "kind": "custom",
       "refersTo": "paperdoll-panel",
@@ -142,7 +152,8 @@
       { "name": "A Exceção do Livro-Razão", "body": "Só o cabeçalho do painel de equipamento (.paperdoll-panel h3) troca para serifada (Georgia, \"Times New Roman\", serif). É a única quebra da regra de fonte única no sistema inteiro.", "section": "typography" },
       { "name": "A Regra do Container Único", "body": "Nenhuma tela foge do container de 1120px centralizado; telas mais densas usam colunas internas em vez de alargar o container.", "section": "layout" },
       { "name": "A Regra do Brilho, Não da Sombra", "body": "Uma superfície nunca ganha profundidade empilhando sombras escuras entre camadas. Se algo precisa parecer ativo ou em foco, a resposta é um glow colorido, não mais elevação.", "section": "elevation" },
-      { "name": "A Regra do Pixel Intacto", "body": "Toda arte do boneco de equipamento e dos ícones de item usa image-rendering: pixelated. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como ilustração vetorial.", "section": "elevation" }
+      { "name": "A Regra do Pixel Intacto", "body": "Toda arte do boneco de equipamento e dos ícones de item usa image-rendering: pixelated. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como ilustração vetorial.", "section": "elevation" },
+      { "name": "A Regra do Glifo do Elemento", "body": "Um elemento paranormal é identificado pelo glifo original (elementGlyph()), nunca só por uma tarja lateral colorida. Border-left/border-right grosso como tarja de identidade é banido — é o tell mais reconhecível de UI genérica gerada por IA.", "section": "components" }
     ],
     "dos": [
       "Do reservar vermelho-sangue exclusivamente para ação primária, alerta e foco — nunca decoração.",
@@ -150,13 +161,16 @@
       "Do manter superfícies quase planas e expressar estado/interatividade como brilho colorido, não como sombra empilhada.",
       "Do opor título quieto (peso pesado, tracking negativo, sem uppercase) a rótulo gritado (uppercase, tracking largo) para toda nova hierarquia de texto.",
       "Do renderizar toda arte pixel (paperdoll, ícones de item) com image-rendering: pixelated, nunca suavizada.",
-      "Do respeitar prefers-reduced-motion desligando nevoeiro/transformações de hover, como home.css já faz."
+      "Do respeitar prefers-reduced-motion desligando nevoeiro/transformações de hover, como home.css já faz.",
+      "Do identificar um elemento paranormal pelo glifo original (elementGlyph()), nunca só por uma tarja lateral colorida.",
+      "Do revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (content-reveal, 360-420ms, curva --motion) — nunca um corte seco."
     ],
     "donts": [
       "Don't introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, com a única exceção documentada do cabeçalho do paperdoll.",
       "Don't adicionar cores saturadas/pastel fora da paleta estabelecida (vermelho, ciano, os cinco elementos, neutros) — isso quebra o tom investigativo e tenso confirmado para o produto.",
       "Don't empilhar sombras escuras entre camadas para simular profundidade; a resposta certa é glow, não elevação.",
-      "Don't tratar o painel de equipamento como só mais um cartão escuro — sua paleta dourado-pergaminho e a serifada no título são intencionais e não devem vazar para o resto da interface."
+      "Don't tratar o painel de equipamento como só mais um cartão escuro — sua paleta dourado-pergaminho e a serifada no título são intencionais e não devem vazar para o resto da interface.",
+      "Don't usar border-left/border-right grosso como tarja de identidade em card, callout ou alerta — a resposta certa é o glifo do elemento, um glow, ou um fundo tingido uniforme."
     ]
   }
 }
