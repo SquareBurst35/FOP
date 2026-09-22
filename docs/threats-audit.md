@@ -188,16 +188,18 @@ sugeria. Adicionado o glifo próprio de "Realidade" em `app.js`
 (`ELEMENT_GLYPHS.realidade`, um contorno de globo) — antes disso as
 fichas mundanas caíam no círculo genérico de fallback.
 
-**Achado de schema pendente, não resolvido**: 5 das 18 ameaças (Enxame de
-Abelhas, Enxame de Ratos, Jacaré, Onça-Pintada, Sucuri) têm um segundo
-valor de deslocamento no livro (nadar/voar/escalar), e `threat()` só tem
-um par `deslocamentoMetros`/`deslocamentoQuadrados`. Solução provisória:
-o valor terrestre foi para os campos normais, e o valor extra virou uma
-entrada em `habilidadesPassivas` (ex.: "Nadar", "Voo", "Escalar e
-Nadar") em vez de um campo dedicado. Se esse padrão aparecer bastante em
-Sobrevivendo ao Horror ou nos Arquivos Secretos, vale considerar um
-campo `deslocamentosExtras: [{ tipo, metros, quadrados }]` — não criado
-ainda porque só 5 entradas em 67 catalogadas precisam disso até agora.
+**Achado de schema, resolvido em 22/09/2026**: o padrão de deslocamento
+extra (nadar/voar/escalar) recorreu tanto — 5 das 18 ameaças de
+Realidade e depois as 3 de Sangue de Sobrevivendo ao Horror inteiras —
+que virou um campo de verdade: `deslocamentosExtras: [{ tipo, metros,
+quadrados }]` no `threat()` (`threats.js`) e uma linha extra por entrada
+na caixa "Deslocamento" da aba Status (`app.js`). As 5 entradas de
+Realidade que usavam o workaround em `habilidadesPassivas` foram
+migradas para o campo novo. Cada tipo de deslocamento (Escalada,
+Natação, Voo) vira uma entrada própria mesmo quando o livro escreve os
+dois juntos ("escala e nada a Xm"), porque a Mescla (Sobrevivendo ao
+Horror) provou que os dois podem ter valores diferentes entre si
+(Escalada 12m, Voo 9m) — uma string combinada não bastaria.
 
 **Duas ameaças sem nenhuma ação com teste**: Enxame de Abelhas e Enxame
 de Ratos causam dano 100% automático pela habilidade passiva "Enxame"
@@ -210,12 +212,50 @@ Abelhas) — o livro coloca o sinal de menos antes do ícone de dado nesse
 template, diferente do "+0" sem sinal visto nas criaturas paranormais.
 `formatTest()` já suporta bônus negativo sem mudança de código.
 
+## Progresso — Sobrevivendo ao Horror
+
+PDF `D:\Livros OP\sobrevivendo-ao-horror-v1.2.pdf` (~84MB). **Offset de
+página diferente do livro base**: aqui página impressa = página do PDF
+− 1 (no livro base era −9 — confirmar sempre de novo por livro, nunca
+assumir). Capítulo 3 "AMEAÇAS PARANORMAIS" começa no PDF 126 / impressa
+125, com exatamente **12 criaturas seguidas, sem divisão visual por
+elemento** (diferente do livro base) — o elemento primário de cada uma
+só aparece na cor da barra do cabeçalho da própria ficha, então é
+preciso renderizar e ler cada uma individualmente para saber a qual
+elemento pertence. Categoria confirmada: `"Criatura"` (igual ao livro
+base). O usuário pediu para catalogar este livro na mesma ordem do
+livro base: Sangue → Morte → Conhecimento → Energia → Realidade, um
+lote/commit por elemento.
+
+| Elemento | Catalogadas | Situação |
+|---|---|---|
+| Sangue | 3 de 3 | **Completa em 22/09/2026**: Mescla (VD 60, p.129), Derretido (VD 80, secundário Energia, p.135), Quibungo (VD 160, p.143). |
+| Morte | — | Não iniciado. |
+| Conhecimento | — | Não iniciado. |
+| Energia | — | Não iniciado. |
+| Realidade | — | Não iniciado; este livro tem uma seção própria "Novas Ameaças da Realidade" começando por volta da p.158 (depois de Amigo Imaginário), fora do capítulo 3 — confirmar estrutura ao chegar lá. |
+
+**Duas pendências abertas, achadas durante o lote de Sangue, para
+resolver quando chegarmos no elemento certo — não decidir agora:**
+
+1. **Amigo Imaginário (VD 360, p.156–157) não tem elemento primário
+   definido claramente** — a ficha mostra Morte, Sangue e Medo como três
+   tags do mesmo peso visual, sem a barra colorida de elemento primário
+   que toda outra ficha do capítulo tem. Ainda não catalogada — decidir
+   ao catalogar Morte (é a ameaça de VD mais alto do capítulo, provável
+   "chefe"; não inventar um primário só para preencher o campo).
+2. **Espectro Inesquecido (Energia, p.130–133) não é uma ficha fixa** —
+   o livro dá uma fórmula (VD = 4×NEX) para transformar um PC/NPC
+   "Marcado" morto numa ameaça, com uma tabela de escala e só um
+   exemplo construído (NEX 55%, VD 220) pra ilustrar. `threat()` não
+   tem hoje como representar "gerador de ficha" em vez de uma ficha
+   fixa — decidir a abordagem ao catalogar Energia.
+
 ## Ordem de continuação sugerida
 
-1. **Sobrevivendo ao Horror** — próximo suplemento a catalogar (ainda
-   nenhuma ameaça inventariada). Mesmo método de sempre; ao chegar lá,
-   confirmar se o template de "ameaça mundana" se repete ou se o
-   suplemento introduz um formato próprio.
+1. **Sobrevivendo ao Horror — Morte**, depois Conhecimento, Energia e
+   Realidade, nessa ordem (pedido explícito do usuário). Mesmo método
+   de sempre.
 2. Arquivos Secretos #1–7 (nenhum inventariado ainda para ameaças;
    `docs/content-audit.md` já mapeou *onde* estão as ameaças de cada AS,
    mas não suas fichas mecânicas).
