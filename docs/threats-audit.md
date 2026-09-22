@@ -231,7 +231,7 @@ lote/commit por elemento.
 |---|---|---|
 | Sangue | 3 de 3 | **Completa em 22/09/2026**: Mescla (VD 60, p.129), Derretido (VD 80, secundário Energia, p.135), Quibungo (VD 160, p.143). |
 | Morte | 3 de 3 | **Completa em 22/09/2026**: Sepultado (VD 20, p.127), Memento Mori (VD 260, secundários Conhecimento/Medo, p.149), Amigo Imaginário (VD 360, p.156 — ver decisão de elemento abaixo). |
-| Conhecimento | — | Não iniciado. |
+| Conhecimento | 3 de 3 | **Completa em 22/09/2026**: Melancolia (VD 140, Minúsculo, secundários Sangue/Morte/Medo, p.140), Rascunho (VD 300, secundário Energia, p.151), Medusa (VD 320, secundário Morte, p.153). |
 | Energia | — | Não iniciado. |
 | Realidade | — | Não iniciado; este livro tem uma seção própria "Novas Ameaças da Realidade" começando por volta da p.158 (depois de Amigo Imaginário), fora do capítulo 3 — confirmar estrutura ao chegar lá. |
 
@@ -260,6 +260,17 @@ morto numa ameaça, com uma tabela de escala e só um exemplo construído
 (NEX 55%, VD 220) pra ilustrar. `threat()` não tem hoje como
 representar "gerador de ficha" em vez de uma ficha fixa — decidir a
 abordagem ao catalogar Energia.
+
+**Achados do lote de Conhecimento**: Melancolia é a primeira ameaça
+catalogada sem `acoes` alguma (`[]`) — é um parasita puro, sem ataque
+listado, só a infecção progressiva de "Parasitose Melancólica". Também
+é a primeira com um teste de **0 dados** (`test(0, 5)`, Fortitude) —
+confirmado visualmente em crop de alta resolução, não é um dígito
+cortado. O Enigma de Medo dela fica isolado numa página ilustrada
+separada, sem o cabeçalho de ficha — fácil de pular ao escanear só a
+página com a barra lateral. Rascunho (VD 300) e Medusa (VD 320), apesar
+do VD alto, **não têm** Enigma de Medo no livro — nem toda ameaça forte
+ganha um, confirmar sempre pela página em vez de assumir pelo VD.
 
 ## Ordem de continuação sugerida
 
