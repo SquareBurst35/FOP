@@ -44,7 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=56";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=9";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=10";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=55";
 import {
   CHOICE_TYPE_LABELS,
@@ -843,7 +843,7 @@ function renderThreatStatusTab(entry) {
 
       <div class="threat-stat-block panel-subtle">
         <h3>Deslocamento</h3>
-        <p>${entry.deslocamentoMetros}m · ${entry.deslocamentoQuadrados} quadrados</p>
+        ${entry.deslocamentoMetros != null ? `<p>${entry.deslocamentoMetros}m · ${entry.deslocamentoQuadrados} quadrados</p>` : ""}
         ${entry.deslocamentosExtras.map((extra) => `<p class="muted small">${escapeHtml(extra.tipo)} ${extra.metros}m · ${extra.quadrados} quadrados</p>`).join("")}
       </div>
     </div>

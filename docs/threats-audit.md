@@ -232,7 +232,7 @@ lote/commit por elemento.
 | Sangue | 3 de 3 | **Completa em 22/09/2026**: Mescla (VD 60, p.129), Derretido (VD 80, secundário Energia, p.135), Quibungo (VD 160, p.143). |
 | Morte | 3 de 3 | **Completa em 22/09/2026**: Sepultado (VD 20, p.127), Memento Mori (VD 260, secundários Conhecimento/Medo, p.149), Amigo Imaginário (VD 360, p.156 — ver decisão de elemento abaixo). |
 | Conhecimento | 3 de 3 | **Completa em 22/09/2026**: Melancolia (VD 140, Minúsculo, secundários Sangue/Morte/Medo, p.140), Rascunho (VD 300, secundário Energia, p.151), Medusa (VD 320, secundário Morte, p.153). |
-| Energia | — | Não iniciado. |
+| Energia | 3 de 3 | **Completa em 22/09/2026**: O Uivar (VD 100, p.137), Profundo (VD 200, secundário Sangue, p.147), Espectro Inesquecido (VD 220, exemplo NEX 55% de uma ficha de fórmula — ver nota abaixo, p.133). Fecha o capítulo 3 inteiro deste livro. |
 | Realidade | — | Não iniciado; este livro tem uma seção própria "Novas Ameaças da Realidade" começando por volta da p.158 (depois de Amigo Imaginário), fora do capítulo 3 — confirmar estrutura ao chegar lá. |
 
 **Decisão registrada: Amigo Imaginário (VD 360, p.156–157) catalogado
@@ -272,11 +272,47 @@ página com a barra lateral. Rascunho (VD 300) e Medusa (VD 320), apesar
 do VD alto, **não têm** Enigma de Medo no livro — nem toda ameaça forte
 ganha um, confirmar sempre pela página em vez de assumir pelo VD.
 
+**Achados do lote de Energia — Espectro Inesquecido (fórmula VD=4×NEX,
+exemplo catalogado em NEX 55%/VD 220)**: chamou atenção que o dano/DT
+impresso da ação "Aterrorizar" (`2d8`/`DT 15`) é o valor da primeira
+faixa da Tabela 3.1 (VD 20-40), não da faixa correta pra VD 220
+(180-300 → `6d8`/`DT 35`, que é o valor usado corretamente na Presença
+Perturbadora do mesmo bloco). Parece um erro de diagramação do próprio
+livro (esqueceram de recalcular esse campo específico pro exemplo).
+**Mantido como está impresso** (2d8/DT15), sem "corrigir" pra bater com
+a tabela — não é papel do catálogo inferir a intenção do livro, só
+registrar o que ele mostra; a divergência fica documentada aqui pra não
+ser confundida com erro de leitura no futuro. A tabela de escala
+completa (5 faixas de VD, cada uma com DT, dano mental, bônus de
+Defesa/resistência, multiplicador de PV e dano extra de arma) está
+preservada no relatório do subagente que gerou este lote, não
+incorporada ao schema — é usada só pra essa uma ficha de exemplo.
+
+**Campo sem equivalente no schema, não criado**: o bloco do Espectro
+Inesquecido também imprime "Pontos de Esforço 66", um valor de PE que
+nenhuma outra ameaça do catálogo (82 até aqui) já teve — normal, é a
+única ameaça que é literalmente um PC/NPC convertido, então herda um
+stat de PC. Não criei um campo `pontosDeEsforco` pra uma ocorrência
+única; o número não foi perdido, só ficou de fora da ficha publicada.
+Se aparecer de novo (ex.: outro "convertido" nos Arquivos Secretos),
+vale promover a campo de verdade, mesmo padrão usado pra
+`deslocamentosExtras`.
+
+**Achado de UI corrigido**: O Uivar é a primeira ameaça sem nenhum
+deslocamento terrestre — só voa, `deslocamentoMetros`/`Quadrados: null`
+com `deslocamentosExtras: [{ tipo: "Voo", ... }]`. A caixa de
+Deslocamento em `app.js` assumia esses dois campos sempre numéricos e
+ia imprimir "nullm · null quadrados"; corrigido pra só mostrar a linha
+principal quando `deslocamentoMetros != null`, deixando só a linha de
+Voo aparecer nesse caso.
+
 ## Ordem de continuação sugerida
 
-1. **Sobrevivendo ao Horror — Morte**, depois Conhecimento, Energia e
-   Realidade, nessa ordem (pedido explícito do usuário). Mesmo método
-   de sempre.
+1. **Sobrevivendo ao Horror — Realidade** ("Novas Ameaças da Realidade",
+   começa por volta da p.158, logo após Amigo Imaginário, fora do
+   capítulo 3). Confirmar se repete o template "Pessoa/Animal/Animal
+   (Enxame)" do livro base ou se este suplemento usa outro formato —
+   não assumir. Isso fecha Sobrevivendo ao Horror por completo.
 2. Arquivos Secretos #1–7 (nenhum inventariado ainda para ameaças;
    `docs/content-audit.md` já mapeou *onde* estão as ameaças de cada AS,
    mas não suas fichas mecânicas).
