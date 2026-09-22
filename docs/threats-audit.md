@@ -290,7 +290,7 @@ incorporada ao schema — é usada só pra essa uma ficha de exemplo.
 
 **Campo sem equivalente no schema, não criado**: o bloco do Espectro
 Inesquecido também imprime "Pontos de Esforço 66", um valor de PE que
-nenhuma outra ameaça do catálogo (82 até aqui) já teve — normal, é a
+nenhuma outra ameaça do catálogo (79 até aqui) já teve — normal, é a
 única ameaça que é literalmente um PC/NPC convertido, então herda um
 stat de PC. Não criei um campo `pontosDeEsforco` pra uma ocorrência
 única; o número não foi perdido, só ficou de fora da ficha publicada.
