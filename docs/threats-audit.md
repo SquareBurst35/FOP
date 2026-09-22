@@ -233,6 +233,7 @@ lote/commit por elemento.
 | Morte | 3 de 3 | **Completa em 22/09/2026**: Sepultado (VD 20, p.127), Memento Mori (VD 260, secundários Conhecimento/Medo, p.149), Amigo Imaginário (VD 360, p.156 — ver decisão de elemento abaixo). |
 | Conhecimento | 3 de 3 | **Completa em 22/09/2026**: Melancolia (VD 140, Minúsculo, secundários Sangue/Morte/Medo, p.140), Rascunho (VD 300, secundário Energia, p.151), Medusa (VD 320, secundário Morte, p.153). |
 | Energia | 3 de 3 | **Completa em 22/09/2026**: O Uivar (VD 100, p.137), Profundo (VD 200, secundário Sangue, p.147), Espectro Inesquecido (VD 220, exemplo NEX 55% de uma ficha de fórmula — ver nota abaixo, p.133). Fecha o capítulo 3 inteiro deste livro. |
+| Realidade | 17 de 17 | **Completa em 22/09/2026**: "Novas Ameaças da Realidade" (p.158–165, logo após o capítulo 3) — mesmo template exato do livro base (Pessoa/Animal/Animal (Enxame), sem sidebar paranormal). 9 Pessoa (Bêbado Local, Burocrata, Fazendeiro Isolado, Investigador, Médico, Religioso, Predador Sofisticado, Caçador de Gente, Artista da Morte) + 7 Animal (Ariranha, Cavalo, Gorila, Leão, Lobo, Touro, Urso Pardo) + 1 Animal (Enxame) (Enxame de Tocandiras). **Fecha Sobrevivendo ao Horror por completo (96 ameaças no catálogo).** |
 | Realidade | — | Não iniciado; este livro tem uma seção própria "Novas Ameaças da Realidade" começando por volta da p.158 (depois de Amigo Imaginário), fora do capítulo 3 — confirmar estrutura ao chegar lá. |
 
 **Decisão registrada: Amigo Imaginário (VD 360, p.156–157) catalogado
@@ -306,16 +307,19 @@ ia imprimir "nullm · null quadrados"; corrigido pra só mostrar a linha
 principal quando `deslocamentoMetros != null`, deixando só a linha de
 Voo aparecer nesse caso.
 
+**Sobrevivendo ao Horror está catalogado por completo**: 29 ameaças
+(12 paranormais do capítulo 3 + 17 mundanas de "Novas Ameaças da
+Realidade"), somadas às 67 do livro base = **96 ameaças no catálogo**.
+O template de "Novas Ameaças da Realidade" bateu 100% com o do livro
+base — mesma categoria (Pessoa/Animal/Animal (Enxame)), mesmo formato
+sem sidebar paranormal, sem surpresa de schema.
+
 ## Ordem de continuação sugerida
 
-1. **Sobrevivendo ao Horror — Realidade** ("Novas Ameaças da Realidade",
-   começa por volta da p.158, logo após Amigo Imaginário, fora do
-   capítulo 3). Confirmar se repete o template "Pessoa/Animal/Animal
-   (Enxame)" do livro base ou se este suplemento usa outro formato —
-   não assumir. Isso fecha Sobrevivendo ao Horror por completo.
-2. Arquivos Secretos #1–7 (nenhum inventariado ainda para ameaças;
+1. Arquivos Secretos #1–7 (nenhum inventariado ainda para ameaças;
    `docs/content-audit.md` já mapeou *onde* estão as ameaças de cada AS,
-   mas não suas fichas mecânicas).
+   mas não suas fichas mecânicas). Livro base e Sobrevivendo ao Horror
+   estão 100% catalogados — este é o único suplemento que falta.
 
 ## Novo fluxo de trabalho (a partir de 22/09/2026)
 
