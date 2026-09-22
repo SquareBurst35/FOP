@@ -381,15 +381,51 @@ logo abaixo da lista de `ataques` (não é um `if/else` excludente, os
 dois aparecem juntos), então não precisou de mudança de código, só
 seguir o padrão já existente.
 
+## Progresso — Arquivos Secretos #2
+
+PDF `D:\Livros OP\Arquivos-Secretos-02.pdf` (~80MB, 108 páginas) — tema
+"Hexatombe". **Offset de página = 0** (igual ao AS#1). Estrutura: regras
+de arena sem fichas (4–25), **Ameaças do Hexatombe** (26–33, 6 fichas:
+3 pares animal-mundano/corrompido-de-Sangue — Arara e Felino — cada um
+com uma terceira forma "infernal" mais forte), **Os Mascarados**
+(34–93, 17 fichas: 5 pares assassino/"desperto" via habilidade
+"Intenção Assassina" + 5 agentes avulsos da Ordo Realitas + o par
+Sacrifício Juan/Juan Diabólico), resto sem fichas. **23 ameaças
+catalogadas em 22/09/2026 — 130 ameaças no catálogo.**
+
+**Achado real do livro, preservado como impresso**: a ficha da p.32
+tem o título grande e todo o conteúdo do "Felino-infernal", mas a
+caixinha pequena de categoria no topo diz "Arara-infernal" — erro de
+diagramação do próprio livro (confirmado comparando com o PV, que
+diverge do PV real da Arara-infernal na p.28). Catalogada como
+"Felino-infernal" (nome real, pelo título e conteúdo), com este erro
+documentado aqui em vez de silenciosamente ignorado.
+
+**Colisão de nome dentro do próprio livro**: as duas formas de um dos
+Mascarados são chamadas de "Labirinto" nas duas páginas (62 e 64) —
+diferente dos outros 4 pares, que sempre trocam de nome na
+transformação. A forma desperta (VD 140) foi catalogada como
+"Labirinto (Desperto)" para diferenciar na interface — mesmo tipo de
+etiqueta de catalogação já usado no "Investido (Transtornados)" do
+AS#1, não um dado do livro.
+
+**`machucadoEm` fora da fórmula**: Felino-infernal tem PV 230 mas
+Machucado 125 impresso (não 115, a metade) — preservado como está.
+
+**Confirma de novo a convenção de elemento**: todas as 17 fichas
+"Pessoa" de Mascarados/agentes usam `element: "Realidade"`, mesmo as
+que causam dano tipado (Dalmo/Colosso = Energia, Jae-Yoon/X =
+Conhecimento, Kemi/Fantasma = Morte, Juan/Juan Diabólico = Sangue) —
+a regra já fixada no AS#1 seguiu firme sem exceção neste lote.
+
 ## Ordem de continuação sugerida
 
-1. Arquivos Secretos #2 — mesmo método: reconhecimento completo do
-   livro primeiro (nunca foi explorado, offset de página desconhecido),
-   incluindo qualquer ficha de combate fora do capítulo óbvio de
-   "ameaças" (como aconteceu aqui com Cleo Brisa/Cristino, fichas bônus
-   fora do capítulo temático principal). Depois AS#3–7, que já têm
-   localização mapeada em `docs/content-audit.md` (mas não fichas
-   mecânicas extraídas).
+1. Arquivos Secretos #3 — a partir daqui, `docs/content-audit.md` já
+   tem a localização de onde as ameaças de cada AS#3–7 ficam (de uma
+   integração anterior, não relacionada, de rituais/itens/poderes),
+   mas não as fichas mecânicas em si — ainda precisa do mesmo
+   reconhecimento visual completo (offset de página, contagem por
+   capítulo) antes de extrair.
 
 ## Novo fluxo de trabalho (a partir de 22/09/2026)
 
