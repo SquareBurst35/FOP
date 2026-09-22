@@ -44,7 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=56";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=5";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=6";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=55";
 import {
   CHOICE_TYPE_LABELS,
@@ -122,6 +122,11 @@ const ELEMENT_GLYPHS = {
     <circle pathLength="70" cx="10.2" cy="6.9" r="0.7"/>
     <path pathLength="70" d="M6.3 10.3c2.6-1.5 7.3-.8 10.2 2.5"/>
     <circle pathLength="70" cx="16.2" cy="12.6" r="0.7"/>
+  `,
+  realidade: `
+    <circle pathLength="70" cx="12" cy="12" r="8"/>
+    <path pathLength="70" d="M4 12 L20 12"/>
+    <path pathLength="70" d="M12 4c3 2.5 3 13.5 0 16c-3-2.5-3-13.5 0-16"/>
   `,
 };
 

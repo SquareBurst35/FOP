@@ -71,7 +71,7 @@ escopo — tabela de mestre, não uma ameaça catalogável) → capítulo 8
 | Conhecimento | 12 de 12 | **Completa em 17/09/2026**: Existido (p.232), Anjo (p.233), Bicho-Papão (p.236), Espreitador (p.238), O Comunicador (p.239 — nome real é uma sequência de símbolos impronunciável no livro; batizei funcionalmente), Lembrado (p.243), Ocioso (p.244), Parasita de Culpa (p.245), Rastejador Sombrio (p.248), Silhueta (p.250), Vulto (p.251), Máscara do Desespero (p.253, Enigma de Medo na p.255). |
 | Energia | 12 de 12 | **Completa em 22/09/2026**: Anárquico (p.257), Anárquico Descontrolado (p.259), Ciborgue (p.265), Perturbado de Energia (p.268), Sukkalgir (p.269), Viajante (p.274), Anomiático (p.262), Infecticídio (p.266), Telopsia (p.270), Anomalia (p.261), Tempestuoso (p.272), O Anfitrião (p.276, VD 413 — quebra o padrão de múltiplos de 20 de propósito, é tema visual de glitch da própria ficha). |
 | Medo | 1 (fora de seção própria) | **Degolificada** (p.282) — a única ameaça de Medo *primário* encontrada até agora nos capítulos catalogados; as demais têm Medo só como elemento secundário. Fecha o capítulo de criaturas paranormais antes de "Ameaças da Realidade" começar, e tem os quatro outros elementos (Sangue/Morte/Conhecimento/Energia) como secundários — parece ser um "resumo" proposital do capítulo inteiro. |
-| Realidade (mundana) | — | Não iniciado; confirmar categoria/rótulo usado pelo livro para esse grupo antes de catalogar (todos os exemplos feitos até agora são "Criatura" ou "Relíquia"; ainda não vimos como o livro rotula uma ameaça mundana) |
+| Realidade (mundana) | 18 de 18 | **Completa em 22/09/2026**: Bandido (p.284), Capanga (p.284), Soldado de Aluguel (p.284), Assassino (p.285), Comandante Mercenário (p.285), Iniciado (p.286), Investido (p.286), Líder de Culto (p.286), Policial (p.287), Policial de Elite (p.287), Chefe de Polícia (p.287), Cão de Guarda (p.288), Enxame de Abelhas (p.288), Enxame de Ratos (p.288), Jacaré (p.288–289), Javaporco (p.289), Onça-Pintada (p.289), Sucuri (p.289). Fecha o capítulo 7 do livro base — próxima entrada é "PERIGOS" (p.290, tabela de mestre, fora do escopo). |
 
 **Lição aprendida catalogando Sangue**: o primeiro escaneamento
 automático da seção (por regex de "VD") errou a contagem — a página do
@@ -174,14 +174,63 @@ alienígenas impronunciáveis (decisão de design do próprio livro, não
 falha de extração) — não é um nome inventado, é só um rótulo funcional
 pra caber no catálogo.
 
+**Ameaças da Realidade usam um template totalmente diferente das criaturas
+paranormais** — bloco de texto compacto, sem sidebar, sem Presença
+Perturbadora nem Enigma do Medo (faz sentido: não são paranormais). Três
+rótulos de categoria confirmados visualmente (nenhum é "Criatura"):
+`"Pessoa"` (humanos — Bandido, Capanga, Soldado de Aluguel, Assassino,
+Comandante Mercenário, Iniciado, Investido, Líder de Culto, Policial,
+Policial de Elite, Chefe de Polícia), `"Animal"` (Cão de Guarda, Jacaré,
+Javaporco, Onça-Pintada, Sucuri) e `"Animal (Enxame)"` (Enxame de Abelhas,
+Enxame de Ratos — categoria nova, sem precedente). `element: "Realidade"`
+é o balde do jogo para todas — confirma o que `THREAT_ELEMENT_ORDER` já
+sugeria. Adicionado o glifo próprio de "Realidade" em `app.js`
+(`ELEMENT_GLYPHS.realidade`, um contorno de globo) — antes disso as
+fichas mundanas caíam no círculo genérico de fallback.
+
+**Achado de schema pendente, não resolvido**: 5 das 18 ameaças (Enxame de
+Abelhas, Enxame de Ratos, Jacaré, Onça-Pintada, Sucuri) têm um segundo
+valor de deslocamento no livro (nadar/voar/escalar), e `threat()` só tem
+um par `deslocamentoMetros`/`deslocamentoQuadrados`. Solução provisória:
+o valor terrestre foi para os campos normais, e o valor extra virou uma
+entrada em `habilidadesPassivas` (ex.: "Nadar", "Voo", "Escalar e
+Nadar") em vez de um campo dedicado. Se esse padrão aparecer bastante em
+Sobrevivendo ao Horror ou nos Arquivos Secretos, vale considerar um
+campo `deslocamentosExtras: [{ tipo, metros, quadrados }]` — não criado
+ainda porque só 5 entradas em 67 catalogadas precisam disso até agora.
+
+**Duas ameaças sem nenhuma ação com teste**: Enxame de Abelhas e Enxame
+de Ratos causam dano 100% automático pela habilidade passiva "Enxame"
+(sem rolagem de ataque) — primeira vez que `acoes: []` aparece no
+catálogo. Não é uma lacuna, é fiel ao livro.
+
+**Achado tipográfico**: esta seção confirmou visualmente o primeiro
+bônus negativo do catálogo (`test(1, -2)`, Fortitude do Enxame de
+Abelhas) — o livro coloca o sinal de menos antes do ícone de dado nesse
+template, diferente do "+0" sem sinal visto nas criaturas paranormais.
+`formatTest()` já suporta bônus negativo sem mudança de código.
+
 ## Ordem de continuação sugerida
 
-1. Ameaças da Realidade (mundanas), a partir da p.283 (pdf ~293) até
-   `PERIGOS` (p.290, fora do escopo). Mesmo método de sempre. Primeira
-   confirmação a fazer: como o livro rotula essas ameaças — os exemplos
-   catalogados até agora são todos "Criatura" ou "Relíquia"; mundanas
-   podem usar outra palavra (ex.: "Ameaça Comum"), e a categoria deve
-   refletir exatamente o que a ficha mostra, não a minha suposição.
-2. Sobrevivendo ao Horror, depois Arquivos Secretos #1–7 (nenhum
-   inventariado ainda para ameaças; `docs/content-audit.md` já mapeou
-   *onde* estão as ameaças de cada AS, mas não suas fichas mecânicas).
+1. **Sobrevivendo ao Horror** — próximo suplemento a catalogar (ainda
+   nenhuma ameaça inventariada). Mesmo método de sempre; ao chegar lá,
+   confirmar se o template de "ameaça mundana" se repete ou se o
+   suplemento introduz um formato próprio.
+2. Arquivos Secretos #1–7 (nenhum inventariado ainda para ameaças;
+   `docs/content-audit.md` já mapeou *onde* estão as ameaças de cada AS,
+   mas não suas fichas mecânicas).
+
+## Novo fluxo de trabalho (a partir de 22/09/2026)
+
+A extração e transcrição de cada seção passou a ser delegada a um
+subagente (`Agent` tool, `general-purpose`) com um prompt autocontido
+(schema exato, exemplo real do `threats.js`, as armadilhas de extração
+já documentadas acima, regras de direitos autorais). O subagente só
+pesquisa e devolve os blocos `threat({...})` prontos no relatório final
+— não edita arquivos. A thread principal revisa o retorno, confere
+contra as convenções já existentes no arquivo (grep por campos como
+`pericias:`/`resistencias:` para confirmar o formato antes de aceitar),
+integra, roda os testes e publica. Motivo: manter as imagens renderizadas
+do PDF (o maior custo de tokens da extração) fora do contexto principal,
+para não estourar o limite de uma sessão no meio de um lote — não muda o
+resultado final nem a precisão, só onde o trabalho pesado acontece.
