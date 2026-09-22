@@ -418,14 +418,60 @@ que causam dano tipado (Dalmo/Colosso = Energia, Jae-Yoon/X =
 Conhecimento, Kemi/Fantasma = Morte, Juan/Juan Diabólico = Sangue) —
 a regra já fixada no AS#1 seguiu firme sem exceção neste lote.
 
+## Progresso — Arquivos Secretos #3
+
+PDF `D:\Livros OP\Arquivos-Secretos-3-v-1-0.pdf` (~63MB, 142 páginas).
+**Offset de página = 0** (igual a AS#1 e AS#2). `docs/content-audit.md`
+já tinha a localização de 18 fichas neste livro (de uma auditoria
+anterior focada em opções de personagem, não em ameaças) — usado como
+atalho, mas cada página ainda foi renderizada e lida visualmente antes
+de aceitar, e o total de 18 foi reconfirmado por varredura de texto
+própria (nenhuma ficha de categoria "Criatura"/"Animal" existe neste
+livro — as 18 são todas "Pessoa"). **18 ameaças catalogadas em
+22/09/2026 — 148 ameaças no catálogo.** Três grupos temáticos: banda
+PSIKOLERA (Alê, Caio, Eloy, Franco, Cindy, mais o roadie Caíto — p.11
+a 41), o culto de Escarlata (Ana, Argano, Chispa, Torvo, Escarlata,
+Miasma — p.47 a 73) e um bando de caçadores com nomes de aves (Coruja,
+Corvo, Papagaio, Pomba, Harpia, mais Suellen — p.81 a 105).
+
+**Erro do próprio livro preservado, não corrigido silenciosamente**: a
+habilidade "Hora do Show" da Alê (p.11) imprime bônus de Defesa/PV que
+não batem com a matemática da própria ficha (+10 Defesa vira "26" em
+vez do correto 28; +20 PV vira "90" em vez do correto 65) — os números
+impressos batem exatamente com os totais corretos da Eloy, sugerindo
+cópia-e-cola do editor entre as duas fichas da banda. Mantido o valor
+impresso (26/90) com uma nota entre parênteses na própria `descricao`
+da habilidade explicando a divergência, para não ser confundido com
+erro de leitura no futuro. Os outros 4 membros da banda batem certinho
+com a própria matemática.
+
+**Rótulo alternativo de DT**: Coruja e Corvo (p.81, 88) imprimem o
+cabeçalho de rituais como "CD 20" em vez de "DT 20" — único caso no
+livro. Normalizado para "DT 20" no catálogo, com uma nota no próprio
+texto da habilidade explicando a variação impressa.
+
+**Primeiro bônus zero-dados-negativo do catálogo**: Argano (p.51) tem
+Percepção e Vontade em `test(0, -2)` — zero dados de teste combinados
+com um bônus negativo, confirmado visualmente.
+
 ## Ordem de continuação sugerida
 
-1. Arquivos Secretos #3 — a partir daqui, `docs/content-audit.md` já
-   tem a localização de onde as ameaças de cada AS#3–7 ficam (de uma
-   integração anterior, não relacionada, de rituais/itens/poderes),
-   mas não as fichas mecânicas em si — ainda precisa do mesmo
-   reconhecimento visual completo (offset de página, contagem por
-   capítulo) antes de extrair.
+1. Arquivos Secretos #4 — `docs/content-audit.md` (linha ~83) já lista
+   os nomes das ameaças (Assistente de Produção, Produtor, Diretor,
+   Simulacro com variantes Troyan/Krypto/Vvorm/Botnetz) e a faixa de
+   página (55–61) de uma auditoria anterior — usar como atalho, mas
+   confirmar offset e ler cada página visualmente antes de aceitar,
+   como feito aqui no AS#3. Depois AS#5 (ameaças em 36–51 + "perigos
+   complexos" em 66–69, verificar se estes últimos têm ficha de combate
+   real ou são só tabelas de mestre fora de escopo), AS#6 (Alice
+   Cruzes/Ketan Arjuna/Laila Verdante/Dr. Neruda aparecem tanto como
+   "Aliados" quanto como "Ameaças" — confirmar se têm ficha própria de
+   ameaça ou só de companheiro) e AS#7 (Raziel/O Verdadeiro Raziel/
+   Alvira/Sabara/Velisar/Zéfero/Incinerado/Stryzga/Apóstata em 4
+   estágios — atenção a uma inconsistência já registrada no livro:
+   Incinerado tem imunidade E vulnerabilidade a fogo simultâneas, e
+   Incinerado/Stryzga têm resistência E vulnerabilidade balística
+   simultâneas; preservar o conflito, não inventar qual prevalece).
 
 ## Novo fluxo de trabalho (a partir de 22/09/2026)
 
