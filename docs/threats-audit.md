@@ -314,12 +314,82 @@ O template de "Novas Ameaças da Realidade" bateu 100% com o do livro
 base — mesma categoria (Pessoa/Animal/Animal (Enxame)), mesmo formato
 sem sidebar paranormal, sem surpresa de schema.
 
+## Progresso — Arquivos Secretos #1
+
+PDF `D:\Livros OP\Arquivos-Secretos-01-v1-2.pdf` (~32MB, 75 páginas) —
+**livro nunca explorado neste projeto antes, nem para este catálogo
+nem para nenhum outro** (`docs/content-audit.md` só cobre AS#3–7,
+apesar do que a seção anterior deste arquivo dizia — corrigido aqui).
+**Offset de página = 0** (impressa = índice do PDF, sem deslocamento —
+diferente dos dois livros anteriores). Estrutura: capa/sumário (1–7),
+conto "Agatha" sem fichas (8–19), capítulo **"Os Transtornados"**
+(20–41, o culto de Sangue liderado por Giovanni Opspor — 8 fichas),
+"Ritos & Maldições" — conteúdo majoritariamente de jogador, só 1 ficha
+de ameaça (Anulado, p.53), e o bônus "A Volante e o Cangaceiro" (2
+fichas, Cleo Brisa e Cristino, que o livro deixa explícito que **não**
+são Transtornados). **11 ameaças catalogadas em 22/09/2026**: Assecla
+(p.28), Investido — renomeado "Investido (Transtornados)" (p.29),
+Apóstolo do Sangue (p.30), Giovanni Opspor (p.33), Mosto (p.35),
+Tarrafa (p.37), Carrara (p.38), Nando Salles (p.39), Anulado (p.53),
+Cleo Brisa (p.69), Cristino (p.71). **107 ameaças no catálogo.**
+
+**Decisão registrada: nenhuma das 10 fichas "Pessoa" tem elemento
+impresso na ficha** (diferente de toda ameaça mundana catalogada até
+aqui, que também não tem elemento impresso, mas aqui existe uma
+tentação real de inferir um pela afinidade de rituais/dano dos
+Transtornados de Sangue). Optei por manter a convenção já estabelecida
+no catálogo — **toda ficha "Pessoa"/"Animal"/"Animal (Enxame)" usa
+`element: "Realidade"`, sem exceção**, mesmo quando o personagem
+conjura rituais de um elemento específico (mesmo padrão já usado para
+Iniciado/Investido/Líder de Culto do livro base, que também conjuram
+rituais sem terem elemento próprio). Só "Anulado" (categoria
+"Criatura", com a tag elemental de fato impressa na ficha) ficou com
+`element: "Sangue"`, `secondaryElements: ["Conhecimento"]`.
+
+**"Transtornado" não existe como rótulo de categoria** — toda ficha do
+capítulo usa literalmente "PESSOA" no cabeçalho, igual às ameaças
+mundanas já catalogadas. A expectativa de uma categoria própria não se
+confirmou; o culto é só o tema narrativo do capítulo, não uma categoria
+de jogo.
+
+**Renomeação deliberada, não um dado do livro**: "Investido" já existe
+no catálogo (livro base, VD 40, p.286, cultista genérico de qualquer
+elemento). O Investido dos Transtornados (VD 80, só Sangue) tem nome
+idêntico no livro, mas é uma ficha mecanicamente diferente — como os
+dois caem na mesma aba "Realidade" e apareceriam lado a lado na lista
+com o mesmo nome, renomeei esta entrada para **"Investido
+(Transtornados)"** só para diferenciação na interface. Não é uma
+invenção de dado do jogo, é uma etiqueta de catalogação — igual ao "O
+Comunicador" do livro base (nome funcional para uma ficha cujo nome
+real é ilegível).
+
+**Achado tipográfico confirmado**: quando o ícone de d20 aparece
+completamente sozinho, sem nenhum dígito antes E sem nenhum "+N" depois
+(nem "+0"), o valor é `test(0, 0)` — zero dados, zero bônus. Já
+tínhamos `test(0, N)` (Melancolia) e bônus/dados negativos, mas esta é
+a primeira vez que os dois lados ficam zerados ao mesmo tempo. Confirma
+que a leitura visual do ícone precisa checar os dois lados
+independentemente, nunca assumir que "sem dígito visível" significa
+"1 dado" por padrão.
+
+**Achado de schema, resolvido sem mudar o código**: armas com dano
+"base + elemento" (ex.: arpão do Tarrafa, "corte normal + 1d6 de
+Sangue ao acertar") não cabem no par único `dano: {formula, tipo}` de
+`ataques`. Resolvido colocando o bônus extra como uma frase na
+`descricao` da própria ação — `app.js` já renderiza `acao.descricao`
+logo abaixo da lista de `ataques` (não é um `if/else` excludente, os
+dois aparecem juntos), então não precisou de mudança de código, só
+seguir o padrão já existente.
+
 ## Ordem de continuação sugerida
 
-1. Arquivos Secretos #1–7 (nenhum inventariado ainda para ameaças;
-   `docs/content-audit.md` já mapeou *onde* estão as ameaças de cada AS,
-   mas não suas fichas mecânicas). Livro base e Sobrevivendo ao Horror
-   estão 100% catalogados — este é o único suplemento que falta.
+1. Arquivos Secretos #2 — mesmo método: reconhecimento completo do
+   livro primeiro (nunca foi explorado, offset de página desconhecido),
+   incluindo qualquer ficha de combate fora do capítulo óbvio de
+   "ameaças" (como aconteceu aqui com Cleo Brisa/Cristino, fichas bônus
+   fora do capítulo temático principal). Depois AS#3–7, que já têm
+   localização mapeada em `docs/content-audit.md` (mas não fichas
+   mecânicas extraídas).
 
 ## Novo fluxo de trabalho (a partir de 22/09/2026)
 
