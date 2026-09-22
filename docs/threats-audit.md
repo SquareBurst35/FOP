@@ -230,26 +230,36 @@ lote/commit por elemento.
 | Elemento | Catalogadas | Situação |
 |---|---|---|
 | Sangue | 3 de 3 | **Completa em 22/09/2026**: Mescla (VD 60, p.129), Derretido (VD 80, secundário Energia, p.135), Quibungo (VD 160, p.143). |
-| Morte | — | Não iniciado. |
+| Morte | 3 de 3 | **Completa em 22/09/2026**: Sepultado (VD 20, p.127), Memento Mori (VD 260, secundários Conhecimento/Medo, p.149), Amigo Imaginário (VD 360, p.156 — ver decisão de elemento abaixo). |
 | Conhecimento | — | Não iniciado. |
 | Energia | — | Não iniciado. |
 | Realidade | — | Não iniciado; este livro tem uma seção própria "Novas Ameaças da Realidade" começando por volta da p.158 (depois de Amigo Imaginário), fora do capítulo 3 — confirmar estrutura ao chegar lá. |
 
-**Duas pendências abertas, achadas durante o lote de Sangue, para
-resolver quando chegarmos no elemento certo — não decidir agora:**
+**Decisão registrada: Amigo Imaginário (VD 360, p.156–157) catalogado
+como `element: "Morte"`, `secondaryElements: ["Sangue", "Medo"]`.** A
+ficha não tem a barra colorida de elemento primário que toda outra
+criatura do capítulo tem — Morte e Sangue aparecem como tags do mesmo
+peso visual, e o texto de abertura (p.154) diz que ela foi "gerada
+conjuntamente pelas entidades de Sangue e Morte" (duas origens
+nomeadas, sem uma se sobrepor à outra); imunidades, tags e o dano da
+ação "Derreter" são 50/50 entre os dois. Medo não entra como candidato
+a primário: a própria ficha o trata como *sustento* ("alimentado pelo
+medo"), não origem, e nenhuma habilidade ou dano é tipado como Medo.
+Motivo do desempate escolhido a favor de Morte: a ordem impressa das
+tags no livro é sempre "MORTE ◆ SANGUE ◆ MEDO" (Morte primeiro — mesmo
+padrão de ordem intencional já visto na Degolificada do livro base), e
+narrativamente ela fecha o capítulo logo após o Memento Mori (também
+Morte, VD 260 → 360), como uma escalada dentro do mesmo elemento. É uma
+decisão de categorização, não uma invenção de número — o livro não dá
+um primário explícito, e Sangue seguiria sendo uma escolha igualmente
+defensável se algum dia precisar reabrir isso.
 
-1. **Amigo Imaginário (VD 360, p.156–157) não tem elemento primário
-   definido claramente** — a ficha mostra Morte, Sangue e Medo como três
-   tags do mesmo peso visual, sem a barra colorida de elemento primário
-   que toda outra ficha do capítulo tem. Ainda não catalogada — decidir
-   ao catalogar Morte (é a ameaça de VD mais alto do capítulo, provável
-   "chefe"; não inventar um primário só para preencher o campo).
-2. **Espectro Inesquecido (Energia, p.130–133) não é uma ficha fixa** —
-   o livro dá uma fórmula (VD = 4×NEX) para transformar um PC/NPC
-   "Marcado" morto numa ameaça, com uma tabela de escala e só um
-   exemplo construído (NEX 55%, VD 220) pra ilustrar. `threat()` não
-   tem hoje como representar "gerador de ficha" em vez de uma ficha
-   fixa — decidir a abordagem ao catalogar Energia.
+**Espectro Inesquecido (Energia, p.130–133) não é uma ficha fixa** — o
+livro dá uma fórmula (VD = 4×NEX) para transformar um PC/NPC "Marcado"
+morto numa ameaça, com uma tabela de escala e só um exemplo construído
+(NEX 55%, VD 220) pra ilustrar. `threat()` não tem hoje como
+representar "gerador de ficha" em vez de uma ficha fixa — decidir a
+abordagem ao catalogar Energia.
 
 ## Ordem de continuação sugerida
 
