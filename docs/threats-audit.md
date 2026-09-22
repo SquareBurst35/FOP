@@ -59,16 +59,18 @@ texto/decoração.
 Capítulo 7 (fichas de ameaças), páginas do PDF 186–303 (impressas
 177–294): `CONSTRUINDO COMBATES` (177) → `FICHAS DE AMEAÇAS` (178) →
 `CRIATURAS DE SANGUE` (182) → `CRIATURAS DE MORTE` (208) →
-`CRIATURAS DE CONHECIMENTO` (232) → `CRIATURAS DE ENERGIA` (254) →
-`AMEAÇAS DA REALIDADE` (282) → `PERIGOS` (290, fora do escopo — tabela de
-mestre, não uma ameaça catalogável) → capítulo 8 (294).
+`CRIATURAS DE CONHECIMENTO` (232) → `CRIATURAS DE ENERGIA` (256) →
+`AMEAÇAS DA REALIDADE` (283, a confirmar) → `PERIGOS` (290, fora do
+escopo — tabela de mestre, não uma ameaça catalogável) → capítulo 8
+(294).
 
 | Seção | Catalogadas | Situação |
 |---|---|---|
 | Sangue | 12 de 12 | **Completa em 17/09/2026**: Aberração de Carne (p.182), Aniquilação (p.185), Carente (p.188), Dama de Sangue (p.190), Enpap-X (p.192), Kerberos (p.194), Minotauro (p.197), Mulher Afogada (p.199), Titã de Sangue (p.201), Zumbi de Sangue (p.202), Zumbi de Sangue Bestial (p.203), O Diabo (p.205). |
 | Morte | 12 de 12 | **Completa em 17/09/2026**: Esqueleto de Lodo (p.208), Aracnasita (p.208), Carniçal Preto da Morte (p.210), Ceifador Espiral (p.212), Enraizado (p.214), Escutado (p.215), Marionete (p.218), Múmia Xipófaga (p.220), Nidere (p.222), Sempiternal (p.225), Succ (p.227), O Deus da Morte (p.230). |
 | Conhecimento | 12 de 12 | **Completa em 17/09/2026**: Existido (p.232), Anjo (p.233), Bicho-Papão (p.236), Espreitador (p.238), O Comunicador (p.239 — nome real é uma sequência de símbolos impronunciável no livro; batizei funcionalmente), Lembrado (p.243), Ocioso (p.244), Parasita de Culpa (p.245), Rastejador Sombrio (p.248), Silhueta (p.250), Vulto (p.251), Máscara do Desespero (p.253, Enigma de Medo na p.255). |
-| Energia | — | Não iniciado — próxima seção, começa na p.256 (primeira ameaça: Anárquico) |
+| Energia | 12 de 12 | **Completa em 22/09/2026**: Anárquico (p.257), Anárquico Descontrolado (p.259), Ciborgue (p.265), Perturbado de Energia (p.268), Sukkalgir (p.269), Viajante (p.274), Anomiático (p.262), Infecticídio (p.266), Telopsia (p.270), Anomalia (p.261), Tempestuoso (p.272), O Anfitrião (p.276, VD 413 — quebra o padrão de múltiplos de 20 de propósito, é tema visual de glitch da própria ficha). |
+| Medo | 1 (fora de seção própria) | **Degolificada** (p.282) — a única ameaça de Medo *primário* encontrada até agora nos capítulos catalogados; as demais têm Medo só como elemento secundário. Fecha o capítulo de criaturas paranormais antes de "Ameaças da Realidade" começar, e tem os quatro outros elementos (Sangue/Morte/Conhecimento/Energia) como secundários — parece ser um "resumo" proposital do capítulo inteiro. |
 | Realidade (mundana) | — | Não iniciado; confirmar categoria/rótulo usado pelo livro para esse grupo antes de catalogar (todos os exemplos feitos até agora são "Criatura" ou "Relíquia"; ainda não vimos como o livro rotula uma ameaça mundana) |
 
 **Lição aprendida catalogando Sangue**: o primeiro escaneamento
@@ -97,6 +99,44 @@ afetam qualquer agente, independente do NEX. Isso é dado real do
 livro, não uma lacuna: o schema trata `imuneDesdeNex: null` como
 "nenhum NEX concede imunidade", e a UI já mostra essa frase em vez de
 inventar um número.
+
+**A cadeia de Enigmas de Medo entre os "chefes" de cada elemento se
+confirmou por completo catalogando Energia — é um ciclo fechado de
+4 pontas, de propósito:** O Diabo (Sangue) só cai pra uma manifestação
+de Morte equivalente; o Deus da Morte (Morte) confirma isso e só cai
+pro caos do Anfitrião; o Anfitrião (Energia) só pode ser enfrentado
+sob a proteção do Equilíbrio, que só a Máscara do Desespero oferece; e
+a Máscara (Conhecimento) cai pra brutalidade do próprio Diabo — fechando
+o ciclo Sangue → Morte → Energia → Conhecimento → Sangue. Não é preciso
+mais tratar essas referências cruzadas como estranhas ou como possível
+erro de leitura.
+
+**Achado extra em Energia: "O Anfitrião" tem VD 413 e PV 1413** — os
+únicos números desta sessão inteira que não são múltiplos de 20 (todo
+o resto do catálogo é). Não é erro de leitura: o design gráfico da
+ficha inteira do Anfitrião é temático de "glitch" (nome estilizado
+"4NFITRIÃO", texto corrompido tipo "HA4HA4HA4"), e os números glitchados
+combinam com isso. Também é a primeira ameaça catalogada com mecânica
+de fases (Ato 1: 5 "facetas" nomeadas — Amphitruo, Aeneas, Liber,
+Silenus, Plautus — cada uma só podendo usar habilidades com seu próprio
+nome; Ato 2: forma única com 3 ações padrão por rodada).
+
+**Achado extra: "Degolificada" é a primeira ameaça de Medo *primário*
+do catálogo.** Até agora Medo só aparecia como elemento secundário
+(Aracnasita, Ceifador Espiral, Anjo etc.). A Degolificada tem Medo como
+elemento principal e os quatro outros elementos do jogo como
+secundários — está posicionada no fim do capítulo de criaturas
+paranormais, antes de "Ameaças da Realidade" começar, funcionando como
+um fechamento simbólico do capítulo inteiro.
+
+**Achado de schema: a "Anomalia" (Energia) não tem Defesa nem
+Percepção/Iniciativa nem os atributos AGI/FOR/VIG** — o livro marca
+esses campos com "—" porque ela "não faz testes e não age da mesma
+maneira que outras criaturas". O `threat()` helper já aceita `null`
+para `defesa`/`percepcao`/`iniciativa` (a UI mostra "—") e aceita a
+string `"—"` como valor de atributo quando o livro não define um
+número — nunca inventar um 0 ou qualquer valor só para preencher o
+campo.
 
 Sempiternal é a única ameaça catalogada até agora cujo "machucado" não
 é simplesmente metade dos PV (990 PV, mas 445 machucado, não 495) — o
@@ -136,12 +176,12 @@ pra caber no catálogo.
 
 ## Ordem de continuação sugerida
 
-1. Criaturas de Energia (p.256–281), mesmo método: renderizar cada
-   página com `python scripts/pdf-read.py render`, nunca confiar só no
-   texto extraído nem no scan automático de "VD", sempre conferir a
-   página seguinte de ameaças fortes/com Medo antes de fechar a ficha, e
-   ficar atento a uma ameaça chamada "O Anfitrião" (ver achado acima).
-2. Realidade (282–289).
-3. Sobrevivendo ao Horror, depois Arquivos Secretos #1–7 (nenhum
+1. Ameaças da Realidade (mundanas), a partir da p.283 (pdf ~293) até
+   `PERIGOS` (p.290, fora do escopo). Mesmo método de sempre. Primeira
+   confirmação a fazer: como o livro rotula essas ameaças — os exemplos
+   catalogados até agora são todos "Criatura" ou "Relíquia"; mundanas
+   podem usar outra palavra (ex.: "Ameaça Comum"), e a categoria deve
+   refletir exatamente o que a ficha mostra, não a minha suposição.
+2. Sobrevivendo ao Horror, depois Arquivos Secretos #1–7 (nenhum
    inventariado ainda para ameaças; `docs/content-audit.md` já mapeou
    *onde* estão as ameaças de cada AS, mas não suas fichas mecânicas).

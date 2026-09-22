@@ -44,7 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=56";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=4";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=5";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=55";
 import {
   CHOICE_TYPE_LABELS,
@@ -805,7 +805,7 @@ function renderThreatStatusTab(entry) {
 
       <div class="threat-stat-block panel-subtle">
         <h3>Defesas</h3>
-        <p><strong>Defesa</strong> ${entry.defesa}</p>
+        <p><strong>Defesa</strong> ${entry.defesa ?? "—"}</p>
         <p><strong>Fortitude</strong> ${formatTest(entry.fortitude)}</p>
         <p><strong>Reflexos</strong> ${formatTest(entry.reflexos)}</p>
         <p><strong>Vontade</strong> ${formatTest(entry.vontade)}</p>
