@@ -548,18 +548,44 @@ preservado.
 do Fummu também é impressa como dado rolado (`Reflexos DT 4d10`), não
 número fixo — preservada como texto, sem mudança de schema.
 
+## Progresso — Arquivos Secretos #6
+
+PDF `D:\Livros OP\Arquivos-Secretos-06.pdf` (~23MB, 84 páginas, v1.1
+com erratas de p.83–84 — nenhuma delas afeta as 11 ameaças, só poderes/
+rituais de personagem). **Offset de página = 0** (igual a AS#1–#5).
+**11 ameaças catalogadas em 22/09/2026 — 176 ameaças no catálogo.**
+
+**Alice Cruzes/Ketan Arjuna/Laila Verdante/Dr. Neruda confirmadas como
+ameaças catalogáveis, não só fichas de aliado.** Cada página do
+"Projeto Titanomaquia" (p.28/33/37/41) tem duas colunas: a ficha de
+combate completa (VD/Defesa/PV/testes/ações) numa, e uma caixa "Como
+Aliado" separada (regalias de recrutamento) na outra — são NPCs que
+servem aos dois papéis, não uma coisa só. Catalogadas as quatro.
+
+**Novo local onde "DT como dado rolado" aparece**: Estímulo (p.62, VD
+320) tem a própria Presença Perturbadora com `dt: "8d10"` — primeira
+vez que esse fenômeno (já visto em ações do AS#4/#5) atinge o campo
+estruturado `presencaPerturbadora.dt`, não só texto solto em
+`descricao`. Como o campo não faz nenhuma conta em código (só é
+interpolado como texto na UI), guardar a string não quebra nada;
+mantido assim em vez de forçar um número.
+
+**Confirma o padrão de elemento primário via `secondaryElements`**:
+Hikikomori/Marca-Passo/Estímulo saíram Energia (primário) + Sangue
+(secundário) — bate exatamente com a nota de erratas que
+`docs/content-audit.md` já tinha registrado de uma auditoria anterior
+("Sangue secundário"), confirmando visualmente o que aquela auditoria
+só tinha lido em texto corrido.
+
 ## Ordem de continuação sugerida
 
-1. Arquivos Secretos #6 — Alice Cruzes/Ketan Arjuna/Laila Verdante/Dr.
-   Neruda aparecem tanto como "Aliados" quanto como "Ameaças";
-   confirmar se têm ficha própria de ameaça ou só de companheiro antes
-   de catalogar.
-2. Arquivos Secretos #7 — Raziel/O Verdadeiro Raziel/Alvira/Sabara/
-   Velisar/Zéfero/Incinerado/Stryzga/Apóstata em 4 estágios. Atenção a
-   uma inconsistência já registrada no livro: Incinerado tem imunidade
-   E vulnerabilidade a fogo simultâneas, e Incinerado/Stryzga têm
-   resistência E vulnerabilidade balística simultâneas; preservar o
-   conflito, não inventar qual prevalece.
+1. Arquivos Secretos #7 (último suplemento pendente!) — Raziel/O
+   Verdadeiro Raziel/Alvira/Sabara/Velisar/Zéfero/Incinerado/Stryzga/
+   Apóstata em 4 estágios. Atenção a uma inconsistência já registrada
+   no livro: Incinerado tem imunidade E vulnerabilidade a fogo
+   simultâneas, e Incinerado/Stryzga têm resistência E vulnerabilidade
+   balística simultâneas; preservar o conflito, não inventar qual
+   prevalece.
 
 ## Novo fluxo de trabalho (a partir de 22/09/2026)
 
