@@ -3932,10 +3932,11 @@ body:has(dialog[open]) {
   height: var(--attribute-node-size);
   place-content: center;
   justify-items: center;
-  clip-path: polygon(50% 4%, 89.83% 27%, 89.83% 73%, 50% 96%, 10.17% 73%, 10.17% 27%);
+  border: 2px solid rgba(243, 241, 235, 0.78);
+  border-radius: 50%;
   background: radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.055), transparent 55%), #07090b;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  transition: filter 240ms ease, transform 260ms var(--motion);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.035), 0 0 0 6px rgba(217, 35, 50, 0.11), inset 0 0 28px rgba(0, 0, 0, 0.86), 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: border-color 220ms ease, box-shadow 240ms ease, transform 260ms var(--motion);
 }
 
 .view-enter .attribute-ring {
@@ -3947,29 +3948,35 @@ body:has(dialog[open]) {
 .view-enter .attribute-node:nth-of-type(6) .attribute-ring { animation-delay: 120ms; }
 .view-enter .attribute-node:nth-of-type(7) .attribute-ring { animation-delay: 160ms; }
 
-/* A rotating glow clipped to the same hexagon as the panel: the light sweeps,
-   the crisp glyph frame (::after) never does, so the hexagon edges never
-   swim out of alignment with themselves mid-spin. */
 .attribute-ring::before {
   position: absolute;
-  inset: 0;
+  inset: -13px;
+  border-radius: 50%;
   content: "";
-  clip-path: polygon(50% 4%, 89.83% 27%, 89.83% 73%, 50% 96%, 10.17% 73%, 10.17% 27%);
-  background: conic-gradient(from 0deg, transparent 0 68%, rgba(217, 35, 50, 0.28) 78%, transparent 90% 100%);
-  animation: slow-orbit 46s linear infinite;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(243, 241, 235, 0.62) 0deg 1.6deg,
+    transparent 1.6deg 9deg,
+    rgba(217, 35, 50, 0.55) 9deg 10.4deg,
+    transparent 10.4deg 18deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+  animation: slow-orbit 90s linear infinite, sigil-breathe 11s ease-in-out infinite alternate;
 }
 
 .attribute-ring::after {
   position: absolute;
-  inset: 0;
+  inset: 8px;
+  border: 1px solid rgba(217, 35, 50, 0.22);
+  border-radius: 50%;
   content: "";
-  background: url("assets/attribute-sigil.svg?v=3") center / contain no-repeat;
-  animation: sigil-breathe 11s ease-in-out infinite alternate;
 }
 
 .attribute-node:hover .attribute-ring,
 .attribute-node:focus-within .attribute-ring {
-  filter: drop-shadow(0 0 16px rgba(217, 35, 50, 0.45));
+  border-color: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.045), 0 0 0 7px rgba(217, 35, 50, 0.2), inset 0 0 30px rgba(217, 35, 50, 0.08), 0 0 30px rgba(217, 35, 50, 0.2);
   transform: scale(1.045);
 }
 
