@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Site favicon: a broken-seal pentagram, in the same red-on-black
+       "Selo Unico" language as the rest of the site. Original mark,
+       inspired by the classic five-point occult circle motif. -->
+  <rect width="32" height="32" rx="7" fill="#0a0b0d"/>
+  <circle cx="16" cy="16" r="12.5" fill="none" stroke="#e2222e" stroke-width="1.3" opacity=".55"/>
+  <path d="M16 6.5 21.58 23.69 6.96 13.06 25.04 13.06 10.42 23.69Z" fill="none" stroke="#ff3c4b" stroke-width="1.7" stroke-linejoin="round"/>
+  <circle cx="16" cy="16" r="1.6" fill="#ff3c4b"/>
+  <circle cx="16" cy="6.5" r="1.3" fill="#ff3c4b"/>
+  <circle cx="25.04" cy="13.06" r="1.3" fill="#ff3c4b"/>
+  <circle cx="21.58" cy="23.69" r="1.3" fill="#ff3c4b"/>
+  <circle cx="10.42" cy="23.69" r="1.3" fill="#ff3c4b"/>
+  <circle cx="6.96" cy="13.06" r="1.3" fill="#ff3c4b"/>
+</svg>
