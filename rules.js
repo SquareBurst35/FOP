@@ -1,4 +1,6 @@
 import { beforeSoBonus } from "./session.js?v=31";
+import { ITEM_BY_ID } from "./items.js?v=57";
+import { upgradedItem } from "./item-upgrades.js?v=56";
 export const ATTRIBUTE_TARGET = 9;
 export const MUNDANE_ATTRIBUTE_TARGET = 8;
 export const ATTRIBUTE_MAX_AT_CREATION = 3;
@@ -251,6 +253,26 @@ function hasSelectedPower(character, powerSlug) {
   );
 }
 
+export function equippedProtections(character) {
+  const entries = Array.isArray(character?.inventarioItens) ? character.inventarioItens : [];
+  const seen = new Set();
+  const items = [];
+  for (const selected of entries) {
+    const original = ITEM_BY_ID.get(selected.itemId);
+    if (!original || original.group !== "Proteções" || seen.has(original.id)) continue;
+    seen.add(original.id);
+    items.push(upgradedItem(original, character?.inventarioModificacoes?.[original.id]));
+  }
+  return items;
+}
+
+function equipmentDefenseBonus(character) {
+  return equippedProtections(character).reduce((sum, item) => {
+    const value = item.details?.find(([key]) => key === "Defesa")?.[1];
+    return sum + (Number(value) || 0);
+  }, 0);
+}
+
 export function calculateDerived(character) {
   const classData = CLASSES[character.classe];
   const vigor = Number(character.atributos?.vigor) || 0;
@@ -294,7 +316,7 @@ export function calculateDerived(character) {
       pvMax: 0,
       peMax: 0,
       sanMax: 0,
-      defesa: 10 + agilidade + beforeSoBonus(character),
+      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: 0,
@@ -318,7 +340,7 @@ export function calculateDerived(character) {
       pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus,
       peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus,
       sanMax: classData.initial.san + advances * classData.gain.san,
-      defesa: 10 + agilidade + beforeSoBonus(character),
+      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
@@ -339,7 +361,7 @@ export function calculateDerived(character) {
     pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus,
     peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
-    defesa: 10 + agilidade + beforeSoBonus(character),
+    defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character),
     deslocamento: 9,
     advances,
     skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
@@ -535,6 +557,8 @@ export function applyDerived(character, resetCurrent = false) {
 
   character.defesa = derived.defesa;
   character.deslocamento = derived.deslocamento;
+  const protections = equippedProtections(character);
+  character.protecao = protections.length ? protections.map((item) => item.name).join(" + ") : "Nenhuma";
 
   const origin = findOrigin(character.origem);
   character.beneficiosOrigem = origin
