@@ -1,5 +1,5 @@
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=56";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=57";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=58";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -16,11 +16,12 @@ import {
   isMundaneCharacter,
   isSurvivorCharacter,
   levelFromNex,
+  ritualDifficulty,
   sanitizeSkillSelections,
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=56";
+} from "./rules.js?v=57";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -45,13 +46,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=57";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=56";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=57";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=58";
+} from "./choices.js?v=59";
 import {
   effortResource,
   beforeSoBonus,
@@ -164,7 +165,7 @@ const NON_USABLE_ABILITY_NAMES = new Set([
   "Treinamento Especial",
 ]);
 
-const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Habilidades e rituais", "Recursos", "Revisão"];
+const STEPS = ["Identidade", "Formação", "Atributos", "Perícias", "Habilidades e rituais", "Recursos", "História", "Revisão"];
 
 const app = document.querySelector("#app");
 const headerActions = document.querySelector("#header-actions");
@@ -295,6 +296,9 @@ function createBlankCharacter() {
       usosSessao: {},
       historico: [],
     },
+    personalidade: "",
+    historico: "",
+    objetivo: "",
     anotacoes: "",
     criadoEm: new Date().toISOString(),
     atualizadoEm: new Date().toISOString(),
@@ -1094,8 +1098,30 @@ function renderCreatorStep() {
     `;
   }
 
+  if (currentStep === 6) {
+    return `
+      <p class="eyebrow">Etapa 7 de ${STEPS.length}</p>
+      <h1>História do agente</h1>
+      <p class="muted">Opcional, mas ajuda a jogar: personalidade, histórico e objetivo do agente. Dá pra editar depois, na ficha.</p>
+      <div class="form-grid">
+        <div class="field full">
+          <label for="personalidade">Personalidade</label>
+          <textarea id="personalidade" name="personalidade" placeholder="Como o agente age, fala e reage sob pressão.">${escapeHtml(creatorState.personalidade || "")}</textarea>
+        </div>
+        <div class="field full">
+          <label for="historico">Histórico</label>
+          <textarea id="historico" name="historico" placeholder="De onde veio, o que viveu antes de entrar pra Ordem.">${escapeHtml(creatorState.historico || "")}</textarea>
+        </div>
+        <div class="field full">
+          <label for="objetivo">Objetivo</label>
+          <textarea id="objetivo" name="objetivo" placeholder="O que o agente busca alcançar.">${escapeHtml(creatorState.objetivo || "")}</textarea>
+        </div>
+      </div>
+    `;
+  }
+
   return `
-    <p class="eyebrow">Etapa 7 de ${STEPS.length}</p>
+    <p class="eyebrow">Etapa 8 de ${STEPS.length}</p>
     <h1>Revisar arquivo</h1>
     <p class="muted">Confira as informações principais. Depois de salvar, todos os campos de sessão continuarão editáveis.</p>
     <div class="review-list">
@@ -1338,7 +1364,8 @@ function prepareCreatorLevel() {
 function creatorOutput() {
   if (!creatorProgress?.complete || creatorProgress.key !== creatorFingerprint()) return creatorState;
   return { ...creatorProgress.draft, nome: creatorState.nome, jogador: creatorState.jogador,
-    nex: creatorState.nex, nivel: creatorState.nivel, patente: creatorState.patente, trilha: creatorState.trilha };
+    nex: creatorState.nex, nivel: creatorState.nivel, patente: creatorState.patente, trilha: creatorState.trilha,
+    personalidade: creatorState.personalidade, historico: creatorState.historico, objetivo: creatorState.objetivo };
 }
 
 function renderCreatorChoices() {
@@ -1441,6 +1468,12 @@ function saveCreatorFields() {
   if (currentStep === 5) {
     applyDerived(creatorOutput(), true);
   }
+
+  if (currentStep === 6) {
+    creatorState.personalidade = value("personalidade")?.trim() || "";
+    creatorState.historico = value("historico")?.trim() || "";
+    creatorState.objetivo = value("objetivo")?.trim() || "";
+  }
 }
 
 const SHEET_TABS = [
@@ -1519,6 +1552,7 @@ function renderSheet(id) {
     ${renderRitualDialog(character)}
     ${renderItemDialog(character)}
     ${renderCustomWeaponDialog(character)}
+    ${renderAttributeEditDialog(character)}
     ${renderLevelUpDialog(character)}
     ${renderAbilityChoiceDialog(character)}
     ${renderSpendDialog(character)}
@@ -1571,6 +1605,7 @@ function renderSheetTab(character) {
   if (activeSheetTab === "anotacoes") {
     return `
       ${renderFormationSection(character)}
+      ${renderHistorySection(character)}
       ${renderAutomaticBenefits(character)}
       ${notesSection("Observações de perícias", "pericias", character.pericias, "Especializações, condições e bônus temporários.")}
       ${notesSection("Anotações", "anotacoes", character.anotacoes, "Pistas, contatos e lembretes da sessão.")}
@@ -1584,7 +1619,7 @@ function renderSummaryTab(character) {
     <div class="summary-layout">
       <div class="summary-side">
         <div class="sheet-section">
-          <div class="section-heading"><h2>Atributos</h2><span class="muted small">Valores atuais</span></div>
+          <div class="section-heading"><h2>Atributos</h2><button class="icon-button" id="open-attribute-edit-dialog" type="button" aria-label="Ajustar atributos" title="Ajustar atributos">✎</button></div>
           ${renderAttributeConstellation(character.atributos)}
         </div>
         <div class="sheet-section">
@@ -1623,6 +1658,31 @@ function renderFormationSection(character) {
         }
       </div>
     </div>
+  `;
+}
+
+function renderHistorySection(character) {
+  return `
+    <details class="entry-card history-card">
+      <summary>
+        <span><strong>História do agente</strong><small>Personalidade, histórico e objetivo</small></span>
+        <span class="entry-summary-side"><span class="chevron" aria-hidden="true">⌄</span></span>
+      </summary>
+      <div class="entry-body history-body">
+        <div class="field">
+          <label for="history-personalidade">Personalidade</label>
+          <textarea id="history-personalidade" class="autosave-field" data-autosave="personalidade" placeholder="Como o agente age, fala e reage sob pressão.">${escapeHtml(character.personalidade || "")}</textarea>
+        </div>
+        <div class="field">
+          <label for="history-historico">Histórico</label>
+          <textarea id="history-historico" class="autosave-field" data-autosave="historico" placeholder="De onde veio, o que viveu antes de entrar pra Ordem.">${escapeHtml(character.historico || "")}</textarea>
+        </div>
+        <div class="field">
+          <label for="history-objetivo">Objetivo</label>
+          <textarea id="history-objetivo" class="autosave-field" data-autosave="objetivo" placeholder="O que o agente busca alcançar.">${escapeHtml(character.objetivo || "")}</textarea>
+        </div>
+      </div>
+    </details>
   `;
 }
 
@@ -1931,6 +1991,8 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
       ? `<button class="entry-remove" type="button" data-ritual-toggle="${entry.id}">Remover</button>`
       : "";
   const glyphDelay = Math.min(index, 10) * 70;
+  const knowsSangueRitual = (selectedCharacter?.rituaisSelecionados ?? []).some((id) => RITUAL_BY_ID.get(id)?.element === "Sangue");
+  const dt = entry.resistance && selectedCharacter ? ritualDifficulty(selectedCharacter, entry, knowsSangueRitual) : null;
   return `
     <div class="entry-card-shell">
       <details class="entry-card ritual-card element-${normalizeSearch(entry.element)}">
@@ -1949,6 +2011,7 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
             ${entry.target ? `<div><dt>Alvo/área</dt><dd>${escapeHtml(entry.target)}</dd></div>` : ""}
             ${entry.duration ? `<div><dt>Duração</dt><dd>${escapeHtml(entry.duration)}</dd></div>` : ""}
             ${entry.resistance ? `<div><dt>Resistência</dt><dd>${escapeHtml(entry.resistance)}</dd></div>` : ""}
+            ${dt !== null ? `<div><dt>DT</dt><dd>${dt}</dd></div>` : ""}
             ${entry.requirement ? `<div><dt>Requisito</dt><dd>${escapeHtml(entry.requirement)}</dd></div>` : ""}
             <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</dd></div>
           </dl>
@@ -3927,6 +3990,7 @@ function bindSheetInteractions(character) {
   bindRitualDialog(character);
   bindItemDialog(character);
   bindCustomWeaponDialog(character);
+  bindAttributeEditDialog(character);
   bindOptionalRulesDialog(character);
   bindLevelUpDialog(character);
   bindAbilityChoiceDialog(character);
@@ -4270,6 +4334,57 @@ function bindCustomWeaponDialog(character) {
     upsertCharacter(character);
     renderSheet(character.id);
     showToast("Arma personalizada salva.");
+  });
+}
+
+function renderAttributeEditDialog(character) {
+  return `
+    <dialog class="picker-dialog attribute-edit-dialog" id="attribute-edit-dialog" aria-labelledby="attribute-edit-dialog-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Atributos</p><h2 id="attribute-edit-dialog-title">Ajustar atributos</h2></div>
+        <button class="dialog-close" id="close-attribute-edit-dialog" type="button" aria-label="Fechar">×</button>
+      </div>
+      <form class="picker-body" id="attribute-edit-form">
+        <p class="field-help">Use quando algo na sessão mudar um atributo (maldição, mutação, experimento, decisão do mestre). PV, PE, Sanidade, Defesa e tudo mais recalculam na hora.</p>
+        <div class="form-grid">
+          ${Object.entries(ATTRIBUTE_LABELS)
+            .map(
+              ([key, abbreviation]) => `
+            <div class="field">
+              <label for="attribute-edit-${key}">${ATTRIBUTE_NAMES[key]} (${abbreviation})</label>
+              <input id="attribute-edit-${key}" name="${key}" type="number" inputmode="numeric" min="0" max="9" value="${numberOr(character.atributos?.[key], 1)}" />
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+        <div class="dialog-actions">
+          <button class="button primary" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+  `;
+}
+
+function bindAttributeEditDialog(character) {
+  const dialog = document.querySelector("#attribute-edit-dialog");
+  document.querySelector("#open-attribute-edit-dialog")?.addEventListener("click", () => {
+    dialog?.showModal();
+  });
+  document.querySelector("#close-attribute-edit-dialog")?.addEventListener("click", () => dialog?.close());
+  closeDialogOnBackdrop(dialog);
+
+  document.querySelector("#attribute-edit-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.target;
+    const next = {};
+    for (const key of Object.keys(ATTRIBUTE_LABELS)) {
+      next[key] = clamp(numberOr(form.elements[key]?.value, character.atributos?.[key] ?? 1), 0, 9);
+    }
+    character.atributos = next;
+    upsertCharacter(character);
+    renderSheet(character.id);
+    showToast("Atributos atualizados.");
   });
 }
 

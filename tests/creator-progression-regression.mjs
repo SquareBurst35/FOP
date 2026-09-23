@@ -47,6 +47,8 @@ assert.equal(u.run('creatorProgress.complete'),true);assert.equal(u.run('creator
 assert.equal(u.store.size,0,'Confirming the draft must not create a saved sheet');
 u.run('advanceCreator()');assert.equal(u.run('currentStep'),5);
 u.run('advanceCreator()');assert.equal(u.run('currentStep'),6);
+assert.match(u.run('renderCreatorStep()'),/História do agente/);
+u.run('advanceCreator()');assert.equal(u.run('currentStep'),7);
 assert.match(u.run('renderCreatorStep()'),/Compreensão Paranormal/);
 u.run('advanceCreator()');
 const saved=JSON.parse(u.store.get('fop_personagens_v1'))[0];

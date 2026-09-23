@@ -1,4 +1,4 @@
-import { beforeSoBonus } from "./session.js?v=31";
+import { beforeSoBonus, turnSpendLimit } from "./session.js?v=31";
 import { ITEM_BY_ID } from "./items.js?v=57";
 import { upgradedItem } from "./item-upgrades.js?v=56";
 export const ATTRIBUTE_TARGET = 9;
@@ -271,6 +271,29 @@ function equipmentDefenseBonus(character) {
     const value = item.details?.find(([key]) => key === "Defesa")?.[1];
     return sum + (Number(value) || 0);
   }, 0);
+}
+
+function ritualDtItemBonus(character, ritual, knowsSangueRitual) {
+  const owned = new Set(
+    (character?.inventarioItens ?? [])
+      .map((selected) => ITEM_BY_ID.get(selected.itemId)?.name)
+      .filter(Boolean),
+  );
+  let bonus = 0;
+  if (owned.has("A Antena")) bonus += 3;
+  if (owned.has("Cajado da Cruz de Sangue") && ritual?.element === "Sangue" && character?.classe === "Ocultista" && knowsSangueRitual) {
+    bonus += 1;
+  }
+  return bonus;
+}
+
+// Livro base, p.78 ("DT de Testes de Resistência"): 10 + limite de PE por
+// turno + o atributo indicado (Presença, para rituais). "A Antena" e o
+// Cajado da Cruz de Sangue (Arquivos Secretos #7, só pra rituais de Sangue
+// com um ocultista que já conheça um) somam bônus fixos quando possuídos.
+export function ritualDifficulty(character, ritual, knowsSangueRitual = false) {
+  const presenca = Number(character?.atributos?.presenca) || 0;
+  return 10 + turnSpendLimit(character) + presenca + ritualDtItemBonus(character, ritual, knowsSangueRitual);
 }
 
 export function calculateDerived(character) {
