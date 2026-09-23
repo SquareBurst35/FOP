@@ -310,25 +310,35 @@ export function inventoryCapacity(character) {
   return base + (militaryPack ? 2 : 0) + (organized ? Math.max(0, Number(character?.atributos?.intelecto) || 0) : 0) + (mochileiro ? 5 : 0) + (mascate ? 5 : 0);
 }
 
+function customWeaponShape(entry) {
+  return { group: "Armas", name: entry.name, category: entry.category, spaces: entry.spaces, details: [["Empunhadura", entry.empunhadura || ""]] };
+}
+
 export function inventoryUsage(character) {
   const entries = Array.isArray(character?.inventarioItens) ? character.inventarioItens : [];
+  const customEntries = Array.isArray(character?.itensPersonalizados) ? character.itensPersonalizados : [];
   const categoryCounts = { I: 0, II: 0, III: 0, IV: 0, "V+": 0 };
   let spaces = 0;
   let quantity = 0;
   const organized = (character?.habilidadesSelecionadas ?? []).some((id) =>
     String(id).endsWith("-inventario-organizado"),
   );
+  const tally = (categoryItem, rawQuantity) => {
+    const amount = Math.max(1, Math.min(99, Number(rawQuantity) || 1));
+    const unitSpaces = organized && categoryItem.spaces === 0.5 ? 0.25 : categoryItem.spaces;
+    spaces += unitSpaces * amount;
+    quantity += amount;
+    if (categoryCounts[categoryItem.category] !== undefined) {
+      categoryCounts[categoryItem.category] += amount;
+    }
+  };
   for (const selected of entries) {
     const originalItem = ITEM_BY_ID.get(selected.itemId);
     if (!originalItem) continue;
-    const catalogItem = upgradedItem(originalItem, character?.inventarioModificacoes?.[selected.itemId]);
-    const amount = Math.max(1, Math.min(99, Number(selected.quantity) || 1));
-    const unitSpaces = organized && catalogItem.spaces === 0.5 ? 0.25 : catalogItem.spaces;
-    spaces += unitSpaces * amount;
-    quantity += amount;
-    if (categoryCounts[catalogItem.category] !== undefined) {
-      categoryCounts[catalogItem.category] += amount;
-    }
+    tally(upgradedItem(originalItem, character?.inventarioModificacoes?.[selected.itemId]), selected.quantity);
+  }
+  for (const entry of customEntries) {
+    tally(upgradedItem(customWeaponShape(entry), entry.modificacoes), entry.quantity);
   }
   const capacity = inventoryCapacity(character);
   return { spaces, quantity, capacity, overloaded: spaces > capacity, categoryCounts };

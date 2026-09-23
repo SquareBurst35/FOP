@@ -43,7 +43,7 @@ import {
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=56";
+} from "./items.js?v=57";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=19";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=55";
 import {
@@ -51,7 +51,7 @@ import {
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=56";
+} from "./choices.js?v=57";
 import {
   effortResource,
   beforeSoBonus,
@@ -190,6 +190,7 @@ let levelUpRitualSearch = "";
 let activeItemGroup = "Armas";
 let activeItemSource = "Todos";
 let itemSearch = "";
+let editingCustomItemId = null;
 let levelUpState = null;
 let abilityChoiceState = null;
 let spendState = null;
@@ -275,6 +276,7 @@ function createBlankCharacter() {
     pericias: "",
     inventario: "",
     inventarioItens: [],
+    itensPersonalizados: [],
     habilidades: "",
     habilidadesNotas: "",
     habilidadesSelecionadas: [],
@@ -383,6 +385,28 @@ function normalizeCharacter(character) {
   }
   character.inventarioModificacoes = Object.fromEntries([...inventoryQuantities.keys()].map(id => [id, itemUpgrades(ITEM_BY_ID.get(id), character.inventarioModificacoes?.[id]).map(u => u.id)]));
   character.inventarioItens = [...inventoryQuantities].map(([itemId, quantity]) => ({ itemId, quantity }));
+  character.itensPersonalizados = (Array.isArray(character.itensPersonalizados) ? character.itensPersonalizados : [])
+    .filter((entry) => entry && typeof entry === "object" && entry.id && String(entry.name ?? "").trim())
+    .map((entry) => {
+      const clean = {
+        id: String(entry.id),
+        name: String(entry.name).trim(),
+        category: ["0", "I", "II", "III", "IV"].includes(entry.category) ? entry.category : "I",
+        spaces: Math.max(0, numberOr(entry.spaces, 1)),
+        quantity: clamp(numberOr(entry.quantity, 1), 1, 99),
+        proficiencia: String(entry.proficiencia ?? ""),
+        empunhadura: String(entry.empunhadura ?? ""),
+        dano: String(entry.dano ?? ""),
+        danoSecundario: String(entry.danoSecundario ?? ""),
+        critico: String(entry.critico ?? ""),
+        multiplicador: String(entry.multiplicador ?? ""),
+        tipo: String(entry.tipo ?? ""),
+        alcance: String(entry.alcance ?? ""),
+        modificacoes: [],
+      };
+      clean.modificacoes = itemUpgrades(buildCustomWeaponItem(clean), entry.modificacoes).map((u) => u.id);
+      return clean;
+    });
   character.inventario ??= "";
   character.anotacoes ??= "";
   character.pericias ??= "";
@@ -1487,6 +1511,7 @@ function renderSheet(id) {
     ${renderAbilityDialog(character)}
     ${renderRitualDialog(character)}
     ${renderItemDialog(character)}
+    ${renderCustomWeaponDialog(character)}
     ${renderLevelUpDialog(character)}
     ${renderAbilityChoiceDialog(character)}
     ${renderSpendDialog(character)}
@@ -2339,9 +2364,16 @@ function formatInventoryNumber(value) {
   return Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
 }
 
+function customItemSelections(character) {
+  return (character.itensPersonalizados ?? [])
+    .map((entry) => ({ itemId: entry.id, quantity: entry.quantity, item: upgradedItem(buildCustomWeaponItem(entry), entry.modificacoes), custom: true }))
+    .sort((a, b) => a.item.name.localeCompare(b.item.name));
+}
+
 function renderInventoryTab(character) {
   const usage = inventoryUsage(character);
-  const selected = inventorySelections(character);
+  const selected = [...inventorySelections(character).map((s) => ({ ...s, custom: false })), ...customItemSelections(character)]
+    .sort((a, b) => a.item.group.localeCompare(b.item.group) || a.item.name.localeCompare(b.item.name));
   const limits = PATENT_ITEM_LIMITS[character.patente];
   const capacityState = usage.spaces > usage.capacity * 2
     ? "blocked"
@@ -2367,7 +2399,7 @@ function renderInventoryTab(character) {
       </div>
       <div class="entry-list inventory-list">
         ${selected.length
-          ? selected.map((selectedItem) => renderItemCard(selectedItem.item, { quantity: selectedItem.quantity, character })).join("")
+          ? selected.map((selectedItem) => renderItemCard(selectedItem.item, { quantity: selectedItem.quantity, character, custom: selectedItem.custom })).join("")
           : emptyCollection("Nenhum item adicionado. Use “Adicionar item” para abrir o catálogo.")}
       </div>
     </section>
@@ -2375,17 +2407,18 @@ function renderInventoryTab(character) {
   `;
 }
 
-function renderItemCard(item, { picker = false, quantity = 0, character = null } = {}) {
+function renderItemCard(item, { picker = false, quantity = 0, character = null, custom = false } = {}) {
   const totalSpaces = item.spaces * Math.max(1, quantity || 1);
   const action = picker
     ? renderItemPickerAction(item)
     : `<div class="inventory-item-actions">
         <div class="quantity-stepper" aria-label="Quantidade de ${escapeAttribute(item.name)}">
-          <button type="button" data-item-quantity="${item.id}" data-item-delta="-1" ${quantity <= 1 ? "disabled" : ""} aria-label="Diminuir quantidade">−</button>
+          <button type="button" data-${custom ? "custom-item" : "item"}-quantity="${item.id}" data-item-delta="-1" ${quantity <= 1 ? "disabled" : ""} aria-label="Diminuir quantidade">−</button>
           <output>${quantity}</output>
-          <button type="button" data-item-quantity="${item.id}" data-item-delta="1" ${quantity >= 99 ? "disabled" : ""} aria-label="Aumentar quantidade">+</button>
+          <button type="button" data-${custom ? "custom-item" : "item"}-quantity="${item.id}" data-item-delta="1" ${quantity >= 99 ? "disabled" : ""} aria-label="Aumentar quantidade">+</button>
         </div>
-        <button class="entry-remove" type="button" data-item-remove="${item.id}">Remover</button>
+        ${custom ? `<button class="button ghost compact" type="button" data-custom-item-edit="${item.id}">Editar</button>` : ""}
+        <button class="entry-remove" type="button" data-${custom ? "custom-item" : "item"}-remove="${item.id}">Remover</button>
       </div>`;
   return `
     <details class="entry-card item-card">
@@ -2401,18 +2434,53 @@ function renderItemCard(item, { picker = false, quantity = 0, character = null }
           <div><dt>Espaços</dt><dd>${formatInventoryNumber(item.spaces)}${quantity > 1 ? ` cada · ${formatInventoryNumber(totalSpaces)} no total` : ""}</dd></div>
           <div><dt>Fonte</dt><dd>${escapeHtml(item.source)}${item.page ? ` · p. ${escapeHtml(item.page)}` : ""}</dd></div>
         </dl>
-        ${character ? renderItemUpgrades(item, character) : ""}
+        ${character ? renderItemUpgradeSection(item, custom ? "custom" : "catalog", item.id) : ""}
         ${action}
       </div>
     </details>
   `;
 }
 
-function renderItemUpgrades(item, character) {
- const original=ITEM_BY_ID.get(item.id),compatible=ITEM_UPGRADES.filter(u=>canApplyUpgrade(original,u));
- if(!compatible.length)return "";
- const chosen=itemUpgrades(original,character.inventarioModificacoes?.[item.id]);
- return `<details class="item-upgrades"><summary>Modificações e maldições (${chosen.length})</summary><p class="muted small">A categoria e os espaços são atualizados aqui. A escolha vale para todas as cópias deste item.</p><div class="upgrade-choices">${compatible.map(u=>`<label><input type="checkbox" data-item-upgrade="${item.id}" value="${u.id}" ${chosen.some(c=>c.id===u.id)?"checked":""}/><span><strong>${escapeHtml(u.name)}</strong><small>${u.curse?"Maldição":"Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small>${u.summary?`<small class="muted">${escapeHtml(u.summary)}</small>`:""}</span></label>`).join("")}</div></details>`;
+function renderItemUpgradeSection(item, ownerKind, ownerId) {
+  const compatible = ITEM_UPGRADES.filter((u) => canApplyUpgrade(item, u));
+  if (!compatible.length) return "";
+  const chosen = item.upgrades ?? [];
+  const available = compatible.filter((u) => !chosen.some((c) => c.id === u.id));
+  return `
+    <div class="item-upgrades-section">
+      <div class="item-upgrades-header">
+        <span>Melhorias${chosen.length ? ` (${chosen.length})` : ""}</span>
+        ${available.length ? `<button class="button compact primary" type="button" data-upgrade-toggle>Adicionar</button>` : ""}
+      </div>
+      ${chosen.length
+        ? `<div class="upgrade-card-list">${chosen.map((u) => renderUpgradeCard(u, ownerKind, ownerId)).join("")}</div>`
+        : `<p class="muted small">Nenhuma melhoria aplicada.</p>`}
+      ${available.length ? `<div class="upgrade-add-list" hidden>${available.map((u) => renderUpgradeAddOption(u, ownerKind, ownerId)).join("")}</div>` : ""}
+    </div>
+  `;
+}
+
+function renderUpgradeCard(u, ownerKind, ownerId) {
+  return `
+    <div class="upgrade-card ${u.curse ? "curse" : ""}">
+      <div class="upgrade-card-body">
+        <strong>${escapeHtml(u.name)}</strong>
+        ${u.summary ? `<p>${escapeHtml(u.summary)}</p>` : ""}
+        <small class="muted">${u.curse ? "Maldição" : "Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small>
+      </div>
+      <button class="entry-remove" type="button" data-upgrade-action="remove" data-upgrade-owner="${ownerKind}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${u.id}">Remover</button>
+    </div>
+  `;
+}
+
+function renderUpgradeAddOption(u, ownerKind, ownerId) {
+  return `
+    <button class="upgrade-add-option" type="button" data-upgrade-action="add" data-upgrade-owner="${ownerKind}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${u.id}">
+      <strong>${escapeHtml(u.name)}</strong>
+      <small>${u.curse ? "Maldição" : "Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small>
+      ${u.summary ? `<small class="muted">${escapeHtml(u.summary)}</small>` : ""}
+    </button>
+  `;
 }
 
 function renderUpgradeCatalog() {
@@ -2428,8 +2496,7 @@ function renderItemPickerAction(item) {
   return `<button class="button ${error ? "ghost" : "primary"} compact" type="button" data-item-add="${item.id}" ${error ? `disabled title="${escapeAttribute(error)}"` : ""}>${error ? "Limite atingido" : quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
 }
 
-function inventoryAddError(character, item) {
-  if(item) item = upgradedItem(item, character.inventarioModificacoes?.[item.id]);
+function categoryLimitError(character, item) {
   if (!item || item.category === "0" || item.group === "Modificações") return "";
   const usage = inventoryUsage(character);
   if (isSurvivorCharacter(character)) {
@@ -2441,6 +2508,44 @@ function inventoryAddError(character, item) {
   if (!limits || limits[item.category] == null) return "";
   if (usage.categoryCounts[item.category] >= limits[item.category]) return `Limite de itens de categoria ${item.category} atingido para esta patente.`;
   return "";
+}
+
+function inventoryAddError(character, item) {
+  if (item) item = upgradedItem(item, character.inventarioModificacoes?.[item.id]);
+  return categoryLimitError(character, item);
+}
+
+function customItemQuantityError(character, entry) {
+  return categoryLimitError(character, upgradedItem(buildCustomWeaponItem(entry), entry.modificacoes));
+}
+
+function customItemSaveError(character, entry) {
+  const withoutEntry = { ...character, itensPersonalizados: (character.itensPersonalizados ?? []).filter((item) => item.id !== entry.id) };
+  return categoryLimitError(withoutEntry, upgradedItem(buildCustomWeaponItem(entry), entry.modificacoes));
+}
+
+function buildCustomWeaponItem(entry) {
+  const details = [
+    ["Proficiência", entry.proficiencia || "—"],
+    ["Empunhadura", entry.empunhadura || "—"],
+    ["Dano", entry.dano || "—"],
+    ...(entry.danoSecundario ? [["Dano secundário", entry.danoSecundario]] : []),
+    ["Crítico", `${entry.critico || "—"}${entry.multiplicador ? `/x${entry.multiplicador}` : ""}`],
+    ["Alcance", entry.alcance || "—"],
+    ["Tipo", entry.tipo || "—"],
+  ];
+  const summary = `Arma personalizada${entry.proficiencia ? ` (${entry.proficiencia.toLowerCase()})` : ""}, com dano ${entry.dano || "—"} e crítico ${entry.critico || "—"}${entry.multiplicador ? `/x${entry.multiplicador}` : ""}.`;
+  return {
+    id: entry.id,
+    name: entry.name,
+    group: "Armas",
+    category: entry.category,
+    spaces: entry.spaces,
+    summary,
+    details,
+    source: "Personalizado",
+    page: "",
+  };
 }
 
 function renderItemDialog(character) {
@@ -2475,9 +2580,74 @@ function renderItemPickerResults() {
       (!query || normalizeSearch(`${item.name} ${(item.aliases ?? []).join(" ")} ${item.summary} ${item.source} ${item.details.flat().join(" ")}`).includes(query)),
   );
   const upgrades = ["Todos", "Modificações"].includes(activeItemGroup) ? renderUpgradeCatalog() : "";
-  return entries.length || upgrades
+  const customButton = activeItemGroup === "Armas" ? `<button class="button ghost compact" id="open-custom-item-dialog" type="button">+ Criar arma personalizada</button>` : "";
+  return (entries.length || upgrades
     ? entries.map((item) => renderItemCard(item, { picker: true })).join("") + upgrades
-    : emptyCollection("Nenhum item encontrado neste filtro.");
+    : emptyCollection("Nenhum item encontrado neste filtro.")) + customButton;
+}
+
+const CUSTOM_WEAPON_PROFICIENCIES = ["Simples", "Tática", "Pesada"];
+const CUSTOM_WEAPON_HANDLING_OPTIONS = ["Leve", "Uma mão", "Uma mão (versátil)", "Duas mãos", "Arremesso", "Disparo · uma mão", "Disparo · duas mãos", "Fogo · leve", "Fogo · uma mão", "Fogo · duas mãos"];
+const CUSTOM_WEAPON_TYPES = ["Corte", "Impacto", "Perfuração", "Balístico", "Fogo", "Sangue", "Morte", "Energia", "Conhecimento", "Medo"];
+
+function selectField(label, id, value, options, required = false) {
+  return `
+    <div class="field">
+      <label for="${id}">${label}${required ? " *" : ""}</label>
+      <select id="${id}" name="${id}" ${required ? "required" : ""}>
+        ${options.map((option) => `<option value="${escapeAttribute(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+      </select>
+    </div>
+  `;
+}
+
+function renderCustomWeaponDialog(character) {
+  const editing = editingCustomItemId ? (character.itensPersonalizados ?? []).find((entry) => entry.id === editingCustomItemId) : null;
+  const v = (key, fallback = "") => (editing ? String(editing[key] ?? fallback) : fallback);
+  return `
+    <dialog class="picker-dialog custom-item-dialog" id="custom-item-dialog" aria-labelledby="custom-item-dialog-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Equipamentos</p><h2 id="custom-item-dialog-title">${editing ? "Editar arma personalizada" : "Criar arma personalizada"}</h2></div>
+        <button class="dialog-close" id="close-custom-item-dialog" type="button" aria-label="Fechar">×</button>
+      </div>
+      <form class="picker-body custom-item-form" id="custom-item-form">
+        ${field("Nome", "custom-item-name", v("name"), "Katana do Rosário Vingativo", true)}
+        <div class="form-grid">
+          ${selectField("Proficiência", "custom-item-proficiencia", v("proficiencia", "Tática"), CUSTOM_WEAPON_PROFICIENCIES)}
+          <div class="field">
+            <label for="custom-item-empunhadura">Empunhadura</label>
+            <input id="custom-item-empunhadura" name="custom-item-empunhadura" list="custom-item-handling-options" value="${escapeAttribute(v("empunhadura"))}" placeholder="Duas mãos" />
+            <datalist id="custom-item-handling-options">${CUSTOM_WEAPON_HANDLING_OPTIONS.map((option) => `<option value="${escapeAttribute(option)}"></option>`).join("")}</datalist>
+          </div>
+        </div>
+        <div class="form-grid">
+          ${field("Dano", "custom-item-dano", v("dano"), "2d10", true)}
+          ${field("Dano secundário", "custom-item-dano-secundario", v("danoSecundario"), "opcional")}
+        </div>
+        <div class="form-grid">
+          ${field("Crítico", "custom-item-critico", v("critico"), "16", true)}
+          <div class="field">
+            <label for="custom-item-multiplicador">Multiplicador *</label>
+            <input id="custom-item-multiplicador" name="custom-item-multiplicador" type="number" min="1" max="10" value="${escapeAttribute(v("multiplicador", "2"))}" required />
+          </div>
+        </div>
+        <div class="form-grid">
+          ${selectField("Tipo de Dano", "custom-item-tipo", v("tipo", "Corte"), CUSTOM_WEAPON_TYPES)}
+          ${field("Alcance", "custom-item-alcance", v("alcance"), "—")}
+        </div>
+        <div class="form-grid">
+          ${selectField("Categoria", "custom-item-categoria", v("category", "I"), ["0", "I", "II", "III", "IV"])}
+          <div class="field">
+            <label for="custom-item-espacos">Espaços *</label>
+            <input id="custom-item-espacos" name="custom-item-espacos" type="number" min="0" max="10" step="0.5" value="${escapeAttribute(v("spaces", "2"))}" required />
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button class="button primary" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+  `;
 }
 
 const LEVEL_UP_STEPS = ["Progressão", "Ganhos", "Escolhas", "Revisão"];
@@ -3682,6 +3852,7 @@ function bindSheetInteractions(character) {
   bindAbilityDialog(character);
   bindRitualDialog(character);
   bindItemDialog(character);
+  bindCustomWeaponDialog(character);
   bindOptionalRulesDialog(character);
   bindLevelUpDialog(character);
   bindAbilityChoiceDialog(character);
@@ -3832,16 +4003,40 @@ function bindItemDialog(character) {
     bindItemAddButtons(character, true);
   });
   bindItemAddButtons(character, false);
-  document.querySelectorAll("[data-item-upgrade]").forEach(input => input.addEventListener("change", () => {
-    const id=input.dataset.itemUpgrade,original=ITEM_BY_ID.get(id);
-    const selected=new Set(character.inventarioModificacoes?.[id]??[]);
-    if(input.checked)selected.add(input.value);else selected.delete(input.value);
-    const candidate=upgradedItem(original,[...selected]);
-    if(candidate.category==='V+')return showToast("Este conjunto ultrapassa a categoria IV."), input.checked=false;
-    if(input.checked&&!candidate.upgrades.some(u=>u.id===input.value))return showToast("Esta modificação é incompatível com uma escolha atual."), input.checked=false;
-    character.inventarioModificacoes={...character.inventarioModificacoes,[id]:candidate.upgrades.map(u=>u.id)};
-    upsertCharacter(character);renderSheet(character.id);showToast("Equipamento atualizado.");
-  }));
+
+  document.querySelectorAll("[data-upgrade-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const panel = button.closest(".item-upgrades-section")?.querySelector(".upgrade-add-list");
+      if (panel) panel.hidden = !panel.hidden;
+    });
+  });
+  document.querySelectorAll("[data-upgrade-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const { upgradeOwner, upgradeOwnerId, upgradeId, upgradeAction } = button.dataset;
+      const original = upgradeOwner === "custom"
+        ? (character.itensPersonalizados ?? []).find((entry) => entry.id === upgradeOwnerId)
+        : ITEM_BY_ID.get(upgradeOwnerId);
+      const originalItem = upgradeOwner === "custom" ? (original ? buildCustomWeaponItem(original) : null) : original;
+      if (!original || !originalItem) return;
+      const currentIds = upgradeOwner === "custom" ? (original.modificacoes ?? []) : (character.inventarioModificacoes?.[upgradeOwnerId] ?? []);
+      const selected = new Set(currentIds);
+      if (upgradeAction === "add") selected.add(upgradeId);
+      else selected.delete(upgradeId);
+      const candidate = upgradedItem(originalItem, [...selected]);
+      if (candidate.category === "V+") return showToast("Este conjunto ultrapassa a categoria IV.");
+      if (upgradeAction === "add" && !candidate.upgrades.some((u) => u.id === upgradeId)) return showToast("Esta melhoria é incompatível com uma escolha atual.");
+      if (upgradeOwner === "custom") {
+        character.itensPersonalizados = character.itensPersonalizados.map((entry) =>
+          entry.id === upgradeOwnerId ? { ...entry, modificacoes: candidate.upgrades.map((u) => u.id) } : entry,
+        );
+      } else {
+        character.inventarioModificacoes = { ...character.inventarioModificacoes, [upgradeOwnerId]: candidate.upgrades.map((u) => u.id) };
+      }
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast(upgradeAction === "add" ? "Melhoria adicionada." : "Melhoria removida.");
+    });
+  });
 
   document.querySelectorAll("[data-item-quantity]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -3858,6 +4053,45 @@ function bindItemDialog(character) {
       showToast("Item removido do inventário.");
     });
   });
+
+  document.querySelectorAll("[data-custom-item-quantity]").forEach((button) => {
+    button.addEventListener("click", () => {
+      changeCustomItemQuantity(character, button.dataset.customItemQuantity, Number(button.dataset.itemDelta));
+    });
+  });
+  document.querySelectorAll("[data-custom-item-remove]").forEach((button) => {
+    button.addEventListener("click", () => {
+      character.itensPersonalizados = (character.itensPersonalizados ?? []).filter(
+        (entry) => entry.id !== button.dataset.customItemRemove,
+      );
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast("Item personalizado removido.");
+    });
+  });
+  document.querySelectorAll("[data-custom-item-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      editingCustomItemId = button.dataset.customItemEdit;
+      renderSheet(character.id);
+      document.querySelector("#custom-item-dialog")?.showModal();
+    });
+  });
+}
+
+function changeCustomItemQuantity(character, itemId, delta) {
+  if (!Number.isFinite(delta) || delta === 0) return;
+  const entry = (character.itensPersonalizados ?? []).find((item) => item.id === itemId);
+  if (!entry) return;
+  if (delta > 0) {
+    const error = customItemQuantityError(character, entry);
+    if (error) return showToast(error);
+  }
+  character.itensPersonalizados = character.itensPersonalizados.map((item) =>
+    item.id === itemId ? { ...item, quantity: clamp(numberOr(item.quantity, 1) + delta, 1, 99) } : item,
+  );
+  upsertCharacter(character);
+  renderSheet(character.id);
+  showToast("Quantidade atualizada.");
 }
 
 function bindItemAddButtons(character, resultsOnly) {
@@ -3899,6 +4133,65 @@ function changeInventoryQuantity(character, itemId, delta, notify = true) {
   upsertCharacter(character);
   renderSheet(character.id);
   if (notify) showToast("Quantidade atualizada.");
+}
+
+function bindCustomWeaponDialog(character) {
+  const dialog = document.querySelector("#custom-item-dialog");
+  document.querySelector("#open-custom-item-dialog")?.addEventListener("click", () => {
+    editingCustomItemId = null;
+    document.querySelector("#item-dialog")?.close();
+    renderSheet(character.id);
+    document.querySelector("#custom-item-dialog")?.showModal();
+  });
+  document.querySelector("#close-custom-item-dialog")?.addEventListener("click", () => {
+    editingCustomItemId = null;
+    dialog?.close();
+  });
+  closeDialogOnBackdrop(dialog);
+
+  document.querySelector("#custom-item-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.target;
+    const value = (name) => (form.elements[name]?.value ?? "").trim();
+    const name = value("custom-item-name");
+    const dano = value("custom-item-dano");
+    const critico = value("custom-item-critico");
+    const multiplicador = value("custom-item-multiplicador");
+    const spaces = value("custom-item-espacos");
+    if (!name) return showToast("Dê um nome para a arma.");
+    if (!dano) return showToast("Preencha o dano.");
+    if (!critico) return showToast("Preencha o crítico.");
+    if (!multiplicador || Number(multiplicador) <= 0) return showToast("Preencha o multiplicador.");
+    if (spaces === "" || Number(spaces) < 0) return showToast("Preencha os espaços.");
+    const existing = (character.itensPersonalizados ?? []).find((item) => item.id === editingCustomItemId);
+    const entry = {
+      id: editingCustomItemId ?? `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+      name,
+      category: value("custom-item-categoria") || "I",
+      spaces: Number(spaces),
+      quantity: existing?.quantity ?? 1,
+      proficiencia: value("custom-item-proficiencia"),
+      empunhadura: value("custom-item-empunhadura"),
+      dano,
+      danoSecundario: value("custom-item-dano-secundario"),
+      critico,
+      multiplicador,
+      tipo: value("custom-item-tipo"),
+      alcance: value("custom-item-alcance"),
+      modificacoes: existing?.modificacoes ?? [],
+    };
+    const error = customItemSaveError(character, entry);
+    if (error) return showToast(error);
+    const entries = [...(character.itensPersonalizados ?? [])];
+    const existingIndex = entries.findIndex((item) => item.id === entry.id);
+    if (existingIndex >= 0) entries[existingIndex] = entry;
+    else entries.push(entry);
+    character.itensPersonalizados = entries;
+    editingCustomItemId = null;
+    upsertCharacter(character);
+    renderSheet(character.id);
+    showToast("Arma personalizada salva.");
+  });
 }
 
 function closeDialogOnBackdrop(dialog) {

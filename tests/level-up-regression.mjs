@@ -467,7 +467,7 @@ for (const determination of [false, true]) {
  const ui=await boot(character);ui.clickData('[data-sheet-tab]','sheetTab','inventario');
  assert.match(ui.html(),/Mochila militar/);assert.match(ui.html(),/2 \/ 7/);
  const reinforced=ITEM_UPGRADES.find(u=>u.target==='Proteções'&&u.name==='Reforçada');
- ui.choose('[data-item-upgrade]',reinforced.id);
+ ui.clickData('[data-upgrade-action]','upgradeId',reinforced.id);
  assert.ok(ui.saved().inventarioModificacoes[armor.id].includes(reinforced.id));
  assert.match(ui.html(),/3 \/ 7/);
  ui.click('open-item-picker');ui.clickData('[data-item-group]','itemGroup','Modificações');assert.match(ui.html(),/Lente de Revelação/);
