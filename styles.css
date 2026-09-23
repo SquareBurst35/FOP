@@ -1476,6 +1476,9 @@ fieldset.skill-choice-block {
 
 .summary-side {
   min-width: 0;
+  align-self: start;
+  position: sticky;
+  top: calc(var(--topbar-height, 76px) + 18px);
 }
 
 .summary-side .stat-grid {
@@ -1517,6 +1520,11 @@ fieldset.skill-choice-block {
 
 .skills-section {
   overflow: hidden;
+  padding: 16px 16px 14px;
+}
+
+.skills-section .section-heading {
+  margin-bottom: 10px;
 }
 
 .skills-table-wrap {
@@ -1535,7 +1543,7 @@ fieldset.skill-choice-block {
 
 .skills-table th,
 .skills-table td {
-  padding: 9px 10px;
+  padding: 5px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.055);
   text-align: center;
   vertical-align: middle;
@@ -1601,7 +1609,7 @@ fieldset.skill-choice-block {
 
 .skill-grade,
 .skill-other {
-  min-height: 36px;
+  min-height: 28px;
   border: 1px solid var(--border);
   border-radius: 7px;
   background: #111419;
@@ -1610,12 +1618,12 @@ fieldset.skill-choice-block {
 
 .skill-grade {
   min-width: 145px;
-  padding: 6px 8px;
+  padding: 3px 8px;
 }
 
 .skill-other {
   width: 70px;
-  padding: 6px;
+  padding: 3px;
   text-align: center;
 }
 
@@ -3358,6 +3366,14 @@ body:has(dialog[open]) {
     linear-gradient(160deg, rgba(18, 21, 24, 0.98), rgba(8, 10, 12, 0.98));
 }
 
+/* .wizard-sidebar/.sheet-sidebar tambem levam .panel (mesma especificidade);
+   sem isto o "position: relative" do .panel vence por ordem e a barra lateral
+   nunca gruda na rolagem. */
+.wizard-sidebar,
+.sheet-sidebar {
+  position: sticky;
+}
+
 .panel::before,
 .sheet-section::before,
 .character-card::after {
@@ -4065,6 +4081,10 @@ body:has(dialog[open]) {
 
   .summary-side .stat-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .summary-side {
+    position: static;
   }
 
   .wizard-sidebar,
