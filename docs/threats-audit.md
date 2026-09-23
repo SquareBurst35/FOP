@@ -577,15 +577,55 @@ Hikikomori/Marca-Passo/Estímulo saíram Energia (primário) + Sangue
 ("Sangue secundário"), confirmando visualmente o que aquela auditoria
 só tinha lido em texto corrido.
 
-## Ordem de continuação sugerida
+## Progresso — Arquivos Secretos #7
 
-1. Arquivos Secretos #7 (último suplemento pendente!) — Raziel/O
-   Verdadeiro Raziel/Alvira/Sabara/Velisar/Zéfero/Incinerado/Stryzga/
-   Apóstata em 4 estágios. Atenção a uma inconsistência já registrada
-   no livro: Incinerado tem imunidade E vulnerabilidade a fogo
-   simultâneas, e Incinerado/Stryzga têm resistência E vulnerabilidade
-   balística simultâneas; preservar o conflito, não inventar qual
-   prevalece.
+PDF `D:\Livros OP\Arquivos-Secretos-07-v1-0.pdf` (~27MB, 93 páginas).
+**Offset de página = 0** (igual a AS#1–#6). **12 ameaças catalogadas
+em 22/09/2026 — 188 ameaças no catálogo.**
+
+**Raziel / O Verdadeiro Raziel confirmadas como 2 fichas distintas**
+(VD 120/200, Defesa/PV/testes próprios) — mesmo padrão de "forma
+desperta" já visto nos Mascarados do AS#2.
+
+**Apóstata: os "4 estágios" citados na auditoria anterior eram duas
+coisas diferentes.** *Mentem Corrumpere* é uma condição progressiva
+que afeta as *vítimas* infectadas (não a apóstata) — documentada como
+texto de habilidade, não virou entrada. Já a apóstata em si tem 4
+patamares de VD (80/160/240/320) com números completos e distintos
+(Presença Perturbadora, Defesa, PV recalculados a cada rito concluído)
+— **viraram 4 entradas**, mesmo padrão do Simulacro (AS#4)/Doppelganger
+(AS#5). Como o livro não nomeia cada patamar, mas *nomeia os ritos*
+("Primeiro/Segundo/Terceiro Rito concluído" — terminologia do próprio
+livro), rotulei as três formas evoluídas como **"Apóstata (1º Rito)"**,
+**"(2º Rito)"**, **"(3º Rito)"** em vez de expor o VD cru no nome
+(que já aparece no badge da própria ficha) — etiqueta de catalogação,
+não dado inventado. Os bônus de cada rito (+10/+15/+20 em testes/dano/
+RD) **não foram recalculados** nos campos numéricos — ficaram como
+texto na habilidade "Ritus", para não arriscar um erro aritmético meu
+virar "dado do livro" (mesmo cuidado já tomado com os bônus do
+Doppelganger/Estímulo).
+
+**Inconsistência Incinerado/Stryzga confirmada como real, preservada
+sem correção**: Incinerado lista imunidade a Fogo E vulnerabilidade a
+Fogo ao mesmo tempo, além de resistência a Balístico colidindo com sua
+própria vulnerabilidade a Balístico; Stryzga tem o mesmo conflito de
+Balístico. Os dois arrays (`imunidadesDano`/`resistencias` e
+`vulnerabilidades`) ficaram como estão impressos, sem decidir qual
+prevalece — mesmo princípio já usado para todo erro do próprio livro
+neste catálogo.
+
+**Primeira contagem de dados negativa com bônus zero**: Incinerado tem
+`test(-2, 0)` em Percepção e Vontade — confirmado visualmente, sem
+"corrigir" para um valor mais familiar.
+
+# Catálogo completo (22/09/2026)
+
+**Todos os livros de Ordem Paranormal publicados até esta sessão estão
+catalogados: livro base, Sobrevivendo ao Horror, e Arquivos Secretos
+#1 a #7 — 188 ameaças no total.** Este documento continua sendo a
+referência de metodologia (offset de página por livro, armadilhas de
+extração, convenções de schema) para qualquer conteúdo novo que seja
+publicado no futuro (novo Arquivo Secreto, erratas, etc.).
 
 ## Novo fluxo de trabalho (a partir de 22/09/2026)
 
