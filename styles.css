@@ -2589,14 +2589,12 @@ fieldset.skill-choice-block {
 .attribute-choice-grid { grid-template-columns: repeat(5,minmax(0,1fr)); }
 .level-choice-card { display: grid; min-width: 0; gap: 5px; padding: 13px; border: 1px solid var(--border); border-radius: 10px; background: #0d0f12; cursor: pointer; }
 .level-choice-card strong,
-.level-choice-card small,
-.ability-choice-card strong,
-.ability-choice-card em { overflow-wrap: anywhere; }
-.level-choice-card:hover:not(.disabled), .ability-choice-card:hover:not(.disabled) { border-color: var(--border-strong); }
-.level-choice-card.selected, .ability-choice-card.selected { border-color: var(--red); background: var(--red-soft); }
-.level-choice-card.disabled, .ability-choice-card.disabled { cursor: not-allowed; opacity: .48; }
-.level-choice-card input, .ability-choice-card input { width: 18px; height: 18px; accent-color: var(--red); }
-.level-choice-card small, .ability-choice-card small { color: var(--muted); line-height: 1.4; }
+.level-choice-card small { overflow-wrap: anywhere; }
+.level-choice-card:hover:not(.disabled) { border-color: var(--border-strong); }
+.level-choice-card.selected { border-color: var(--red); background: var(--red-soft); }
+.level-choice-card.disabled { cursor: not-allowed; opacity: .48; }
+.level-choice-card input { width: 18px; height: 18px; accent-color: var(--red); }
+.level-choice-card small { color: var(--muted); line-height: 1.4; }
 .level-up-resource-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 20px 0; }
 .level-up-resource { display: grid; gap: 4px; padding: 15px; border: 1px solid var(--border); border-radius: 10px; background: #0d0f12; }
 .level-up-resource span { color: var(--muted); }
@@ -2613,10 +2611,24 @@ fieldset.skill-choice-block {
 .level-up-subchoice + .level-up-subchoice { margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--border); }
 .level-up-subchoice h4 { margin: 0 0 10px; }
 .level-up-option-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 12px; }
-.ability-choice-card { display: flex; min-width: 0; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #0d0f12; cursor: pointer; }
-.ability-choice-card input { flex: 0 0 auto; }
-.ability-choice-card > span { display: grid; min-width: 0; gap: 4px; }
-.ability-choice-card em { color: #d9dce1; font-size: .82rem; font-style: normal; line-height: 1.45; }
+.choice-card { min-width: 0; border: 1px solid var(--border); border-radius: 10px; background: #0d0f12; transition: border-color 200ms ease, background 200ms ease; }
+.choice-card:hover:not(.disabled) { border-color: var(--border-strong); }
+.choice-card.selected { border-color: var(--red); background: var(--red-soft); }
+.choice-card.disabled { opacity: .55; }
+.choice-card-head { display: flex; align-items: center; gap: 6px; padding: 10px 8px 10px 12px; }
+.choice-card-select { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; cursor: pointer; }
+.choice-card.disabled .choice-card-select { cursor: not-allowed; }
+.choice-card-select input { flex: 0 0 auto; width: 18px; height: 18px; accent-color: var(--red); }
+.choice-card-name { display: grid; min-width: 0; gap: 3px; }
+.choice-card-name strong { overflow-wrap: anywhere; }
+.choice-card-name small { color: var(--muted); line-height: 1.4; }
+.choice-card-toggle { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 7px; background: transparent; color: inherit; cursor: pointer; }
+.choice-card-toggle:hover { background: rgba(255,255,255,.05); }
+.choice-card-toggle .chevron { font-size: 1.1rem; }
+.choice-card-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+.choice-card-body { padding: 0 13px 13px; border-top: 1px solid var(--border); }
+.choice-card-body p { margin: 12px 0 8px; color: #d9dce1; font-size: .85rem; line-height: 1.45; overflow-wrap: anywhere; }
+.choice-card-body small { display: block; margin-top: 4px; color: var(--muted); font-size: .74rem; line-height: 1.4; overflow-wrap: anywhere; }
 .level-up-catalog-group { border: 1px solid var(--border); border-radius: 10px; background: #0d0f12; }
 .level-up-catalog-group + .level-up-catalog-group { margin-top: 8px; }
 .level-up-catalog-group > summary { display: flex; justify-content: space-between; gap: 10px; padding: 12px 14px; cursor: pointer; font-weight: 900; }

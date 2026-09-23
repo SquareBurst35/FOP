@@ -3121,8 +3121,35 @@ function availableClassPowers(character, plan) {
     : entries;
 }
 
+function renderChoiceOptionCard({ key, name, meta, summary, extraBody = "", inputType = "radio", inputName = "", dataAttr, checked = false, disabled = false, extraClass = "" }) {
+  return `
+    <div class="choice-card ${checked ? "selected" : ""} ${disabled ? "disabled" : ""} ${extraClass}">
+      <div class="choice-card-head">
+        <label class="choice-card-select">
+          <input type="${inputType}" ${inputName ? `name="${escapeAttribute(inputName)}"` : ""} value="${escapeAttribute(key)}" ${dataAttr} ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/>
+          <span class="choice-card-name"><strong>${escapeHtml(name)}</strong>${meta ? `<small>${meta}</small>` : ""}</span>
+        </label>
+        <button type="button" class="choice-card-toggle" data-choice-toggle aria-expanded="false" aria-label="Ver descrição de ${escapeAttribute(name)}"><span class="chevron" aria-hidden="true">⌄</span></button>
+      </div>
+      <div class="choice-card-body" hidden>
+        ${summary ? `<p>${escapeHtml(summary)}</p>` : ""}
+        ${extraBody}
+      </div>
+    </div>
+  `;
+}
+
 function renderAbilityRadioBlock(title, description, entries, selectedId, dataAttribute, blockId = "") {
-  return `<fieldset class="level-up-choice-block" ${blockId ? `id="${escapeAttribute(blockId)}"` : ""}><legend>${escapeHtml(title)}</legend><p class="muted small">${escapeHtml(description)}</p><div class="level-up-option-list">${entries.map((entry) => `<label class="ability-choice-card ${selectedId === entry.id ? "selected" : ""}"><input type="radio" name="${dataAttribute.replace("data-", "")}" value="${escapeAttribute(entry.id)}" ${dataAttribute} ${selectedId === entry.id ? "checked" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.group)} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em><small>Requisito: ${escapeHtml(entry.requirement)}</small><small class="ability-choice-source">Fonte: ${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</small></span></label>`).join("") || `<p class="muted small">Nenhuma opção disponível para esta ficha.</p>`}</div></fieldset>`;
+  return `<fieldset class="level-up-choice-block" ${blockId ? `id="${escapeAttribute(blockId)}"` : ""}><legend>${escapeHtml(title)}</legend><p class="muted small">${escapeHtml(description)}</p><div class="level-up-option-list">${entries.map((entry) => renderChoiceOptionCard({
+    key: entry.id,
+    name: entry.name,
+    meta: `${escapeHtml(entry.group)} · ${escapeHtml(entry.cost)}`,
+    summary: entry.summary,
+    extraBody: `<small>Requisito: ${escapeHtml(entry.requirement)}</small><small class="ability-choice-source">Fonte: ${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</small>`,
+    inputName: dataAttribute.replace("data-", ""),
+    dataAttr: dataAttribute,
+    checked: selectedId === entry.id,
+  })).join("") || `<p class="muted small">Nenhuma opção disponível para esta ficha.</p>`}</div></fieldset>`;
 }
 
 function renderClassPowerChoice(character, plan) {
@@ -3225,7 +3252,16 @@ function renderParanormalPowerChoice(character, plan) {
 
 function renderTranscenderRitualChoice(character, plan) {
   const entries = availableTranscenderRituals(character, plan);
-  return `<fieldset class="level-up-choice-block" id="level-up-transcender-ritual-choice"><legend>Aprender Ritual — escolha um ritual</legend><p class="muted small">Círculo máximo permitido neste NEX: ${transcenderRitualCircle(plan)}º.</p><div class="level-up-option-list">${entries.map((entry) => `<label class="ability-choice-card ritual-choice ${levelUpState.paranormalRitualId === entry.id ? "selected" : ""}"><input type="radio" name="level-up-transcender-ritual" value="${escapeAttribute(entry.id)}" data-level-up-transcender-ritual ${levelUpState.paranormalRitualId === entry.id ? "checked" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small><em>${escapeHtml(entry.summary)}</em></span></label>`).join("") || `<p class="muted small">Não há ritual novo disponível dentro do limite.</p>`}</div></fieldset>`;
+  return `<fieldset class="level-up-choice-block" id="level-up-transcender-ritual-choice"><legend>Aprender Ritual — escolha um ritual</legend><p class="muted small">Círculo máximo permitido neste NEX: ${transcenderRitualCircle(plan)}º.</p><div class="level-up-option-list">${entries.map((entry) => renderChoiceOptionCard({
+    key: entry.id,
+    name: entry.name,
+    meta: `${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo`,
+    summary: entry.summary,
+    inputName: "level-up-transcender-ritual",
+    dataAttr: "data-level-up-transcender-ritual",
+    checked: levelUpState.paranormalRitualId === entry.id,
+    extraClass: "ritual-choice",
+  })).join("") || `<p class="muted small">Não há ritual novo disponível dentro do limite.</p>`}</div></fieldset>`;
 }
 
 function renderParanormalElementChoice(character, power) {
@@ -3381,7 +3417,29 @@ function renderLevelUpRitualChoiceBody(available, required, validSelected, defau
 function renderLevelUpRitualOption(entry, validSelected, required) {
   const checked = validSelected.includes(entry.id);
   const disabled = !checked && validSelected.length >= required;
-  return `<label class="ability-choice-card ritual-choice ${checked ? "selected" : ""} ${disabled ? "disabled" : ""}"><input type="checkbox" value="${escapeAttribute(entry.id)}" data-level-up-ritual ${checked ? "checked" : ""} ${disabled ? "disabled" : ""}/><span><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${escapeHtml(entry.cost)}</small><em>${escapeHtml(entry.summary)}</em></span></label>`;
+  return renderChoiceOptionCard({
+    key: entry.id,
+    name: entry.name,
+    meta: `${escapeHtml(ritualElementLabel(entry))} · ${escapeHtml(entry.cost)}`,
+    summary: entry.summary,
+    inputType: "checkbox",
+    dataAttr: "data-level-up-ritual",
+    checked,
+    disabled,
+    extraClass: "ritual-choice",
+  });
+}
+
+function bindChoiceCardToggles() {
+  document.querySelectorAll("[data-choice-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const body = button.closest(".choice-card")?.querySelector(".choice-card-body");
+      if (!body) return;
+      const expanded = !body.hidden;
+      body.hidden = expanded;
+      button.setAttribute("aria-expanded", String(!expanded));
+    });
+  });
 }
 
 function bindLevelUpRitualSearch(character) {
@@ -3397,6 +3455,7 @@ function bindLevelUpRitualSearch(character) {
     const validSelected = levelUpState.ritualIds.filter((id) => available.some((entry) => entry.id === id));
     container.innerHTML = renderLevelUpRitualChoiceBody(available, required, validSelected, plan.ritualCircle);
     bindLevelUpArray(character, "[data-level-up-ritual]", "ritualIds", () => requiredLevelUpRitualPicks(character, plan));
+    bindChoiceCardToggles();
   });
 }
 
@@ -3625,6 +3684,7 @@ function bindLevelUpDialog(character) {
     return plan ? requiredLevelUpRitualPicks(character, plan) : 0;
   });
   bindLevelUpRitualSearch(character);
+  bindChoiceCardToggles();
   document.querySelectorAll("[data-level-up-structured-choice]").forEach((input) => input.addEventListener("change", () => {
     const scrollTop = currentLevelUpScrollTop();
     const ownerId = input.dataset.choiceOwner;
