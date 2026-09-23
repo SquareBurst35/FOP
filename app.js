@@ -119,16 +119,18 @@ const ELEMENT_GLYPHS = {
     <circle pathLength="70" cx="2.79" cy="13.32" r="0.55"/>
   `,
   energia: `
-    <circle pathLength="70" cx="12" cy="12" r="7"/>
-    <circle pathLength="70" cx="13" cy="13.3" r="3"/>
-    <path pathLength="70" d="M12 5 L12 2M18.4 8.5 L20.8 7M5.3 15.3 L2.9 16.8"/>
+    <path pathLength="70" d="M13.4 3c-1.3.4-2.1 1.8-1.6 3.3-.1 1.8 0 3.5.2 5.3"/>
+    <path pathLength="70" d="M11.9 11.8c-1.9-.4-3.9-.3-5.6.5.7 1.5 2 2.4 3.5 2.2 1.2-.2 1.9-1.2 1.9-2.4"/>
+    <path pathLength="70" d="M12.1 11.8c1.9-.4 3.9-.3 5.6.5-.7 1.5-2 2.4-3.5 2.2-1.2-.2-1.9-1.2-1.9-2.4"/>
+    <path pathLength="70" d="M12 12.5c.1 2.7-.1 5.4-.7 8"/>
   `,
   medo: `
-    <circle pathLength="70" cx="9.5" cy="5.8" r="0.9"/>
-    <path pathLength="70" d="M9.5 6.7c-.4 2.6.9 3.9 2.8 3.6 2-.3 2.6-2.3.9-3.4-1.1-.7-2.1.2-1.6 1.2"/>
-    <path pathLength="70" d="M8.6 9.8c1.6 2 2.2 5.4.6 8.4-1 1.9-2.8 2.7-4.4 2"/>
-    <path pathLength="70" d="M14.6 8.6c1.9 1.7 2.5 4.6 1.3 7.3-.8 1.8-2.3 2.8-3.9 2.6"/>
-    <circle pathLength="70" cx="16.3" cy="15.8" r="0.9"/>
+    <circle pathLength="70" cx="8.3" cy="4" r="0.9"/>
+    <path pathLength="70" d="M9.1 4.3c1.9.2 3.4 1.5 3.3 3.1-.1 1.7-1.8 2.7-3.5 2-1.4-.5-1.8-2.1-.7-2.8"/>
+    <path pathLength="70" d="M10.8 9.6c-.3 1.9-2.1 3.3-4.2 3.9-1.4.4-2.1 1-1.9 2"/>
+    <path pathLength="70" d="M12.3 9.4c.5 1.9 2.4 3.1 4.6 3.5 1.4.3 2 1 1.7 2"/>
+    <circle pathLength="70" cx="5" cy="17" r="0.9"/>
+    <circle pathLength="70" cx="18.3" cy="16.4" r="0.9"/>
   `,
   realidade: `
     <circle pathLength="70" cx="12" cy="12" r="8"/>
