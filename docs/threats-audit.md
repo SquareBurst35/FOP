@@ -32,7 +32,14 @@ Depois **leia o PNG com a ferramenta Read** — não confie só no texto
 extraído para os números da barra lateral. Duas armadilhas encontradas:
 
 1. **Numeração de página do PDF ≠ número impresso.** Para o livro base
-   v1.3, página impressa = página do PDF − 9. Confirme de novo se abrir
+   v1.3, página impressa = página do PDF − 10 (não −9 — valor corrigido em
+   23/09/2026 após a auditoria completa do catálogo confirmar o offset real
+   cruzando o rodapé de dezenas de páginas em todas as seções: Sangue,
+   Morte, Conhecimento, Energia e Medo). O −9 registrado antes era
+   impreciso desde o início; não corrompeu nenhum dado publicado porque a
+   extração original sempre conferia o rodapé de cada página visualmente
+   em vez de confiar na fórmula, mas usar −9 para navegar direto a uma
+   página específica renderiza a página errada. Confirme de novo se abrir
    um arquivo diferente (renderize uma página, compare com o rodapé).
 2. **O bônus de teste usa um ícone de d20, não um "d20" escrito.** Quando
    o bônus é +0, o livro não escreve "+0" — mostra só o ícone sozinho.

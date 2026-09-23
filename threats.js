@@ -105,7 +105,7 @@ export const THREATS = [
     iniciativa: test(1, 0),
     sentidosExtras: ["Percepção às cegas"],
     defesa: 19,
-    fortitude: test(1, 10),
+    fortitude: test(3, 10),
     reflexos: test(1, 0),
     vontade: test(1, 0),
     pontosDeVida: 70,
@@ -122,13 +122,13 @@ export const THREATS = [
         tipo: "Padrão",
         nome: "Agredir",
         ataques: [
-          { nome: "Pancada", execucao: "Corpo a corpo x2", teste: test(1, 10), dano: { formula: "2d6+6", tipo: "impacto" } },
+          { nome: "Pancada", execucao: "Corpo a corpo x2", teste: test(3, 10), dano: { formula: "2d6+6", tipo: "impacto" } },
         ],
       },
       {
         tipo: "Reação",
         nome: "Agarrão",
-        descricao: "Se a aberração de carne acertar um ataque de pancada, ela pode tentar agarrar o alvo (teste 1d20+12). Ela pode manter até dois personagens agarrados por vez.",
+        descricao: "Se a aberração de carne acertar um ataque de pancada, ela pode tentar agarrar o alvo (teste 3d20+12). Ela pode manter até dois personagens agarrados por vez.",
       },
       {
         tipo: "Movimento",
@@ -330,7 +330,7 @@ export const THREATS = [
       {
         tipo: "Movimento",
         nome: "Grito Devastador (Flor Roxa)",
-        descricao: "Grito que causa confusão em todos em alcance curto (Vontade DT 15 evita; quem falha pode repetir o teste no fim do turno). Murcha com contato com o bulbo de bravo purpuris, perdendo esta habilidade e sofrendo −1d20 em Vontade.",
+        descricao: "Grito que causa confusão em todos em alcance curto (Vontade DT 15 evita; quem falha pode repetir o teste no fim do turno). Murcha com contato com o bulbo de bravo purpulis, perdendo esta habilidade e sofrendo −1d20 em Vontade.",
       },
       {
         tipo: "Padrão",
@@ -537,7 +537,7 @@ export const THREATS = [
     deslocamentoMetros: 9,
     deslocamentoQuadrados: 6,
     habilidadesPassivas: [
-      { nome: "Forma de Sangue", descricao: "Por padrão, é encontrada como líquido de Sangue: nessa forma tem deslocamento 36m/24 quadrados, pode se mover por canos, frestas e orifícios como qualquer líquido, e ganha as habilidades Afogar em Sangue, Arrancar Sangue e Invadir Órgãos." },
+      { nome: "Forma de Sangue", descricao: "Por padrão, é encontrada como líquido de Sangue: nessa forma tem deslocamento 36m/24 quadrados, resistência a balístico, corte, impacto, perfuração e Sangue 20, pode se mover por canos, frestas e orifícios como qualquer líquido, e ganha as habilidades Afogar em Sangue, Arrancar Sangue e Invadir Órgãos." },
     ],
     acoes: [
       {
@@ -784,7 +784,7 @@ export const THREATS = [
     vd: 20,
     presencaPerturbadora: { dt: 14, dado: "2d4", tipo: "mental", imuneDesdeNex: 25 },
     percepcao: test(1, 0),
-    iniciativa: test(1, 0),
+    iniciativa: test(2, 0),
     sentidosExtras: ["Percepção às cegas"],
     defesa: 14,
     fortitude: test(1, 0),
@@ -913,7 +913,7 @@ export const THREATS = [
       {
         tipo: "Padrão",
         nome: "Hipnose",
-        descricao: "Domina a mente de um ser em alcance curto (Vontade DT 29 evita). A vítima fica sob controle telepático total do carniçal e fará tudo que ele mandar, exceto tirar a própria vida — em termos de jogo, fica sob controle do mestre. No fim de cada turno do hipnotizado, ele pode repetir o teste de Vontade, com bônus cumulativo de +1 por teste já realizado. O carniçal pode ter até três seres hipnotizados por vez. Se usar esta habilidade num alvo enlouquecendo, o teste falha automaticamente e o domínio se torna permanente, até o carniçal ser destruído.",
+        descricao: "Domina a mente de um ser em alcance curto (Vontade DT 29 evita). A vítima fica sob controle telepático total do carniçal e fará tudo que ele mandar, exceto tirar a própria vida — em termos de jogo, fica sob controle do mestre. No fim de cada turno do hipnotizado, ele pode repetir o teste de Vontade, com bônus cumulativo de +1 por teste já realizado. O carniçal pode ter até três seres hipnotizados por vez. Se usar esta habilidade num alvo enlouquecendo, o teste falha automaticamente e o domínio se torna permanente, até o carniçal ser destruído — nesse caso, mesmo a exceção de tirar a própria vida deixa de valer, e o hipnotizado pode ser comandado a se matar.",
       },
       {
         tipo: "Completa",
@@ -1177,7 +1177,7 @@ export const THREATS = [
     habilidadesPassivas: [
       { nome: "Caçador Veloz", descricao: "Pode se mover no seu deslocamento normal sem penalidade em Furtividade." },
       { nome: "Regeneração Acelerada", descricao: "Possui Cura Acelerada 50. Perde esta habilidade se seu Enigma de Medo for resolvido." },
-      { nome: "Senso de Direção Perfeito", descricao: "Nunca se perde e recebe +1d20 em Percepção e Sobrevivência (já contabilizado na ficha). Perde esta habilidade se seu Enigma de Medo for resolvido." },
+      { nome: "Senso de Direção Perfeito", descricao: "Nunca se perde e recebe +2d20 em Percepção e Sobrevivência (já contabilizado na ficha). Perde esta habilidade se seu Enigma de Medo for resolvido." },
     ],
     acoes: [
       {
@@ -1388,7 +1388,7 @@ export const THREATS = [
     ],
     descricao: "\"Saber tudo é perder tudo\": um humano que foi longe demais e entendeu o Outro Lado por completo, hoje apenas uma casca repetindo o próprio nome na tentativa de ser lembrado.",
     source: "Livro base",
-    page: "232",
+    page: "242",
   }),
   threat({
     name: "Anjo",
@@ -1444,7 +1444,7 @@ export const THREATS = [
     ],
     descricao: "A visita de um anjo é descrita por incontáveis observadores em culturas e épocas diferentes como o mesmo momento inesquecível e aterrorizante — o rosto da verdade impossível, capaz de derreter os olhos de quem o observa.",
     source: "Livro base",
-    page: "233",
+    page: "234",
   }),
   threat({
     name: "Bicho-Papão",
@@ -1511,6 +1511,7 @@ export const THREATS = [
     pontosDeVida: 500,
     imunidadesDano: ["Geral"],
     vulnerabilidades: ["Sangue"],
+    sentidosExtras: ["Percepção às cegas"],
     atributos: { agi: 4, for: 2, int: 3, pre: 3, vig: 2 },
     pericias: [{ nome: "Furtividade", teste: test(4, 20) }],
     deslocamentoMetros: 12,
@@ -1539,7 +1540,7 @@ export const THREATS = [
     ],
     descricao: "Uma forma curvada e cinzenta, a cabeça coberta de dezenas de olhos amarelos que se multiplicam enquanto observa suas vítimas — o corpo inteiro treme, como se estivesse sempre com frio, ansioso ou com medo.",
     source: "Livro base",
-    page: "238",
+    page: "241",
   }),
   threat({
     name: "O Comunicador",
@@ -1622,7 +1623,7 @@ export const THREATS = [
     deslocamentoMetros: 9,
     deslocamentoQuadrados: 6,
     habilidadesPassivas: [
-      { nome: "Aura Manifestada", descricao: "O lembrado é cercado por uma aura dourada de faces flutuantes, que gritam com todos que se aproximam. Personagens em alcance curto do lembrado sofrem −1d20 em todos os testes." },
+      { nome: "Aura Manifestada", descricao: "O lembrado é cercado por uma aura dourada de faces flutuantes, que gritam com todos que se aproximam. Personagens em alcance curto do lembrado sofrem −2d20 em todos os testes." },
     ],
     acoes: [
       {
@@ -1693,8 +1694,9 @@ export const THREATS = [
     vd: 60,
     presencaPerturbadora: { dt: 20, dado: "2d6", tipo: "mental", imuneDesdeNex: 35 },
     enigmaDoMedo: "Para derrotar o parasita de culpa, os personagens devem perceber que estão vivendo um sonho compartilhado e identificar qual personagem dentro do sonho é o hospedeiro do parasita. Depois de descobrir isso, o hospedeiro deve confrontar as manifestações do parasita e derrotá-las dentro do sonho, sozinho. Um sonho compartilhado é uma sequência de cenas na mente dos personagens; fora deles próprios, tudo no sonho é um constructo de Conhecimento, e o mestre determina como os agentes podem descobrir que estão nele.",
-    percepcao: test(1, 0),
-    iniciativa: test(1, 0),
+    percepcao: test(4, 0),
+    iniciativa: test(2, 0),
+    sentidosExtras: ["Percepção às cegas"],
     defesa: 15,
     fortitude: test(1, 10),
     reflexos: test(2, 10),
@@ -1731,7 +1733,7 @@ export const THREATS = [
     ],
     descricao: "Alimenta-se da culpa e dos traumas de quem dorme, prendendo vítimas inteiras num pesadelo compartilhado que só termina quando o hospedeiro morre, enlouquece — ou enfrenta sozinho o que o parasita construiu com sua própria culpa.",
     source: "Livro base",
-    page: "245",
+    page: "246",
   }),
   threat({
     name: "Rastejador Sombrio",
@@ -1913,7 +1915,7 @@ export const THREATS = [
     ],
     descricao: "Uma máscara indestrutível que contém toda a verdade do Outro Lado. Quem a porta lembra de tudo, sabe tudo — e deixa de existir como si mesmo, tornando-se apenas a Magistrada, a executora de um equilíbrio que nem ela mesma sabe explicar.",
     source: "Livro base",
-    page: "253",
+    page: "254",
   }),
   threat({
     name: "Anárquico",
@@ -2005,7 +2007,7 @@ export const THREATS = [
     defesa: 25,
     fortitude: test(3, 10),
     reflexos: test(3, 5),
-    vontade: test(1, 0),
+    vontade: test(2, 0),
     pontosDeVida: 160,
     imunidadesCondicoes: ["Paralisia"],
     resistencias: [{ tipos: ["Balístico", "Corte", "Perfuração"], valor: 10 }, { tipos: ["Energia"], valor: 20 }],
@@ -2091,8 +2093,9 @@ export const THREATS = [
     resistencias: [{ tipos: ["Impacto", "Energia"], valor: 10 }],
     vulnerabilidades: ["Conhecimento"],
     atributos: { agi: 3, for: 2, int: 3, pre: 3, vig: 2 },
-    deslocamentoMetros: 18,
-    deslocamentoQuadrados: 12,
+    deslocamentoMetros: null,
+    deslocamentoQuadrados: null,
+    deslocamentosExtras: [{ tipo: "Voo", metros: 18, quadrados: 12 }],
     habilidadesPassivas: [
       { nome: "Aura Desesperada", descricao: "Qualquer ser que comece seu turno em alcance curto da sukkalgir sofre 2d12 de dano mental (Vontade DT 25 reduz à metade)." },
       { nome: "Espírito Plasmático", descricao: "A sukkalgir é parcialmente intangível e pode atravessar obstáculos sólidos como paredes." },
@@ -2140,6 +2143,7 @@ export const THREATS = [
     atributos: { agi: 4, for: 2, int: 3, pre: 4, vig: 2 },
     deslocamentoMetros: 9,
     deslocamentoQuadrados: 6,
+    deslocamentosExtras: [{ tipo: "Escalada", metros: 9, quadrados: 6 }],
     habilidadesPassivas: [
       { nome: "Invisibilidade Permanente", descricao: "O viajante é invisível. Recebe camuflagem total, +15 em Furtividade, e seres que não possam vê-lo ficam desprevenidos contra seus ataques." },
     ],
@@ -2449,7 +2453,7 @@ export const THREATS = [
     enigmaDoMedo: "A degolificada precisa ser confrontada com a causa de sua morte, de modo que não possa escapar desse confronto. Se for confrontada desta forma, ela perde sua imunidade a dano.",
     percepcao: test(4, 15),
     sentidosExtras: ["Percepção às cegas"],
-    iniciativa: test(1, 0),
+    iniciativa: test(3, 0),
     defesa: 45,
     fortitude: test(4, 20),
     reflexos: test(3, 15),
@@ -3836,7 +3840,7 @@ export const THREATS = [
     vulnerabilidades: ["Conhecimento"],
     atributos: { agi: 2, for: 1, int: 3, pre: 3, vig: 2 },
     pericias: [
-      { nome: "Atletismo", teste: test(0, 5) },
+      { nome: "Atletismo", teste: test(1, 5) },
       { nome: "Ciências", teste: test(3, 10) },
       { nome: "Furtividade", teste: test(2, 10) },
       { nome: "Intimidação", teste: test(3, 5) },
@@ -6862,7 +6866,7 @@ export const THREATS = [
       {
         tipo: "Padrão",
         nome: "Agredir",
-        ataques: [{ nome: "Martelo Meteoro USB", execucao: "Corpo a corpo x2", teste: test(2, 10), critico: "x3", dano: { formula: "1d12+10", tipo: "impacto" } }],
+        ataques: [{ nome: "Martelo Meteoro USB", execucao: "Corpo a corpo x2", teste: test(2, 10), critico: "x3", dano: { formula: "1d12+10", tipo: "impacto ou Energia" } }],
       },
       {
         tipo: "Padrão",
@@ -7682,7 +7686,7 @@ export const THREATS = [
     deslocamentoQuadrados: 6,
     habilidadesPassivas: [
       { nome: "Camuflagem Alheia", descricao: "É invisível: camuflagem total, +15 em Furtividade contra ouvir, e seres que não possam vê-lo ficam desprevenidos contra seus ataques; também recebe +2d20 em ataques contra alvos não cegos (alvos cegos sofrem −5 na Defesa em vez disso). Pode ficar visível gastando uma ação livre." },
-      { nome: "Círculo de Transmissão", descricao: "Se for cercado por um círculo de dispositivos eletrônicos funcionando num raio de 10m, perde a invisibilidade; se metade ou mais desses dispositivos parar de funcionar, também perde a incorporeidade." },
+      { nome: "Círculo de Transmissão", descricao: "Se for aprisionado num círculo de dispositivos eletrônicos funcionando num raio de 10m, perde invisibilidade e incorporeidade simultaneamente. Se 1 ou mais desses dispositivos pararem de funcionar, recupera a invisibilidade; se metade ou mais pararem de funcionar, recupera também a incorporeidade." },
       { nome: "Incorporeidade Alheia", descricao: "Não tem corpo físico: só pode ser afetado por itens amaldiçoados, rituais ou outras ameaças incorpóreas. Atravessa objetos sólidos mas não os manipula, não tem valor de Força (usa a Agilidade para calcular ataques) e pode ficar visível gastando uma ação livre." },
     ],
     acoes: [
@@ -9008,7 +9012,7 @@ export const THREATS = [
     habilidadesPassivas: [
       { nome: "Mentem Corrumpere", descricao: "Pode fazer um ser que falhe contra sua Presença Perturbadora não sofrer dano mental; em vez disso, é contaminado por uma crença impossível, iniciando uma condição progressiva de 4 estágios sem teste de resistência inicial (funciona como doença). A cada início de dia, o infectado testa Vontade (DT 20 + 1 por dia infectado); se falhar, fica compelido a não se afastar mais de 90m da apóstata. O avanço dos estágios está ligado aos ritos da apóstata; a cura só ocorre com a morte da apóstata." },
       { nome: "Murus Idolorum", descricao: "Esconde-se no vazio atrás de uma parede rachada de ídolos esquecidos. Qualquer ser ou objeto que a atravesse sofre 20d12 de dano de Conhecimento; se os PV do alvo chegarem a 0, ele é inexistido, morrendo instantaneamente." },
-      { nome: "Ritus — Segundo Rito concluído", descricao: "Após o Segundo Rito (Religião DT 30), passa a receber +15 em todos os testes, rolagens de dano e RD (resistências) em relação à ficha inicial (VD 80) — bônus não recalculado nos campos numéricos acima/abaixo, aplicar manualmente na mesa." },
+      { nome: "Ritus — Segundo Rito concluído", descricao: "Após o Segundo Rito (Religião DT 30), passa a receber +15 em todos os testes, rolagens de dano e RD (resistências) em relação à ficha inicial (VD 80), e pode fazer um ataque adicional com flagellum — bônus não recalculado nos campos numéricos acima/abaixo, aplicar manualmente na mesa." },
     ],
     acoes: [
       {
@@ -9076,7 +9080,7 @@ export const THREATS = [
     habilidadesPassivas: [
       { nome: "Mentem Corrumpere", descricao: "Pode fazer um ser que falhe contra sua Presença Perturbadora não sofrer dano mental; em vez disso, é contaminado por uma crença impossível, iniciando uma condição progressiva de 4 estágios sem teste de resistência inicial (funciona como doença). A cada início de dia, o infectado testa Vontade (DT 20 + 1 por dia infectado); se falhar, fica compelido a não se afastar mais de 90m da apóstata. O avanço dos estágios está ligado aos ritos da apóstata; a cura só ocorre com a morte da apóstata." },
       { nome: "Murus Idolorum", descricao: "Esconde-se no vazio atrás de uma parede rachada de ídolos esquecidos. Qualquer ser ou objeto que a atravesse sofre 20d12 de dano de Conhecimento; se os PV do alvo chegarem a 0, ele é inexistido, morrendo instantaneamente." },
-      { nome: "Ritus — Terceiro Rito concluído", descricao: "Após o Terceiro Rito (resistido em Vontade, não em Religião), passa a receber +20 em todos os testes, rolagens de dano e RD (resistências) em relação à ficha inicial (VD 80), além do deslocamento de Voo acima — bônus de testes/dano/RD não recalculado nos campos numéricos, aplicar manualmente na mesa. É a forma mais próxima da completa antes de abandonar os ídolos de vez." },
+      { nome: "Ritus — Terceiro Rito concluído", descricao: "Após o Terceiro Rito (resistido em Vontade, não em Religião), passa a receber +20 em todos os testes, rolagens de dano e RD (resistências) em relação à ficha inicial (VD 80), além do deslocamento de Voo acima, e pode fazer dois ataques adicionais com flagellum — bônus de testes/dano/RD não recalculado nos campos numéricos, aplicar manualmente na mesa. É a forma mais próxima da completa antes de abandonar os ídolos de vez." },
     ],
     acoes: [
       {

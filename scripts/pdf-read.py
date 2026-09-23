@@ -35,9 +35,11 @@ Usage:
 
 Observação sobre numeração de página: o número que este script usa é o
 índice do PDF (1-based), NÃO o número impresso no rodapé da página. Para
-o livro base v1.3, página impressa = página do PDF - 9 (ache o offset de
-novo se usar outro arquivo: renderize uma página, leia o número no
-rodapé e compare).
+o livro base v1.3, página impressa = página do PDF - 10 (não -9; valor
+corrigido após auditoria confirmar o offset real em dezenas de páginas
+de Sangue/Morte/Conhecimento/Energia/Medo). Ache o offset de novo se
+usar outro arquivo: renderize uma página, leia o número no rodapé e
+compare.
 """
 import sys
 import fitz  # pymupdf
