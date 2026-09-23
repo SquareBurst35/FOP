@@ -107,8 +107,13 @@ const ELEMENT_GLYPHS = {
     <path pathLength="70" d="M12 12 L17 6 L14 8"/>
   `,
   conhecimento: `
-    <path pathLength="70" d="M14 3 L9 21"/>
-    <path pathLength="70" d="M7.5 9.3 L17 6.7"/>
+    <circle pathLength="70" cx="12" cy="10.3" r="1.1"/>
+    <circle pathLength="70" cx="12" cy="13.1" r="1.3"/>
+    <path pathLength="70" d="M12 4.3v-1.6M19.63 13.09l1.58.23M9.83 19.38l-.45 1.54M5 8.8l-1.46-.66"/>
+    <path pathLength="70" d="M16.38 5.19 17.03 4.18 17.31 5.78M18.12 17.3 19.03 18.09 17.4 18.14M5.88 17.3 4.97 18.09 5.16 16.47M7.62 5.19 6.97 4.18 8.54 4.59"/>
+    <circle pathLength="70" cx="20.46" cy="8.14" r="0.55"/>
+    <circle pathLength="70" cx="14.62" cy="20.92" r="0.55"/>
+    <circle pathLength="70" cx="2.79" cy="13.32" r="0.55"/>
   `,
   energia: `
     <circle pathLength="70" cx="12" cy="12" r="7"/>
