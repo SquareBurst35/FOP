@@ -102,10 +102,12 @@ const ELEMENT_GLYPHS = {
     <path pathLength="70" d="M12.1 11.9c-.2 1.9 0 3.8-.3 5.6-1.6.4-3.1 1.1-4.3 2.3M11.8 17.5c1.5.5 2.8 1.4 3.7 2.7"/>
   `,
   morte: `
-    <path pathLength="70" d="M12 12 L13 4 L11 7"/>
-    <path pathLength="70" d="M12 12 L6 18 L9 16"/>
-    <path pathLength="70" d="M12 12 L18 15 L15 13"/>
-    <path pathLength="70" d="M12 12 L17 6 L14 8"/>
+    <circle pathLength="70" cx="12" cy="12.3" r="5.8"/>
+    <circle pathLength="70" cx="13" cy="11.6" r="4"/>
+    <path pathLength="70" d="M12.2 10.3c-.4.5-.3 1.2.3 1.5"/>
+    <path pathLength="70" d="M13.3 6.2 13.6 2"/>
+    <path pathLength="70" d="M6 15.5 10.5 5.8"/>
+    <path pathLength="70" d="M10.8 17.6 8.8 22.3M13.3 17.7 15.2 22.2"/>
   `,
   conhecimento: `
     <circle pathLength="70" cx="12" cy="10.3" r="1.1"/>
