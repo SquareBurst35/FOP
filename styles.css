@@ -4401,15 +4401,14 @@ body:has(dialog[open]) {
 .item-upgrades-section { margin:16px 0; padding:12px; border:1px solid var(--border,#34363d); border-radius:8px; }
 .item-upgrades-header { display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:600; }
 .upgrade-card-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
-.upgrade-card { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:12px 14px; background:#15171b; border-radius:6px; border-left:3px solid var(--energy,#a453ff); }
-.upgrade-card.curse { border-left-color:var(--red-bright,#ff3c4b); }
-.upgrade-card-body strong { display:block; margin-bottom:4px; }
+.upgrade-card { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:12px 14px; background:#15171b; border:1px solid var(--border,#34363d); border-radius:6px; }
+.upgrade-card-heading { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:4px; }
 .upgrade-card-body p { margin:0 0 4px; color:var(--muted,#a4a6af); font-size:0.88rem; }
 .upgrade-card-body small { display:block; line-height:1.4; color:var(--muted,#a4a6af); }
 .upgrade-add-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; margin-top:12px; max-height:320px; overflow:auto; }
 .upgrade-add-list[hidden] { display:none; }
-.upgrade-add-option { display:block; width:100%; text-align:left; padding:10px; background:#15171b; border:1px dashed var(--border-strong); border-radius:6px; cursor:pointer; color:inherit; font:inherit; }
-.upgrade-add-option:hover { border-color:var(--energy,#a453ff); }
+.upgrade-add-option { display:block; width:100%; text-align:left; padding:10px; background:#15171b; border:1px solid var(--border,#34363d); border-radius:6px; cursor:pointer; color:inherit; font:inherit; }
+.upgrade-add-option:hover { border-color:var(--border-strong,#535b63); }
 .upgrade-add-option small { display:block; margin-top:4px; line-height:1.4; color:var(--muted,#a4a6af); }
 .upgrade-reference { padding:16px; }
 .custom-item-form .dialog-actions { display:flex; justify-content:flex-end; gap:10px; padding-top:14px; margin-top:6px; border-top:1px solid var(--border); }

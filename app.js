@@ -2462,11 +2462,11 @@ function renderItemUpgradeSection(item, ownerKind, ownerId) {
 
 function renderUpgradeCard(u, ownerKind, ownerId) {
   return `
-    <div class="upgrade-card ${u.curse ? "curse" : ""}">
+    <div class="upgrade-card">
       <div class="upgrade-card-body">
-        <strong>${escapeHtml(u.name)}</strong>
+        <div class="upgrade-card-heading"><strong>${escapeHtml(u.name)}</strong><span class="badge ${u.curse ? "red" : ""}">${u.curse ? "Maldição" : "Modificação"}</span></div>
         ${u.summary ? `<p>${escapeHtml(u.summary)}</p>` : ""}
-        <small class="muted">${u.curse ? "Maldição" : "Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small>
+        <small class="muted">${escapeHtml(u.source)} · p. ${u.page}</small>
       </div>
       <button class="entry-remove" type="button" data-upgrade-action="remove" data-upgrade-owner="${ownerKind}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${u.id}">Remover</button>
     </div>
@@ -2476,8 +2476,8 @@ function renderUpgradeCard(u, ownerKind, ownerId) {
 function renderUpgradeAddOption(u, ownerKind, ownerId) {
   return `
     <button class="upgrade-add-option" type="button" data-upgrade-action="add" data-upgrade-owner="${ownerKind}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${u.id}">
-      <strong>${escapeHtml(u.name)}</strong>
-      <small>${u.curse ? "Maldição" : "Modificação"} · ${escapeHtml(u.source)} · p. ${u.page}</small>
+      <div class="upgrade-card-heading"><strong>${escapeHtml(u.name)}</strong><span class="badge ${u.curse ? "red" : ""}">${u.curse ? "Maldição" : "Modificação"}</span></div>
+      <small>${escapeHtml(u.source)} · p. ${u.page}</small>
       ${u.summary ? `<small class="muted">${escapeHtml(u.summary)}</small>` : ""}
     </button>
   `;
