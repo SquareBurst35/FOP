@@ -8327,6 +8327,7 @@ export const THREATS = [
   }),
   threat({
     name: "Raziel",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Raziel",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -8401,6 +8402,7 @@ export const THREATS = [
   }),
   threat({
     name: "O Verdadeiro Raziel",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Raziel",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -8464,6 +8466,7 @@ export const THREATS = [
   }),
   threat({
     name: "Alvira",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Alvira",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -8538,6 +8541,7 @@ export const THREATS = [
   }),
   threat({
     name: "Sabara",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Sabara",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -8618,6 +8622,7 @@ export const THREATS = [
   }),
   threat({
     name: "Velisar",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Velisar",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -8692,6 +8697,7 @@ export const THREATS = [
   }),
   threat({
     name: "Zéfero",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Zéfero",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -8750,6 +8756,7 @@ export const THREATS = [
   }),
   threat({
     name: "Incinerado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Incinerado",
     element: "Energia",
     secondaryElements: ["Sangue"],
     category: "Criatura",
@@ -8807,6 +8814,7 @@ export const THREATS = [
   }),
   threat({
     name: "Stryzga",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Strzyga",
     element: "Sangue",
     secondaryElements: ["Morte"],
     category: "Criatura",
@@ -8880,6 +8888,7 @@ export const THREATS = [
   }),
   threat({
     name: "Apóstata",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Apóstata",
     element: "Conhecimento",
     secondaryElements: ["Morte"],
     category: "Criatura",
@@ -8932,6 +8941,7 @@ export const THREATS = [
   }),
   threat({
     name: "Apóstata (1º Rito)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Apóstata",
     element: "Conhecimento",
     secondaryElements: ["Morte"],
     category: "Criatura",
@@ -8989,6 +8999,7 @@ export const THREATS = [
   }),
   threat({
     name: "Apóstata (2º Rito)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Apóstata",
     element: "Conhecimento",
     secondaryElements: ["Morte"],
     category: "Criatura",
@@ -9056,6 +9067,7 @@ export const THREATS = [
   }),
   threat({
     name: "Apóstata (3º Rito)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Apóstata",
     element: "Conhecimento",
     secondaryElements: ["Morte"],
     category: "Criatura",
