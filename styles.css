@@ -4195,6 +4195,24 @@ body:has(dialog[open]) {
     min-height: 0;
     overflow-y: auto;
   }
+
+  /* A rolagem interna continua funcionando (roda do mouse, trackpad, toque);
+     só a barra cinza nativa do navegador some, que destoava do resto do
+     visual desenhado. */
+  .sheet-sidebar,
+  .sheet-tab-content,
+  .summary-side,
+  .skills-table-wrap {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .sheet-sidebar::-webkit-scrollbar,
+  .sheet-tab-content::-webkit-scrollbar,
+  .summary-side::-webkit-scrollbar,
+  .skills-table-wrap::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media (max-width: 600px) {
