@@ -1188,7 +1188,12 @@ fieldset.skill-choice-block {
 }
 
 .live-resource-value strong {
+  display: inline-block;
   font-size: 1.3rem;
+}
+
+.live-resource-value.pulse strong {
+  animation: value-pulse 420ms var(--motion) both;
 }
 
 .session-control {
@@ -2449,6 +2454,10 @@ fieldset.skill-choice-block {
   font-variant-numeric: tabular-nums;
 }
 
+.quantity-stepper output.pulse {
+  animation: value-pulse 420ms var(--motion) both;
+}
+
 .item-filter-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(175px, 0.32fr);
@@ -2627,6 +2636,7 @@ fieldset.skill-choice-block {
 .choice-card-toggle .chevron { font-size: 1.1rem; }
 .choice-card-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
 .choice-card-body { padding: 0 13px 13px; border-top: 1px solid var(--border); }
+.choice-card-body:not([hidden]) { animation: details-reveal 260ms var(--motion) both; }
 .choice-card-body p { margin: 12px 0 8px; color: #d9dce1; font-size: .85rem; line-height: 1.45; overflow-wrap: anywhere; }
 .choice-card-body small { display: block; margin-top: 4px; color: var(--muted); font-size: .74rem; line-height: 1.4; overflow-wrap: anywhere; }
 .level-up-catalog-group { border: 1px solid var(--border); border-radius: 10px; background: #0d0f12; }
@@ -3997,6 +4007,12 @@ body:has(dialog[open]) {
   to { transform: rotate(360deg); }
 }
 
+@keyframes value-pulse {
+  0% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+  40% { transform: scale(1.2); text-shadow: 0 0 14px var(--resource-color, var(--red)); }
+  100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -4414,6 +4430,7 @@ body:has(dialog[open]) {
 .item-upgrades-header { display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:600; }
 .upgrade-card-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
 .upgrade-card { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:12px 14px; background:#15171b; border:1px solid var(--border,#34363d); border-radius:6px; }
+.upgrade-card.just-added { animation: details-reveal 280ms var(--motion) both; }
 .upgrade-card-heading { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:4px; }
 .upgrade-card-body p { margin:0 0 4px; color:var(--muted,#a4a6af); font-size:0.88rem; }
 .upgrade-card-body small { display:block; line-height:1.4; color:var(--muted,#a4a6af); }

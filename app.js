@@ -3841,6 +3841,7 @@ function bindSheetInteractions(character) {
       );
       upsertCharacter(character);
       renderSheet(character.id);
+      document.querySelector(`.resource-${resource} .live-resource-value`)?.classList.add("pulse");
     });
   });
 
@@ -4094,6 +4095,9 @@ function bindItemDialog(character) {
       }
       upsertCharacter(character);
       renderSheet(character.id);
+      if (upgradeAction === "add") {
+        document.querySelector(`.upgrade-card:has([data-upgrade-id="${upgradeId}"])`)?.classList.add("just-added");
+      }
       showToast(upgradeAction === "add" ? "Melhoria adicionada." : "Melhoria removida.");
     });
   });
@@ -4151,6 +4155,7 @@ function changeCustomItemQuantity(character, itemId, delta) {
   );
   upsertCharacter(character);
   renderSheet(character.id);
+  document.querySelector(`[data-custom-item-quantity="${itemId}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
   showToast("Quantidade atualizada.");
 }
 
@@ -4192,6 +4197,7 @@ function changeInventoryQuantity(character, itemId, delta, notify = true) {
   character.inventarioItens = entries;
   upsertCharacter(character);
   renderSheet(character.id);
+  document.querySelector(`[data-item-quantity="${itemId}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
   if (notify) showToast("Quantidade atualizada.");
 }
 
