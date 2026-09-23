@@ -454,24 +454,57 @@ texto da habilidade explicando a variação impressa.
 Percepção e Vontade em `test(0, -2)` — zero dados de teste combinados
 com um bônus negativo, confirmado visualmente.
 
+## Progresso — Arquivos Secretos #4
+
+PDF `D:\Livros OP\Arquivos-Secretos-04-v1.0.pdf` (~29MB, 79 páginas).
+**Offset de página = 0** (igual a AS#1/#2/#3). `docs/content-audit.md`
+apontou a faixa 55–61 (Assistente de Produção, Produtor, Diretor,
+Simulacro) de uma auditoria anterior; confirmado por varredura própria
+que não há mais nada catalogável no livro (páginas 76–78, também
+achadas por aquela auditoria, são só orientação ao mestre para
+reaproveitar ameaças já publicadas noutros livros, sem ficha nova). Ao
+contrário do AS#1/#2, não há fichas bônus escondidas fora do capítulo
+principal — o livro inteiro é estruturado como uma missão sala-a-sala.
+**7 ameaças catalogadas em 22/09/2026 — 155 ameaças no catálogo.**
+
+**Decisão de representação: "Simulacro" virou 4 entradas, não 1.** O
+livro imprime uma ficha base (categoria Criatura, elemento Energia/
+Conhecimento, estágio "troyan") com uma caixa "Forma Evolutiva" que dá
+os números completos e explícitos de três estágios seguintes (krypto,
+vvorm, botnetz) — VD, PV, Defesa, atributos, testes e a ação
+"Perturbação Digital" recalculados a cada estágio, não uma fórmula de
+escala como o Espectro Inesquecido de Sobrevivendo ao Horror (que só
+tinha UM exemplo numérico, daí ter virado uma entrada só). Como todos
+os quatro estágios têm números completos impressos, viraram 4 fichas
+prontas para uso direto na mesa (`Simulacro`, `Simulacro (Krypto)`,
+`Simulacro (Vvorm)`, `Simulacro (Botnetz)`) em vez de forçar o mestre a
+fazer contas de uma tabela de deltas durante a sessão. Nenhum número
+foi inventado — os quatro estágios já são explícitos no livro.
+
+**Achado incomum, preservado como está**: a DT de resistência da ação
+"Perturbação Digital" é impressa como um dado rolado, não um número
+fixo (`Vontade DT 3d10` no troyan, subindo até `6d10` no botnetz) — já
+que não existe campo estruturado para DT de ação neste catálogo (é
+sempre texto dentro da `descricao`), isso não exigiu mudança de
+schema, só uma nota explicando a peculiaridade dentro do próprio texto
+da habilidade.
+
 ## Ordem de continuação sugerida
 
-1. Arquivos Secretos #4 — `docs/content-audit.md` (linha ~83) já lista
-   os nomes das ameaças (Assistente de Produção, Produtor, Diretor,
-   Simulacro com variantes Troyan/Krypto/Vvorm/Botnetz) e a faixa de
-   página (55–61) de uma auditoria anterior — usar como atalho, mas
-   confirmar offset e ler cada página visualmente antes de aceitar,
-   como feito aqui no AS#3. Depois AS#5 (ameaças em 36–51 + "perigos
-   complexos" em 66–69, verificar se estes últimos têm ficha de combate
-   real ou são só tabelas de mestre fora de escopo), AS#6 (Alice
-   Cruzes/Ketan Arjuna/Laila Verdante/Dr. Neruda aparecem tanto como
-   "Aliados" quanto como "Ameaças" — confirmar se têm ficha própria de
-   ameaça ou só de companheiro) e AS#7 (Raziel/O Verdadeiro Raziel/
-   Alvira/Sabara/Velisar/Zéfero/Incinerado/Stryzga/Apóstata em 4
-   estágios — atenção a uma inconsistência já registrada no livro:
-   Incinerado tem imunidade E vulnerabilidade a fogo simultâneas, e
-   Incinerado/Stryzga têm resistência E vulnerabilidade balística
-   simultâneas; preservar o conflito, não inventar qual prevalece).
+1. Arquivos Secretos #5 — `docs/content-audit.md` já lista ameaças em
+   36–51 e "perigos complexos" em 66–69; confirmar se estes últimos são
+   fichas de combate reais ou tabelas de mestre fora de escopo (mesmo
+   padrão da seção "Perigos" do livro base, que ficou de fora).
+2. Arquivos Secretos #6 — Alice Cruzes/Ketan Arjuna/Laila Verdante/Dr.
+   Neruda aparecem tanto como "Aliados" quanto como "Ameaças";
+   confirmar se têm ficha própria de ameaça ou só de companheiro antes
+   de catalogar.
+3. Arquivos Secretos #7 — Raziel/O Verdadeiro Raziel/Alvira/Sabara/
+   Velisar/Zéfero/Incinerado/Stryzga/Apóstata em 4 estágios. Atenção a
+   uma inconsistência já registrada no livro: Incinerado tem imunidade
+   E vulnerabilidade a fogo simultâneas, e Incinerado/Stryzga têm
+   resistência E vulnerabilidade balística simultâneas; preservar o
+   conflito, não inventar qual prevalece.
 
 ## Novo fluxo de trabalho (a partir de 22/09/2026)
 
