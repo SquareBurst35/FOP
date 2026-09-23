@@ -512,6 +512,13 @@ function currentRoute() {
 function renderRoute() {
   const route = currentRoute();
   headerActions.innerHTML = "";
+  // A ficha usa a tela inteira (colunas fixas + rolagem interna); as demais
+  // telas continuam com a largura central de leitura.
+  if (route.page === "ficha" && route.id) {
+    app.classList.add("app-sheet-view");
+  } else {
+    app.classList.remove("app-sheet-view");
+  }
 
   if (route.page === "criar") {
     if (!creatorState) creatorState = createBlankCharacter();

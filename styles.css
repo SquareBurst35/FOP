@@ -1130,8 +1130,6 @@ fieldset.skill-choice-block {
 
 .sheet-sidebar {
   align-self: start;
-  position: sticky;
-  top: calc(var(--topbar-height, 76px) + 18px);
 }
 
 .agent-identity {
@@ -1476,9 +1474,6 @@ fieldset.skill-choice-block {
 
 .summary-side {
   min-width: 0;
-  align-self: start;
-  position: sticky;
-  top: calc(var(--topbar-height, 76px) + 18px);
 }
 
 .summary-side .stat-grid {
@@ -3366,11 +3361,10 @@ body:has(dialog[open]) {
     linear-gradient(160deg, rgba(18, 21, 24, 0.98), rgba(8, 10, 12, 0.98));
 }
 
-/* .wizard-sidebar/.sheet-sidebar tambem levam .panel (mesma especificidade);
-   sem isto o "position: relative" do .panel vence por ordem e a barra lateral
-   nunca gruda na rolagem. */
-.wizard-sidebar,
-.sheet-sidebar {
+/* .wizard-sidebar tambem leva .panel (mesma especificidade); sem isto o
+   "position: relative" do .panel vence por ordem e a barra lateral do
+   assistente de criacao nunca gruda na rolagem. */
+.wizard-sidebar {
   position: sticky;
 }
 
@@ -4083,16 +4077,8 @@ body:has(dialog[open]) {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .summary-side {
-    position: static;
-  }
-
-  .wizard-sidebar,
-  .sheet-sidebar {
-    position: static;
-  }
-
   .wizard-sidebar {
+    position: static;
     padding-bottom: 14px;
   }
 
@@ -4138,6 +4124,77 @@ body:has(dialog[open]) {
 
   .attribute-choice-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .level-up-option-list { grid-template-columns: 1fr; }
+}
+
+/* Ficha em tela cheia: a barra de identidade e as abas ficam fixas na
+   altura da viewport, e só a coluna de conteudo da aba rola por dentro —
+   sem isso, sidebar/abas "sticky" cada uma engatava num momento diferente
+   da rolagem da pagina e a troca parecia quebrada (uma sumia antes da
+   outra acompanhar). */
+@media (min-width: 821px) {
+  #app.app-sheet-view {
+    width: min(1800px, calc(100% - 48px));
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .sheet-layout {
+    height: calc(100vh - var(--topbar-height, 76px) - 36px);
+    /* grid-auto-rows padrao e "auto": a trilha cresce pro conteudo e o
+       height acima vira só um palpite, ignorado. Com 1fr a trilha fica
+       presa na altura do container e sobra pra filho de verdade rolar. */
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .sheet-sidebar {
+    align-self: stretch;
+    overflow-y: auto;
+  }
+
+  .sheet-main {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .sheet-tabs {
+    flex: 0 0 auto;
+  }
+
+  .sheet-tab-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .summary-layout {
+    height: 100%;
+    align-items: stretch;
+  }
+
+  .summary-side {
+    overflow-y: auto;
+  }
+
+  .summary-main {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .skills-section {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .skills-table-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
 }
 
 @media (max-width: 600px) {
