@@ -3178,6 +3178,7 @@ export const THREATS = [
   }),
   threat({
     name: "Mescla",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Mescla",
     element: "Sangue",
     category: "Criatura",
     size: "Grande",
@@ -3256,6 +3257,7 @@ export const THREATS = [
   }),
   threat({
     name: "Derretido",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Derretido",
     element: "Sangue",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -3319,6 +3321,7 @@ export const THREATS = [
   }),
   threat({
     name: "Quibungo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Quibungo",
     element: "Sangue",
     category: "Criatura",
     size: "Grande",
@@ -3391,6 +3394,7 @@ export const THREATS = [
   }),
   threat({
     name: "Sepultado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Sepultado",
     element: "Morte",
     category: "Criatura",
     size: "Médio",
@@ -3446,6 +3450,7 @@ export const THREATS = [
   }),
   threat({
     name: "Memento Mori",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Memento_Mori",
     element: "Morte",
     secondaryElements: ["Conhecimento", "Medo"],
     category: "Criatura",
@@ -3505,6 +3510,7 @@ export const THREATS = [
   }),
   threat({
     name: "Amigo Imaginário",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Amigo_Imaginário",
     element: "Morte",
     secondaryElements: ["Sangue", "Medo"],
     category: "Criatura",
@@ -3562,6 +3568,7 @@ export const THREATS = [
   }),
   threat({
     name: "Melancolia",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Melancolia",
     element: "Conhecimento",
     secondaryElements: ["Sangue", "Morte", "Medo"],
     category: "Criatura",
@@ -3593,6 +3600,7 @@ export const THREATS = [
   }),
   threat({
     name: "Rascunho",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Rascunho",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -3639,6 +3647,7 @@ export const THREATS = [
   }),
   threat({
     name: "Medusa",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Medusa",
     element: "Conhecimento",
     secondaryElements: ["Morte"],
     category: "Criatura",
@@ -3716,6 +3725,7 @@ export const THREATS = [
   }),
   threat({
     name: "O Uivar",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/O_Uivar",
     element: "Energia",
     category: "Criatura",
     size: "Médio",
@@ -3761,6 +3771,7 @@ export const THREATS = [
   }),
   threat({
     name: "Profundo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Profundo",
     element: "Energia",
     secondaryElements: ["Sangue"],
     category: "Criatura",
@@ -3823,6 +3834,7 @@ export const THREATS = [
   }),
   threat({
     name: "Espectro Inesquecido",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Espectros_Inesquecidos",
     element: "Energia",
     secondaryElements: ["Conhecimento", "Morte", "Medo"],
     category: "Criatura",
@@ -4459,6 +4471,7 @@ export const THREATS = [
   }),
   threat({
     name: "Assecla",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Transtornado_Assecla",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4505,6 +4518,7 @@ export const THREATS = [
   }),
   threat({
     name: "Investido (Transtornados)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Transtornado_Investido",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4560,6 +4574,7 @@ export const THREATS = [
   }),
   threat({
     name: "Apóstolo do Sangue",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Transtornado_Apóstolo_de_Sangue",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4632,6 +4647,7 @@ export const THREATS = [
   }),
   threat({
     name: "Giovanni Opspor",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Giovanni_Opspor",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4696,6 +4712,7 @@ export const THREATS = [
   }),
   threat({
     name: "Mosto",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Mosto",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4740,6 +4757,7 @@ export const THREATS = [
   }),
   threat({
     name: "Tarrafa",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Tarrafa",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4784,6 +4802,7 @@ export const THREATS = [
   }),
   threat({
     name: "Carrara",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Carrara",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4827,6 +4846,7 @@ export const THREATS = [
   }),
   threat({
     name: "Nando Salles",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Nando_Salles",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4860,6 +4880,7 @@ export const THREATS = [
   }),
   threat({
     name: "Anulado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Anulado",
     element: "Sangue",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
@@ -4903,6 +4924,7 @@ export const THREATS = [
   }),
   threat({
     name: "Cleo Brisa",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Cleo_Brisa",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -4950,6 +4972,7 @@ export const THREATS = [
   }),
   threat({
     name: "Cristino",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Cristino",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6786,6 +6809,7 @@ export const THREATS = [
   }),
   threat({
     name: "Assistente de Produção",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Produção_Verde",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6842,6 +6866,7 @@ export const THREATS = [
   }),
   threat({
     name: "Produtor",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Produtor",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6894,6 +6919,7 @@ export const THREATS = [
   }),
   threat({
     name: "Diretor",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Diretor_da_Produção",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6961,6 +6987,7 @@ export const THREATS = [
   }),
   threat({
     name: "Simulacro",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Simulacro",
     element: "Energia",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
@@ -7002,6 +7029,7 @@ export const THREATS = [
   }),
   threat({
     name: "Simulacro (Krypto)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Simulacro",
     element: "Energia",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
@@ -7043,6 +7071,7 @@ export const THREATS = [
   }),
   threat({
     name: "Simulacro (Vvorm)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Simulacro",
     element: "Energia",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
@@ -7084,6 +7113,7 @@ export const THREATS = [
   }),
   threat({
     name: "Simulacro (Botnetz)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Simulacro",
     element: "Energia",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
