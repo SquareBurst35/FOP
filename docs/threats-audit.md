@@ -489,17 +489,72 @@ sempre texto dentro da `descricao`), isso não exigiu mudança de
 schema, só uma nota explicando a peculiaridade dentro do próprio texto
 da habilidade.
 
+## Progresso — Arquivos Secretos #5
+
+PDF `D:\Livros OP\Arquivos-Secretos-05-v1.0.pdf` (~26MB, 70 páginas),
+tema Alheios (alienígenas). **Offset de página = 0** (igual a AS#1–#4).
+`docs/content-audit.md` apontou 36–51 (ameaças) e 66–69 ("perigos
+complexos") de uma auditoria anterior. **10 ameaças catalogadas em
+22/09/2026 — 165 ameaças no catálogo.**
+
+**"Perigos complexos" (p.66–69) confirmados como fora de escopo, não
+catalogados** — Explosão em Contagem Regressiva, Fuga de Horda de
+Criaturas, Navio Naufragando, Prédio Ocupado por Criaturas e Chuva de
+Sangue não têm PV/Defesa/testes de resistência nem ações de combate;
+são desafios de teste estendido (ações do jogador com DTs, tipo
+"Correr"/"Desarmar Explosivo"), igual à seção "Perigos" do livro base
+que também ficou fora. O "VD" impresso ali é só referência de
+dificuldade para o mestre calibrar, não descreve uma ficha.
+
+**Elemento novo do livro: "Transmissão"** — o livro define esse termo
+(p.46) como a fusão de Conhecimento e Energia, "pertencem a esses dois
+elementos ao mesmo tempo", para as 9 criaturas paranormais do capítulo
+(todas exceto Hospedeiro Parasitado, que é "Pessoa"). **Decisão: não
+criar uma aba "Transmissão" nova no site** — o jogo tem uma cosmologia
+fixa de 4 elementos paranormais + Medo + Realidade, e "Transmissão" é
+apresentada pelo próprio livro como uma fusão desses dois, não uma
+força independente; criar uma 7ª aba para 9 fichas de um único
+suplemento fragmentaria a estrutura sem necessidade. Em vez disso, as 9
+usam `element: "Conhecimento"`, `secondaryElements: ["Energia"]` — a
+mesma técnica de primário+secundário já usada para toda ameaça
+multi-elemento do catálogo. Desempate para Conhecimento como primário:
+o próprio livro nomeia "Conhecimento e Energia" nessa ordem na frase
+que define Transmissão — mesmo critério de "ordem impressa importa" já
+usado para decidir o primário do Amigo Imaginário (Sobrevivendo ao
+Horror).
+
+**Hospedeiro Parasitado (p.36) não virou 4 entradas.** O livro dá 4
+"perfis" (Acólito, Faz-Tudo, Guerrilheiro, Socorrista) como *variações
+parciais* que o mestre aplica sobre a ficha base — trocam alguns
+atributos/perícias e no máximo uma ação, mas nenhum redefine VD,
+Defesa, Sentidos ou os três testes de resistência (só o Guerrilheiro
+redefine PV). É uma ferramenta de mestre sobre uma ficha só, não 4
+criaturas com números completos e distintos — diferente do Simulacro
+do AS#4. Os 4 perfis foram preservados como texto completo dentro de
+uma `habilidadesPassivas` da própria entrada, para não perder a
+informação.
+
+**Doppelganger: 3 formas viraram 3 entradas (Civil/Combatente/
+Cultista), mas "Monstruoso" não virou uma 4ª.** As três formas nomeadas
+têm VD, Defesa, PV, testes e perícias próprios e completos — mesmo
+padrão do Simulacro, três entradas. Já "Forma Monstruosa" é só um
+pacote de bônus fixo (+10 PV, +2 Defesa, +5 testes, +5 dano, +2 DT) que
+qualquer uma das três pode ativar quando ameaçada — sem VD/Defesa/PV
+próprios, não é uma criatura à parte. Ficou como a ação "Assumir Forma
+Monstruosa" dentro de cada uma das 3 fichas, com o texto do bônus
+preservado.
+
+**Achado incomum, mesmo padrão do AS#4**: a DT de "Acionar Explosão"
+do Fummu também é impressa como dado rolado (`Reflexos DT 4d10`), não
+número fixo — preservada como texto, sem mudança de schema.
+
 ## Ordem de continuação sugerida
 
-1. Arquivos Secretos #5 — `docs/content-audit.md` já lista ameaças em
-   36–51 e "perigos complexos" em 66–69; confirmar se estes últimos são
-   fichas de combate reais ou tabelas de mestre fora de escopo (mesmo
-   padrão da seção "Perigos" do livro base, que ficou de fora).
-2. Arquivos Secretos #6 — Alice Cruzes/Ketan Arjuna/Laila Verdante/Dr.
+1. Arquivos Secretos #6 — Alice Cruzes/Ketan Arjuna/Laila Verdante/Dr.
    Neruda aparecem tanto como "Aliados" quanto como "Ameaças";
    confirmar se têm ficha própria de ameaça ou só de companheiro antes
    de catalogar.
-3. Arquivos Secretos #7 — Raziel/O Verdadeiro Raziel/Alvira/Sabara/
+2. Arquivos Secretos #7 — Raziel/O Verdadeiro Raziel/Alvira/Sabara/
    Velisar/Zéfero/Incinerado/Stryzga/Apóstata em 4 estágios. Atenção a
    uma inconsistência já registrada no livro: Incinerado tem imunidade
    E vulnerabilidade a fogo simultâneas, e Incinerado/Stryzga têm
