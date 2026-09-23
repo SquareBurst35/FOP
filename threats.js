@@ -5023,6 +5023,7 @@ export const THREATS = [
   }),
   threat({
     name: "Arara-vermelha",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Araras",
     element: "Realidade",
     category: "Animal",
     size: "Pequeno",
@@ -5057,6 +5058,7 @@ export const THREATS = [
   }),
   threat({
     name: "Arara-devorada",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Araras_Devoradas",
     element: "Sangue",
     category: "Criatura",
     size: "Médio",
@@ -5104,6 +5106,7 @@ export const THREATS = [
   }),
   threat({
     name: "Arara-infernal",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Araras_Devoradas",
     element: "Sangue",
     category: "Criatura",
     size: "Grande",
@@ -5156,6 +5159,7 @@ export const THREATS = [
   }),
   threat({
     name: "Jaguatirica",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Jaguatirica",
     element: "Realidade",
     category: "Animal",
     size: "Pequeno",
@@ -5191,6 +5195,7 @@ export const THREATS = [
   }),
   threat({
     name: "Felino-devorado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Felinos_Devorados",
     element: "Sangue",
     category: "Criatura",
     size: "Médio",
@@ -5241,6 +5246,7 @@ export const THREATS = [
   }),
   threat({
     name: "Felino-infernal",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Felinos_Devorados",
     element: "Sangue",
     category: "Criatura",
     size: "Grande",
@@ -5297,6 +5303,7 @@ export const THREATS = [
   }),
   threat({
     name: "Jonas Aguiar",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Jonas_Aguiar",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5343,6 +5350,7 @@ export const THREATS = [
   }),
   threat({
     name: "Mutilador Noturno",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Jonas_Aguiar",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5392,6 +5400,7 @@ export const THREATS = [
   }),
   threat({
     name: "Dalmo Magno",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Dalmo_Magno",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5432,6 +5441,7 @@ export const THREATS = [
   }),
   threat({
     name: "Colosso",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Dalmo_Magno",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5471,6 +5481,7 @@ export const THREATS = [
   }),
   threat({
     name: "Jae-Yoon",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Park_Jae-Yoon",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5515,6 +5526,7 @@ export const THREATS = [
   }),
   threat({
     name: "X",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Park_Jae-Yoon",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5559,6 +5571,7 @@ export const THREATS = [
   }),
   threat({
     name: "Kemi",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Kemi",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5657,6 +5670,7 @@ export const THREATS = [
   }),
   threat({
     name: "Labirinto",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Labirinto",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5702,6 +5716,7 @@ export const THREATS = [
   }),
   threat({
     name: "Labirinto (Desperto)",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Labirinto",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5746,6 +5761,7 @@ export const THREATS = [
   }),
   threat({
     name: "Jasper",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Jasper",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5787,6 +5803,7 @@ export const THREATS = [
   }),
   threat({
     name: "Lena Viegas",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Lena_Viegas",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5827,6 +5844,7 @@ export const THREATS = [
   }),
   threat({
     name: "Maria",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Maria_Helena_Rodrigues",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5867,6 +5885,7 @@ export const THREATS = [
   }),
   threat({
     name: "Remi",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Remi",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5906,6 +5925,7 @@ export const THREATS = [
   }),
   threat({
     name: "Tuco",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Tuco_Belez",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5947,6 +5967,7 @@ export const THREATS = [
   }),
   threat({
     name: "Juan",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Juan",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -5990,6 +6011,7 @@ export const THREATS = [
   }),
   threat({
     name: "Juan Diabólico",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Juan",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -7155,6 +7177,7 @@ export const THREATS = [
   }),
   threat({
     name: "Hospedeiro Parasitado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Interflorado",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -7186,6 +7209,7 @@ export const THREATS = [
   }),
   threat({
     name: "Hospedeiro Aflorado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Interflorado",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7235,6 +7259,7 @@ export const THREATS = [
   }),
   threat({
     name: "Interflorado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Interflorado",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7290,6 +7315,7 @@ export const THREATS = [
   }),
   threat({
     name: "Fummu",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Fummu",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7350,6 +7376,7 @@ export const THREATS = [
   }),
   threat({
     name: "Doppelganger Civil",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Doppelganger",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7409,6 +7436,7 @@ export const THREATS = [
   }),
   threat({
     name: "Doppelganger Combatente",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Doppelganger",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7478,6 +7506,7 @@ export const THREATS = [
   }),
   threat({
     name: "Doppelganger Cultista",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Doppelganger",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7560,6 +7589,7 @@ export const THREATS = [
   }),
   threat({
     name: "Bilu",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Bilu",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7628,6 +7658,7 @@ export const THREATS = [
   }),
   threat({
     name: "Rastropoda",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Rastropoda",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -7696,6 +7727,7 @@ export const THREATS = [
   }),
   threat({
     name: "Memoflígico",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Memoflígico",
     element: "Conhecimento",
     secondaryElements: ["Energia"],
     category: "Criatura",
