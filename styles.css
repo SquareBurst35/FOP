@@ -3963,7 +3963,7 @@ body:has(dialog[open]) {
   position: absolute;
   inset: 0;
   content: "";
-  background: url("assets/attribute-sigil.svg") center / contain no-repeat;
+  background: url("assets/attribute-sigil.svg?v=3") center / contain no-repeat;
   animation: sigil-breathe 11s ease-in-out infinite alternate;
 }
 
