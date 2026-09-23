@@ -1438,11 +1438,10 @@ function saveCreatorFields() {
 
 const SHEET_TABS = [
   ["resumo", "Resumo"],
-  ["pericias", "Perícias"],
   ["habilidades", "Habilidades"],
   ["rituais", "Rituais"],
   ["inventario", "Inventário"],
-  ["anotacoes", "Anotações"],
+  ["anotacoes", "Formação & Notas"],
 ];
 
 function renderSheet(id) {
@@ -1559,29 +1558,47 @@ function documentTop(element) {
 }
 
 function renderSheetTab(character) {
-  if (activeSheetTab === "pericias") return renderSkillsTab(character);
   if (activeSheetTab === "habilidades") return renderAbilitiesTab(character);
   if (activeSheetTab === "rituais") return renderRitualsTab(character);
   if (activeSheetTab === "inventario") return renderInventoryTab(character);
   if (activeSheetTab === "anotacoes") {
-    return notesSection(
-      "Anotações",
-      "anotacoes",
-      character.anotacoes,
-      "Pistas, contatos e lembretes da sessão.",
-    );
+    return `
+      ${renderFormationSection(character)}
+      ${renderAutomaticBenefits(character)}
+      ${notesSection("Observações de perícias", "pericias", character.pericias, "Especializações, condições e bônus temporários.")}
+      ${notesSection("Anotações", "anotacoes", character.anotacoes, "Pistas, contatos e lembretes da sessão.")}
+    `;
   }
   return renderSummaryTab(character);
 }
 
 function renderSummaryTab(character) {
+  return `
+    <div class="summary-layout">
+      <div class="summary-side">
+        <div class="sheet-section">
+          <div class="section-heading"><h2>Atributos</h2><span class="muted small">Valores atuais</span></div>
+          ${renderAttributeConstellation(character.atributos)}
+        </div>
+        <div class="sheet-section">
+          <div class="section-heading"><h2>Combate</h2></div>
+          <div class="stat-grid">
+            ${statCard("Defesa", character.defesa)}
+            ${statCard("Deslocamento", `${character.deslocamento} m`)}
+            ${statCard("Proteção", character.protecao || "Nenhuma")}
+          </div>
+        </div>
+      </div>
+      <div class="summary-main">
+        ${renderSkillsPanel(character)}
+      </div>
+    </div>
+  `;
+}
+
+function renderFormationSection(character) {
   const isMundane = isMundaneCharacter(character) || character.classe === "Mundano" || isSurvivorCharacter(character);
   return `
-    <div class="sheet-section">
-      <div class="section-heading"><h2>Atributos</h2><span class="muted small">Valores atuais</span></div>
-      ${renderAttributeConstellation(character.atributos)}
-    </div>
-
     <div class="sheet-section">
       <div class="section-heading"><h2>Formação</h2><span class="muted small">Seleções da ficha</span></div>
       <div class="formation-grid">
@@ -1599,21 +1616,10 @@ function renderSummaryTab(character) {
         }
       </div>
     </div>
-
-    ${renderAutomaticBenefits(character)}
-
-    <div class="sheet-section">
-      <div class="section-heading"><h2>Combate</h2></div>
-      <div class="stat-grid">
-        ${statCard("Defesa", character.defesa)}
-        ${statCard("Deslocamento", `${character.deslocamento} m`)}
-        ${statCard("Proteção", character.protecao || "Nenhuma")}
-      </div>
-    </div>
   `;
 }
 
-function renderSkillsTab(character) {
+function renderSkillsPanel(character) {
   return `
     <section class="sheet-section skills-section">
       <div class="section-heading stacked-mobile">
@@ -1630,7 +1636,6 @@ function renderSkillsTab(character) {
       </div>
     </section>
     ${beforeSoBonus(character) ? `<p class="muted small">Antes Só ativo: +1 incluído nos testes de perícia. O campo Outros mantém seus bônus manuais.</p>` : ""}
-    ${notesSection("Observações de perícias", "pericias", character.pericias, "Especializações, condições e bônus temporários.")}
   `;
 }
 
