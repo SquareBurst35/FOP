@@ -6052,6 +6052,7 @@ export const THREATS = [
   }),
   threat({
     name: "Alê",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Alê",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6099,6 +6100,7 @@ export const THREATS = [
   }),
   threat({
     name: "Caio",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Caio_Teles",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6145,6 +6147,7 @@ export const THREATS = [
   }),
   threat({
     name: "Eloy",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Eloy_Furtado",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6186,6 +6189,7 @@ export const THREATS = [
   }),
   threat({
     name: "Franco",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Franco",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6232,6 +6236,7 @@ export const THREATS = [
   }),
   threat({
     name: "Cindy",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Cindy_Lopes",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6276,6 +6281,7 @@ export const THREATS = [
   }),
   threat({
     name: "Caíto",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Caíto_Rocha",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6309,6 +6315,7 @@ export const THREATS = [
   }),
   threat({
     name: "Ana",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Ana_Delgado_dos_Santos",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6351,6 +6358,7 @@ export const THREATS = [
   }),
   threat({
     name: "Argano",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Argano",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6404,6 +6412,7 @@ export const THREATS = [
   }),
   threat({
     name: "Chispa",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Chispa",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6458,6 +6467,7 @@ export const THREATS = [
   }),
   threat({
     name: "Torvo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Torvo",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6493,6 +6503,7 @@ export const THREATS = [
   }),
   threat({
     name: "Escarlata",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Escarlata",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6547,6 +6558,7 @@ export const THREATS = [
   }),
   threat({
     name: "Miasma",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Miasma",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6579,6 +6591,7 @@ export const THREATS = [
   }),
   threat({
     name: "Coruja",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Coruja",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6620,6 +6633,7 @@ export const THREATS = [
   }),
   threat({
     name: "Corvo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Corvo",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6662,6 +6676,7 @@ export const THREATS = [
   }),
   threat({
     name: "Papagaio",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Papagaio",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6706,6 +6721,7 @@ export const THREATS = [
   }),
   threat({
     name: "Pomba",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Pomba",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6747,6 +6763,7 @@ export const THREATS = [
   }),
   threat({
     name: "Harpia",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Harpia",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -6794,6 +6811,7 @@ export const THREATS = [
   }),
   threat({
     name: "Suellen",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Suellen",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -7781,6 +7799,7 @@ export const THREATS = [
   }),
   threat({
     name: "Alice Cruzes",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Alice_Cruzes",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -7834,6 +7853,7 @@ export const THREATS = [
   }),
   threat({
     name: "Ketan Arjuna",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Ketan_Arjuna",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -7897,6 +7917,7 @@ export const THREATS = [
   }),
   threat({
     name: "Laila Verdante",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Laila_Verdante",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -7960,6 +7981,7 @@ export const THREATS = [
   }),
   threat({
     name: "Dr. Neruda",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Carlos_Neruda",
     element: "Realidade",
     category: "Pessoa",
     size: "Médio",
@@ -8185,6 +8207,7 @@ export const THREATS = [
   }),
   threat({
     name: "Hikikomori",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Hikikomori",
     element: "Energia",
     secondaryElements: ["Sangue"],
     category: "Criatura",
@@ -8232,6 +8255,7 @@ export const THREATS = [
   }),
   threat({
     name: "Marca-Passo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Marca-Passo",
     element: "Energia",
     secondaryElements: ["Sangue"],
     category: "Criatura",
@@ -8279,6 +8303,7 @@ export const THREATS = [
   }),
   threat({
     name: "Estímulo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Estímulo",
     element: "Energia",
     secondaryElements: ["Sangue"],
     category: "Criatura",
@@ -8334,6 +8359,7 @@ export const THREATS = [
   }),
   threat({
     name: "Experimento Ssabáka",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Experimento_Ssabáka",
     element: "Morte",
     secondaryElements: ["Sangue"],
     category: "Criatura",
