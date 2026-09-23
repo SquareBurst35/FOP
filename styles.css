@@ -4623,6 +4623,23 @@ body:has(dialog[open]) {
   line-height: 1.55;
 }
 
+.threat-wiki-link {
+  justify-self: start;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.threat-wiki-link:hover {
+  border-color: var(--red);
+  color: var(--text);
+}
+
 .threat-status-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

@@ -56,10 +56,12 @@ function threat({
   descricao,
   source = "Livro base",
   page = "",
+  wikiUrl = "",
 }) {
   return {
     id: slug(`ameaca-${source}-${name}`),
     name,
+    wikiUrl,
     element,
     secondaryElements,
     category,
@@ -700,6 +702,7 @@ export const THREATS = [
   }),
   threat({
     name: "O Diabo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/O_Diabo",
     element: "Sangue",
     secondaryElements: ["Conhecimento", "Medo"],
     category: "Criatura",
@@ -1153,6 +1156,7 @@ export const THREATS = [
   }),
   threat({
     name: "Nidere",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Nidere",
     element: "Morte",
     secondaryElements: ["Sangue", "Medo"],
     category: "Criatura",

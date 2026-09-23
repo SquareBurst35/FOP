@@ -44,7 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=57";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=19";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=20";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=56";
 import {
   CHOICE_TYPE_LABELS,
@@ -783,6 +783,7 @@ function renderThreatSheet(id) {
           ${entry.secondaryElements.map((element) => `<span class="badge threat-element-badge">${elementGlyph(element)}${escapeHtml(element)}</span>`).join("")}
         </div>
         <p class="muted threat-flavor">${escapeHtml(entry.descricao)}</p>
+        ${entry.wikiUrl ? `<a class="threat-wiki-link" href="${escapeAttribute(entry.wikiUrl)}" target="_blank" rel="noopener noreferrer">Saiba mais na wiki ↗</a>` : ""}
       </aside>
 
       <div class="sheet-main">
