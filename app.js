@@ -97,8 +97,9 @@ const SKILL_GROUP_NAMES = Object.fromEntries(
 // pixel trace of that fan art. Decorative; no gameplay meaning.
 const ELEMENT_GLYPHS = {
   sangue: `
-    <circle pathLength="70" cx="12" cy="12" r="6.5"/>
-    <path pathLength="70" d="M12 4.3v2M12 19.7v-2M4.3 12h2M19.7 12h-2M6.6 6.6l1.4 1.4M17.4 17.4l-1.4-1.4M17.4 6.6l-1.4 1.4M6.6 17.4l1.4-1.4"/>
+    <path pathLength="70" d="M13.2 3c-.8.6-1.3 1.4-1.2 2.4-.4 2.1-.3 4.3.1 6.4"/>
+    <path pathLength="70" d="M7 12.4c1.8-.2 3.6-.4 5.3-1 1.7.9 3.4.7 4.7-.7.9-1 1.3-2.2 1-3.5M17.4 11.7c.8.2 1.4.9 1.5 1.8"/>
+    <path pathLength="70" d="M12.1 11.9c-.2 1.9 0 3.8-.3 5.6-1.6.4-3.1 1.1-4.3 2.3M11.8 17.5c1.5.5 2.8 1.4 3.7 2.7"/>
   `,
   morte: `
     <path pathLength="70" d="M12 12 L13 4 L11 7"/>
