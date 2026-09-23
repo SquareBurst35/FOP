@@ -1998,7 +1998,7 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
       <details class="entry-card ritual-card element-${normalizeSearch(entry.element)}">
         <summary>
           <span class="ritual-card-title">${elementGlyph(entry.element, glyphDelay)}<span class="ritual-card-title-text"><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(ritualElementLabel(entry))} · ${entry.circle}º círculo</small></span></span>
-          <span class="entry-summary-side"><span class="badge">${escapeHtml(entry.cost)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
+          <span class="entry-summary-side">${dt !== null ? `<span class="badge red ritual-dt-badge" title="DT do teste de resistência">DT ${dt}</span>` : ""}<span class="badge">${escapeHtml(entry.cost)}</span><span class="chevron" aria-hidden="true">⌄</span></span>
         </summary>
         <div class="entry-body">
           <p>${escapeHtml(entry.summary)}</p>
@@ -2011,7 +2011,6 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
             ${entry.target ? `<div><dt>Alvo/área</dt><dd>${escapeHtml(entry.target)}</dd></div>` : ""}
             ${entry.duration ? `<div><dt>Duração</dt><dd>${escapeHtml(entry.duration)}</dd></div>` : ""}
             ${entry.resistance ? `<div><dt>Resistência</dt><dd>${escapeHtml(entry.resistance)}</dd></div>` : ""}
-            ${dt !== null ? `<div><dt>DT</dt><dd>${dt}</dd></div>` : ""}
             ${entry.requirement ? `<div><dt>Requisito</dt><dd>${escapeHtml(entry.requirement)}</dd></div>` : ""}
             <div><dt>Fonte</dt><dd>${escapeHtml(entry.source)}${entry.page ? ` · p. ${escapeHtml(entry.page)}` : ""}</dd></div>
           </dl>

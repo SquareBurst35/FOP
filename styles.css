@@ -4543,6 +4543,10 @@ body:has(dialog[open]) {
   .entry-summary-side .badge {
     display: none;
   }
+
+  .entry-summary-side .badge.ritual-dt-badge {
+    display: inline-flex;
+  }
 }
 
 @container (max-width: 560px) {
