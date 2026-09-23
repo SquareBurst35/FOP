@@ -98,6 +98,7 @@ function threat({
 export const THREATS = [
   threat({
     name: "Aberração de Carne",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Aberração_de_Carne",
     element: "Sangue",
     category: "Criatura",
     size: "Grande",
@@ -144,6 +145,7 @@ export const THREATS = [
   }),
   threat({
     name: "Carente",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/O_Carente",
     element: "Sangue",
     secondaryElements: ["Morte"],
     category: "Criatura",
@@ -208,6 +210,7 @@ export const THREATS = [
   }),
   threat({
     name: "Aniquilação",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Aniquilação",
     element: "Sangue",
     secondaryElements: ["Medo"],
     category: "Criatura",
@@ -282,6 +285,7 @@ export const THREATS = [
   }),
   threat({
     name: "Dama de Sangue",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Dama_de_Sangue",
     element: "Sangue",
     secondaryElements: ["Morte", "Medo"],
     category: "Criatura",
@@ -356,6 +360,7 @@ export const THREATS = [
   }),
   threat({
     name: "Enpap-X",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Enpap-X",
     element: "Sangue",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
@@ -419,6 +424,7 @@ export const THREATS = [
   }),
   threat({
     name: "Kerberos",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Kerberos",
     element: "Sangue",
     category: "Criatura",
     size: "Enorme",
@@ -472,6 +478,7 @@ export const THREATS = [
   }),
   threat({
     name: "Minotauro",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Minotauro",
     element: "Sangue",
     category: "Criatura",
     size: "Grande",
@@ -515,6 +522,7 @@ export const THREATS = [
   }),
   threat({
     name: "Mulher Afogada",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Mulher_Afogada",
     element: "Sangue",
     secondaryElements: ["Energia", "Medo"],
     category: "Criatura",
@@ -582,6 +590,7 @@ export const THREATS = [
   }),
   threat({
     name: "Titã de Sangue",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Titã_de_Sangue",
     element: "Sangue",
     category: "Criatura",
     size: "Enorme",
@@ -627,6 +636,7 @@ export const THREATS = [
   }),
   threat({
     name: "Zumbi de Sangue",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Zumbis_de_Sangue",
     element: "Sangue",
     category: "Criatura",
     size: "Médio",
@@ -661,6 +671,7 @@ export const THREATS = [
   }),
   threat({
     name: "Zumbi de Sangue Bestial",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Zumbis_de_Sangue",
     element: "Sangue",
     category: "Criatura",
     size: "Grande",
@@ -781,6 +792,7 @@ export const THREATS = [
   }),
   threat({
     name: "Esqueleto de Lodo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Esqueletos_de_Lodo",
     element: "Morte",
     category: "Criatura",
     size: "Médio",
@@ -820,6 +832,7 @@ export const THREATS = [
   }),
   threat({
     name: "Aracnasita",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Aracnasita",
     element: "Morte",
     secondaryElements: ["Medo"],
     category: "Criatura",
@@ -872,6 +885,7 @@ export const THREATS = [
   }),
   threat({
     name: "Carniçal Preto da Morte",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Carniçal_Preto_da_Morte",
     element: "Morte",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
@@ -930,6 +944,7 @@ export const THREATS = [
   }),
   threat({
     name: "Ceifador Espiral",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Ceifador_Espiral",
     element: "Morte",
     secondaryElements: ["Medo"],
     category: "Criatura",
@@ -983,6 +998,7 @@ export const THREATS = [
   }),
   threat({
     name: "Enraizado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Enraizados",
     element: "Morte",
     category: "Criatura",
     size: "Médio",
@@ -1018,6 +1034,7 @@ export const THREATS = [
   }),
   threat({
     name: "Escutado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Escutado",
     element: "Morte",
     secondaryElements: ["Energia", "Medo"],
     category: "Criatura",
@@ -1063,6 +1080,7 @@ export const THREATS = [
   }),
   threat({
     name: "Marionete",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/A_Marionete",
     element: "Morte",
     category: "Criatura",
     size: "Médio",
@@ -1107,6 +1125,7 @@ export const THREATS = [
   }),
   threat({
     name: "Múmia Xipófaga",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Múmias",
     element: "Morte",
     category: "Criatura",
     size: "Médio",
@@ -1209,6 +1228,7 @@ export const THREATS = [
   }),
   threat({
     name: "Sempiternal",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Sempiternal",
     element: "Morte",
     category: "Criatura",
     size: "Médio",
@@ -1251,6 +1271,7 @@ export const THREATS = [
   }),
   threat({
     name: "Succ",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Succ",
     element: "Morte",
     secondaryElements: ["Energia"],
     category: "Criatura",
@@ -1288,6 +1309,7 @@ export const THREATS = [
   }),
   threat({
     name: "O Deus da Morte",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/O_Deus_da_Morte",
     element: "Morte",
     secondaryElements: ["Conhecimento", "Medo"],
     category: "Relíquia",
@@ -1354,6 +1376,7 @@ export const THREATS = [
   }),
   threat({
     name: "Existido",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Existidos_e_Lembrados",
     element: "Conhecimento",
     category: "Criatura",
     size: "Médio",
@@ -1396,6 +1419,7 @@ export const THREATS = [
   }),
   threat({
     name: "Anjo",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Anjo",
     element: "Conhecimento",
     secondaryElements: ["Medo"],
     category: "Criatura",
@@ -1452,6 +1476,7 @@ export const THREATS = [
   }),
   threat({
     name: "Bicho-Papão",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Bicho-Papão",
     element: "Conhecimento",
     category: "Criatura",
     size: "Grande",
@@ -1499,6 +1524,7 @@ export const THREATS = [
   }),
   threat({
     name: "Espreitador",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/O_Espreitador",
     element: "Conhecimento",
     secondaryElements: ["Medo"],
     category: "Criatura",
@@ -1607,6 +1633,7 @@ export const THREATS = [
   }),
   threat({
     name: "Lembrado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Existidos_e_Lembrados",
     element: "Conhecimento",
     category: "Criatura",
     size: "Médio",
@@ -1647,6 +1674,7 @@ export const THREATS = [
   }),
   threat({
     name: "Ocioso",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Ocioso",
     element: "Conhecimento",
     category: "Criatura",
     size: "Grande",
@@ -1691,6 +1719,7 @@ export const THREATS = [
   }),
   threat({
     name: "Parasita de Culpa",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Parasita_de_Culpa",
     element: "Conhecimento",
     secondaryElements: ["Sangue", "Morte", "Medo"],
     category: "Criatura",
@@ -1741,6 +1770,7 @@ export const THREATS = [
   }),
   threat({
     name: "Rastejador Sombrio",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Rastejador_Sombrio",
     element: "Conhecimento",
     secondaryElements: ["Sangue"],
     category: "Criatura",
@@ -1792,6 +1822,7 @@ export const THREATS = [
   }),
   threat({
     name: "Silhueta",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Silhueta",
     element: "Conhecimento",
     category: "Criatura",
     size: "Médio",
@@ -1834,6 +1865,7 @@ export const THREATS = [
   }),
   threat({
     name: "Vulto",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Vultos",
     element: "Conhecimento",
     category: "Criatura",
     size: "Médio",
@@ -1874,6 +1906,7 @@ export const THREATS = [
   }),
   threat({
     name: "Máscara do Desespero",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Relíquia_de_Conhecimento",
     element: "Conhecimento",
     secondaryElements: ["Medo"],
     category: "Relíquia",
@@ -1923,6 +1956,7 @@ export const THREATS = [
   }),
   threat({
     name: "Anárquico",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Anárquicos",
     element: "Energia",
     category: "Criatura",
     size: "Médio",
@@ -1957,6 +1991,7 @@ export const THREATS = [
   }),
   threat({
     name: "Anárquico Descontrolado",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Anárquicos",
     element: "Energia",
     category: "Criatura",
     size: "Médio",
@@ -1998,6 +2033,7 @@ export const THREATS = [
   }),
   threat({
     name: "Ciborgue",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Ciborgue",
     element: "Energia",
     secondaryElements: ["Sangue", "Medo"],
     category: "Criatura",
@@ -2043,6 +2079,7 @@ export const THREATS = [
   }),
   threat({
     name: "Perturbado de Energia",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Perturbados_de_Energia",
     element: "Energia",
     category: "Criatura",
     size: "Médio",
@@ -2079,6 +2116,7 @@ export const THREATS = [
   }),
   threat({
     name: "Sukkalgir",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Sukkalgir",
     element: "Energia",
     secondaryElements: ["Conhecimento"],
     category: "Criatura",
@@ -2127,6 +2165,7 @@ export const THREATS = [
   }),
   threat({
     name: "Viajante",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Viajante",
     element: "Energia",
     secondaryElements: ["Conhecimento", "Medo"],
     category: "Criatura",
@@ -2174,6 +2213,7 @@ export const THREATS = [
   }),
   threat({
     name: "Anomiático",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Anomiático",
     element: "Energia",
     category: "Criatura",
     size: "Médio",
@@ -2208,6 +2248,7 @@ export const THREATS = [
   }),
   threat({
     name: "Infecticídio",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Infecticídio",
     element: "Energia",
     secondaryElements: ["Sangue"],
     category: "Criatura",
@@ -2258,6 +2299,7 @@ export const THREATS = [
   }),
   threat({
     name: "Telopsia",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Telopsia",
     element: "Energia",
     secondaryElements: ["Morte", "Medo"],
     category: "Criatura",
@@ -2308,6 +2350,7 @@ export const THREATS = [
   }),
   threat({
     name: "Anomalia",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Anomalia",
     element: "Energia",
     secondaryElements: ["Medo"],
     category: "Criatura",
@@ -2356,6 +2399,7 @@ export const THREATS = [
   }),
   threat({
     name: "Tempestuoso",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Tempestuoso",
     element: "Energia",
     category: "Criatura",
     size: "Médio",
@@ -2402,6 +2446,7 @@ export const THREATS = [
   }),
   threat({
     name: "O Anfitrião",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/O_Anfitrião",
     element: "Energia",
     secondaryElements: ["Conhecimento", "Medo"],
     category: "Criatura",
@@ -2448,6 +2493,7 @@ export const THREATS = [
   }),
   threat({
     name: "Degolificada",
+    wikiUrl: "https://ordemparanormal.fandom.com/wiki/Degolificada",
     element: "Medo",
     secondaryElements: ["Energia", "Conhecimento", "Sangue", "Morte"],
     category: "Criatura",

@@ -44,7 +44,7 @@ import {
   PATENT_ITEM_LIMITS,
   inventoryUsage,
 } from "./items.js?v=57";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=24";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
 import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=56";
 import {
   CHOICE_TYPE_LABELS,
