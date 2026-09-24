@@ -2288,7 +2288,7 @@ function applyGrantedChoiceEffects(character, entry, staged) {
       character.outrosBonusPericia.Profissão = numberOr(character.outrosBonusPericia?.Profissão, 0) + 5;
     }
   }
-  if (entry.name === "Aprender Ritual" || entry.name === "Mácula Ritualística") {
+  if (["Aprender Ritual", "Mácula Ritualística", "Invenção Paranormal"].includes(entry.name)) {
     for (const choice of chosen("ritual")) character.rituaisSelecionados = [...new Set([...(character.rituaisSelecionados ?? []), choice.valueId])];
   }
 }
@@ -3619,6 +3619,9 @@ function buildLevelUpPreview(character, { includePowerTraining = true } = {}) {
     if (!duplicate || owner?.name === "<Habilidade> Aprimorada") preview.habilidadeEscolhas.push({ ...choice, level: plan.toLevel });
     if (owner?.name === "Dominar Habilidade Ritualística" && choice.type === "habilidade") {
       preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), choice.valueId])];
+    }
+    if (["Aprender Ritual", "Mácula Ritualística", "Invenção Paranormal"].includes(owner?.name) && choice.type === "ritual") {
+      preview.rituaisSelecionados = [...new Set([...(preview.rituaisSelecionados ?? []), choice.valueId])];
     }
     if (["Especialista Diletante", "Ele Me Ensina"].includes(owner?.name) && ["poder", "habilidade"].includes(choice.type)) {
       preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), choice.valueId])];
