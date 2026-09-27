@@ -273,6 +273,27 @@ function equipmentDefenseBonus(character) {
   }, 0);
 }
 
+// Livro base: "Reflexos Defensivos" e "Precognição" são bônus passivos e
+// incondicionais (+2 na Defesa sempre que a habilidade é conhecida). "Tanque
+// de Guerra" e "Especialista em Proteção Leve" também são sempre ativos,
+// mas só enquanto a proteção do tipo certo (pesada/leve) estiver equipada —
+// dado que já lemos do inventário. Os demais bônus de Defesa do livro (ex.:
+// Combate Defensivo, Barreira do Oculto, rituais como Armadura de Sangue)
+// são condicionados a uma ação/reação ou a um efeito temporário de cena, não
+// a um estado permanente da ficha, então ficam de fora — o jogador aplica
+// na hora, como já faz com o resto do combate.
+function abilityDefenseBonus(character) {
+  let bonus = 0;
+  if (hasSelectedPower(character, "reflexos-defensivos")) bonus += 2;
+  if (hasSelectedPower(character, "precognicao")) bonus += 2;
+  const proficiencies = equippedProtections(character).map(
+    (item) => item.details?.find(([key]) => key === "Proficiência")?.[1] ?? "",
+  );
+  if (hasSelectedPower(character, "tanque-de-guerra") && proficiencies.some((value) => /pesada/i.test(value))) bonus += 2;
+  if (hasSelectedPower(character, "especialista-em-protecao-leve") && proficiencies.some((value) => /leve/i.test(value))) bonus += 2;
+  return bonus;
+}
+
 function ritualDtItemBonus(character, ritual, knowsSangueRitual) {
   const owned = new Set(
     (character?.inventarioItens ?? [])
@@ -339,7 +360,7 @@ export function calculateDerived(character) {
       pvMax: 0,
       peMax: 0,
       sanMax: 0,
-      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character),
+      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: 0,
@@ -363,7 +384,7 @@ export function calculateDerived(character) {
       pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus,
       peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus,
       sanMax: classData.initial.san + advances * classData.gain.san,
-      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character),
+      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
@@ -384,7 +405,7 @@ export function calculateDerived(character) {
     pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus,
     peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
-    defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character),
+    defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
     deslocamento: 9,
     advances,
     skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
