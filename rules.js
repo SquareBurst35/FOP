@@ -1,6 +1,6 @@
 import { beforeSoBonus, turnSpendLimit } from "./session.js?v=33";
-import { ITEM_BY_ID } from "./items.js?v=57";
-import { upgradedItem } from "./item-upgrades.js?v=56";
+import { ITEM_BY_ID } from "./items.js?v=58";
+import { upgradedItem } from "./item-upgrades.js?v=57";
 export const ATTRIBUTE_TARGET = 9;
 export const MUNDANE_ATTRIBUTE_TARGET = 8;
 export const ATTRIBUTE_MAX_AT_CREATION = 3;

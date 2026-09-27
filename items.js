@@ -1,4 +1,4 @@
-import { upgradedItem } from "./item-upgrades.js?v=56";
+import { upgradedItem } from "./item-upgrades.js?v=57";
 import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=55";
 const slug = (value) =>
   String(value)

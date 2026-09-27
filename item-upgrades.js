@@ -113,4 +113,55 @@ export function itemUpgrades(item,ids=[]){
   out.push(u);
  }return out;
 }
-export function upgradedItem(item,ids=[]){const upgrades=itemUpgrades(item,ids),curses=upgrades.filter(u=>u.curse).length,base=['0','I','II','III','IV'].indexOf(item.category),increase=upgrades.filter(u=>!u.curse).length+(curses?curses+1:0),level=base+increase;return {...item,upgrades,category:increase?(['0','I','II','III','IV'][level]??'V+'):item.category,spaces:Math.max(0,item.spaces+upgrades.reduce((s,u)=>s+u.spaces,0))};}
+
+// Só as modificações abaixo (não-amaldiçoadas) têm um efeito numérico limpo e
+// sempre ativo sobre um campo que a ficha já mostra no cartão do item (Dano,
+// Crítico, Alcance, Defesa, Resistência) — por isso só essas recalculam o
+// cartão automaticamente. As demais concedem bônus de teste (Alongada,
+// Certeira), dependem de contexto (Compensador, Silenciador, Discreta) ou
+// afetam munição em vez da própria arma (Dum Dum, Explosiva — a arma
+// carregada com ela não tem esse dado na própria ficha); o jogador aplica
+// essas na hora, igual já faz hoje. O mesmo vale para toda maldição: são bem
+// mais condicionais (2 PE ao acertar, gatilhos, escolhas) e ficam de fora
+// por enquanto.
+function bumpDiceCount(value, extra) {
+  return String(value).replace(/(\d+)d(\d+)/g, (_, count, sides) => `${Number(count) + extra}d${sides}`);
+}
+function appendFlatDamage(value, amount) {
+  return String(value).split("/").map((part) => `${part}+${amount}`).join("/");
+}
+function tightenThreat(value, marginDelta) {
+  const text = String(value).trim();
+  if (text.startsWith("x")) return `${20 - marginDelta}/${text}`;
+  if (text.includes("/")) {
+    const [threat, multiplier] = text.split("/");
+    return `${Number(threat) - marginDelta}/${multiplier}`;
+  }
+  return `${Number(text) - marginDelta}`;
+}
+const RANGE_ORDER = ["Curto", "Médio", "Longo"];
+function widenRange(value) {
+  const index = RANGE_ORDER.indexOf(String(value));
+  return index === -1 ? value : RANGE_ORDER[Math.min(index + 1, RANGE_ORDER.length - 1)];
+}
+function bumpSigned(value, amount) {
+  const total = (Number(value) || 0) + amount;
+  return total >= 0 ? `+${total}` : `${total}`;
+}
+function mapDetail(details, key, transform) {
+  return (details ?? []).map(([k, v]) => (k === key ? [k, transform(v)] : [k, v]));
+}
+const UPGRADE_EFFECTS = {
+  "livro-base-armas-mira-laser": (details) => mapDetail(details, "Crítico", (v) => tightenThreat(v, 2)),
+  "livro-base-armas-perigosa": (details) => mapDetail(details, "Crítico", (v) => tightenThreat(v, 2)),
+  "livro-base-armas-calibre-grosso": (details) => mapDetail(details, "Dano", (v) => bumpDiceCount(v, 1)),
+  "livro-base-armas-cruel": (details) => mapDetail(details, "Dano", (v) => appendFlatDamage(v, 2)),
+  "livro-base-armas-mira-telescopica": (details) => mapDetail(details, "Alcance", widenRange),
+  "livro-base-protecoes-reforcada": (details) => mapDetail(details, "Defesa", (v) => bumpSigned(v, 2)),
+  "livro-base-protecoes-blindada": (details) => mapDetail(details, "Resistência", () => "5"),
+};
+export function upgradedItem(item,ids=[]){
+  const upgrades=itemUpgrades(item,ids),curses=upgrades.filter(u=>u.curse).length,base=['0','I','II','III','IV'].indexOf(item.category),increase=upgrades.filter(u=>!u.curse).length+(curses?curses+1:0),level=base+increase;
+  const details=upgrades.reduce((current,u)=>UPGRADE_EFFECTS[u.id]?UPGRADE_EFFECTS[u.id](current):current,item.details);
+  return {...item,upgrades,details,category:increase?(['0','I','II','III','IV'][level]??'V+'):item.category,spaces:Math.max(0,item.spaces+upgrades.reduce((s,u)=>s+u.spaces,0))};
+}
