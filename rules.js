@@ -253,6 +253,26 @@ function hasSelectedPower(character, powerSlug) {
   );
 }
 
+// Poderes passivos e incondicionais que somam um valor fixo numa perícia
+// específica, sempre que conhecidos (nenhum depende de ação, alvo ou item
+// equipado). Poderes que só valem contra um alvo específico (Envolto em
+// Mistério), que trocam o atributo usado no teste (Racionalidade
+// Inflexível) ou que vêm de trilha/ritual ficam fora por enquanto — são
+// mecanicamente diferentes de "soma um número fixo".
+const ABILITY_SKILL_BONUSES = [
+  ["vontade-inabalavel", "Vontade", 2],
+  ["vitalidade-reforcada", "Fortitude", 2],
+  ["adaptacao-climatica", "Fortitude", 2],
+  ["muito-sorrateiro", "Furtividade", 3],
+];
+
+export function abilitySkillBonus(character, skill) {
+  return ABILITY_SKILL_BONUSES.reduce(
+    (sum, [slug, targetSkill, bonus]) => sum + (targetSkill === skill && hasSelectedPower(character, slug) ? bonus : 0),
+    0,
+  );
+}
+
 export function equippedProtections(character) {
   const entries = Array.isArray(character?.inventarioItens) ? character.inventarioItens : [];
   const seen = new Set();

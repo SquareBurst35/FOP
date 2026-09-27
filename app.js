@@ -1,11 +1,12 @@
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=56";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=59";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=60";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
   CLASSES,
   ORIGINS,
   SKILLS,
+  abilitySkillBonus,
   applyDerived,
   attributeBudget,
   attributeTarget,
@@ -21,7 +22,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=58";
+} from "./rules.js?v=59";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -46,13 +47,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=57";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=58";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=59";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=60";
+} from "./choices.js?v=61";
 import {
   effortResource,
   beforeSoBonus,
@@ -1719,7 +1720,7 @@ function renderSkillRow(character, skill) {
   const dice = skillAttributeValue(character, attribute);
   const grade = numberOr(character.grausPericia?.[skill], 0);
   const other = numberOr(character.outrosBonusPericia?.[skill], 0);
-  const total = grade + other + beforeSoBonus(character);
+  const total = grade + other + beforeSoBonus(character) + abilitySkillBonus(character, skill);
   return `
     <tr class="skill-rank-${grade}">
       <th scope="row"><span class="skill-die" aria-hidden="true">◇</span>${escapeHtml(skill)}</th>
