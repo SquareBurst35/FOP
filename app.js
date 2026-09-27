@@ -238,6 +238,7 @@ function createBlankCharacter() {
     id: crypto.randomUUID(),
     nome: "",
     jogador: "",
+    foto: "",
     aparencia: "masculino",
     origem: "",
     classe: "Mundano",
@@ -315,6 +316,11 @@ function createBlankCharacter() {
 function normalizeCharacter(character) {
   if (!character || typeof character !== "object") return character;
   character.aparencia=character.aparencia==="feminino"?"feminino":"masculino";
+  // Foto enviada pelo jogador: já sai comprimida/redimensionada de resizeImageToDataUrl,
+  // então um valor gigante ou fora do formato esperado só pode ser corrupção — descarta.
+  character.foto = typeof character.foto === "string" && /^data:image\//.test(character.foto) && character.foto.length <= 300000
+    ? character.foto
+    : "";
   ensureOptionalRules(character);
   character.atributos ??= { agilidade: 1, forca: 1, intelecto: 1, presenca: 1, vigor: 1 };
   character.periciasTreinadas = Array.isArray(character.periciasTreinadas)
@@ -625,7 +631,7 @@ function renderCharacterGrid(characters) {
           (character, index) => `
             <article class="character-card" style="animation-delay: ${Math.min(index, 8) * 45}ms">
               <div class="character-card-head">
-                <div class="avatar" aria-hidden="true">${escapeHtml(initials(character.nome))}</div>
+                <div class="avatar" aria-hidden="true">${character.foto ? `<img src="${escapeAttribute(character.foto)}" alt="" />` : escapeHtml(initials(character.nome))}</div>
                 <div>
                   <h3>${escapeHtml(character.nome || "Agente sem nome")}</h3>
                   <span class="muted small">${escapeHtml(character.jogador || "Jogador não informado")}</span>
@@ -1610,6 +1616,7 @@ function renderSheetTab(character) {
   if (activeSheetTab === "inventario") return renderInventoryTab(character);
   if (activeSheetTab === "anotacoes") {
     return `
+      ${renderPhotoSection(character)}
       ${renderFormationSection(character)}
       ${renderHistorySection(character)}
       ${renderAutomaticBenefits(character)}
@@ -1639,6 +1646,22 @@ function renderSummaryTab(character) {
       </div>
       <div class="summary-main">
         ${renderSkillsPanel(character)}
+      </div>
+    </div>
+  `;
+}
+
+function renderPhotoSection(character) {
+  return `
+    <div class="sheet-section photo-section">
+      <div class="section-heading"><h2>Foto do agente</h2><span class="muted small">Aparece no lugar das iniciais ao escolher a ficha</span></div>
+      <div class="photo-upload-row">
+        <div class="avatar avatar-lg" aria-hidden="true">${character.foto ? `<img src="${escapeAttribute(character.foto)}" alt="" />` : escapeHtml(initials(character.nome))}</div>
+        <div class="photo-upload-actions">
+          <label class="button ghost compact photo-upload-button" for="photo-upload-input">${character.foto ? "Trocar foto" : "Enviar foto"}</label>
+          <input type="file" id="photo-upload-input" accept="image/*" hidden />
+          ${character.foto ? `<button class="button ghost compact" type="button" id="remove-photo">Remover foto</button>` : ""}
+        </div>
       </div>
     </div>
   `;
@@ -3985,6 +4008,27 @@ function bindSheetInteractions(character) {
     button.addEventListener("click", () => cancelActiveEffect(character, button.dataset.cancelEffect));
   });
 
+  document.querySelector("#photo-upload-input")?.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return showToast("Escolha um arquivo de imagem.");
+    try {
+      character.foto = await resizeImageToDataUrl(file);
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast("Foto atualizada.");
+    } catch {
+      showToast("Não foi possível carregar essa imagem.");
+    }
+  });
+
+  document.querySelector("#remove-photo")?.addEventListener("click", () => {
+    character.foto = "";
+    upsertCharacter(character);
+    renderSheet(character.id);
+    showToast("Foto removida.");
+  });
+
   document.querySelectorAll("[data-autosave]").forEach((fieldElement) => {
     fieldElement.addEventListener("change", () => {
       character[fieldElement.dataset.autosave] = fieldElement.value;
@@ -5029,6 +5073,41 @@ function playLevelUpCeremony(label, nex) {
   levelUpCeremonyElement.classList.add("play");
   window.clearTimeout(levelUpCeremonyTimer);
   levelUpCeremonyTimer = window.setTimeout(() => levelUpCeremonyElement.classList.remove("play"), 2050);
+}
+
+// Recorta ao quadrado central e redimensiona antes de guardar: a foto vai
+// direto pro localStorage (e pro Firestore, se sincronizar) como data URL
+// dentro do personagem, então precisa ficar pequena (~poucos KB) mesmo que
+// o arquivo original seja uma foto de câmera de vários MB.
+function resizeImageToDataUrl(file, maxSize = 240, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("invalid image"));
+      img.onload = () => {
+        const side = Math.min(img.width, img.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+        canvas.getContext("2d").drawImage(
+          img,
+          (img.width - side) / 2,
+          (img.height - side) / 2,
+          side,
+          side,
+          0,
+          0,
+          maxSize,
+          maxSize,
+        );
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function initials(name) {
