@@ -318,11 +318,12 @@ function equipmentDefenseBonus(character) {
 // como "Patrulha" (poder da origem Policial). "Tanque de Guerra" e
 // "Especialista em Proteção Leve" também são sempre ativos, mas só enquanto
 // a proteção do tipo certo (pesada/leve) estiver equipada — dado que já
-// lemos do inventário. Os demais bônus de Defesa do livro (ex.: Combate
-// Defensivo, Barreira do Oculto, rituais como Armadura de Sangue) são
-// condicionados a uma ação/reação ou a um efeito temporário de cena, não a
-// um estado permanente da ficha, então ficam de fora — o jogador aplica na
-// hora, como já faz com o resto do combate.
+// lemos do inventário. Os demais bônus de Defesa do livro que dependem de
+// uma ação/reação (Combate Defensivo, Barreira do Oculto) ficam de fora — o
+// jogador aplica na hora, como já faz com o resto do combate. Rituais como
+// Armadura de Sangue e Embaralhar são diferentes: duram a cena inteira uma
+// vez conjurados, então entram por ativarRitualEffect()/efeitosAtivos em vez
+// de daqui (ver mais abaixo).
 function abilityDefenseBonus(character) {
   let bonus = 0;
   if (hasSelectedPower(character, "reflexos-defensivos")) bonus += 2;
@@ -334,6 +335,28 @@ function abilityDefenseBonus(character) {
   if (hasSelectedPower(character, "tanque-de-guerra") && proficiencies.some((value) => /pesada/i.test(value))) bonus += 2;
   if (hasSelectedPower(character, "especialista-em-protecao-leve") && proficiencies.some((value) => /leve/i.test(value))) bonus += 2;
   return bonus;
+}
+
+// Rituais que, uma vez conjurados, ficam com um efeito numérico simples e
+// contínuo até o jogador cancelar (ver character.efeitosAtivos, ligado pelo
+// botão "Conjurar" e desligado por "Cancelar" na ficha — não expira sozinho
+// porque cena/rodada não são mais rastreados automaticamente, ver o commit
+// que tirou Resetar turno/cena). "Armadura de Sangue" tem uma regra própria:
+// não acumula com a Defesa do equipamento (só com outros bônus).
+export const RITUAL_ACTIVE_EFFECTS = {
+  "Armadura de Sangue": { Normal: 5, Discente: 10, Verdadeiro: 15, excludesEquipmentDefense: true },
+  "Embaralhar": { Normal: 6, Discente: 10, Verdadeiro: 16 },
+};
+
+function activeEffectDefenseBonus(character) {
+  return (character?.efeitosAtivos ?? []).reduce((sum, effect) => {
+    const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
+    return sum + (typeof bonus === "number" ? bonus : 0);
+  }, 0);
+}
+
+function activeEffectsExcludeEquipmentDefense(character) {
+  return (character?.efeitosAtivos ?? []).some((effect) => RITUAL_ACTIVE_EFFECTS[effect.name]?.excludesEquipmentDefense);
 }
 
 // "Fôlego de Nadador" (origem Mergulhador) soma +5 PV fixos. "Calejado"
@@ -423,7 +446,7 @@ export function calculateDerived(character) {
       pvMax: 0,
       peMax: 0,
       sanMax: 0,
-      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
+      defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: 0,
@@ -447,7 +470,7 @@ export function calculateDerived(character) {
       pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus + originVitality,
       peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus + originEffort,
       sanMax: classData.initial.san + advances * classData.gain.san,
-      defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
+      defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
       deslocamento: 9,
       advances,
       skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
@@ -468,7 +491,7 @@ export function calculateDerived(character) {
     pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality,
     peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
-    defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
+    defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
     deslocamento: 9,
     advances,
     skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),

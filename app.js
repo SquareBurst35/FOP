@@ -1,5 +1,5 @@
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=57";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=63";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=64";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -17,12 +17,13 @@ import {
   isMundaneCharacter,
   isSurvivorCharacter,
   levelFromNex,
+  RITUAL_ACTIVE_EFFECTS,
   ritualDifficulty,
   sanitizeSkillSelections,
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=62";
+} from "./rules.js?v=63";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -47,13 +48,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=58";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=62";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=63";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=64";
+} from "./choices.js?v=65";
 import {
   effortResource,
   beforeSoBonus,
@@ -1630,7 +1631,7 @@ function renderSummaryTab(character) {
         <div class="sheet-section">
           <div class="section-heading"><h2>Combate</h2></div>
           <div class="stat-grid">
-            ${statCard("Defesa", character.defesa)}
+            ${statCard("Defesa", character.defesa, (character.efeitosAtivos ?? []).length > 0)}
             ${statCard("Deslocamento", `${character.deslocamento} m`)}
             ${statCard("Proteção", character.protecao || "Nenhuma")}
           </div>
@@ -1793,8 +1794,28 @@ function renderSessionControl(character) {
         <div><dt>${resource.label} atual</dt><dd>${current}/${maximum}</dd></div>
       </dl>
       ${hasBeforeSo(character) ? `<label class="skill-option ${beforeSoBonus(character) ? "selected" : ""}"><input type="checkbox" data-before-so ${beforeSoBonus(character) ? "checked" : ""} /><span>Sem aliados em alcance curto<small>Antes Só: +1 Defesa, perícias e limite de ${resource.label} por turno.</small></span></label>` : ""}
+      ${renderActiveEffects(character)}
       ${last ? `<details class="session-history"><summary>Último uso</summary><div class="session-last-use"><strong>${escapeHtml(last.name)}</strong><small>${last.cost ? `−${last.cost} ${escapeHtml(last.resource)}` : "Sem custo de recurso"}</small><button type="button" data-session-action="undo">Desfazer</button></div></details>` : ""}
     </section>
+  `;
+}
+
+function renderActiveEffects(character) {
+  const effects = character.efeitosAtivos ?? [];
+  if (!effects.length) return "";
+  return `
+    <div class="active-effects">
+      <span class="active-effects-label">Efeitos ativos</span>
+      ${effects.map((effect) => {
+        const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
+        return `
+          <div class="active-effect-chip">
+            <span><strong>${escapeHtml(effect.name)}</strong><small>${escapeHtml(effect.variant)}${typeof bonus === "number" ? ` · +${bonus} Defesa` : ""}</small></span>
+            <button type="button" data-cancel-effect="${effect.id}" aria-label="Cancelar ${escapeAttribute(effect.name)}">Cancelar</button>
+          </div>
+        `;
+      }).join("")}
+    </div>
   `;
 }
 
@@ -2412,11 +2433,31 @@ function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, 
   });
   if (!result.ok) return showToast(result.message);
   spendState = null;
+  let activationNote = "";
+  if (type === "ritual" && RITUAL_ACTIVE_EFFECTS[entry.name]) {
+    const bonus = RITUAL_ACTIVE_EFFECTS[entry.name][variant];
+    if (typeof bonus === "number") {
+      character.efeitosAtivos = [
+        ...(character.efeitosAtivos ?? []).filter((effect) => effect.name !== entry.name),
+        { id: `${entry.id}-${Date.now().toString(36)}`, name: entry.name, variant },
+      ];
+      activationNote = ` Efeito ativo: +${bonus} na Defesa (cancele na ficha quando acabar).`;
+    }
+  }
   upsertCharacter(character);
   renderSheet(character.id);
   const resourceLabel = result.record.resource ? ` e gastou ${result.record.cost} ${result.record.resource}` : "";
-  showToast(`${result.record.name} usado${resourceLabel}.`);
+  showToast(`${result.record.name} usado${resourceLabel}.${activationNote}`);
   if (type === "ritual") playCastFlourish(entry.element);
+}
+
+function cancelActiveEffect(character, effectId) {
+  const effect = (character.efeitosAtivos ?? []).find((entry) => entry.id === effectId);
+  if (!effect) return;
+  character.efeitosAtivos = character.efeitosAtivos.filter((entry) => entry.id !== effectId);
+  upsertCharacter(character);
+  renderSheet(character.id);
+  showToast(`${effect.name} (${effect.variant}) cancelado.`);
 }
 
 function reopenSpendDialog(character) {
@@ -3940,6 +3981,10 @@ function bindSheetInteractions(character) {
     });
   });
 
+  document.querySelectorAll("[data-cancel-effect]").forEach((button) => {
+    button.addEventListener("click", () => cancelActiveEffect(character, button.dataset.cancelEffect));
+  });
+
   document.querySelectorAll("[data-autosave]").forEach((fieldElement) => {
     fieldElement.addEventListener("change", () => {
       character[fieldElement.dataset.autosave] = fieldElement.value;
@@ -4917,8 +4962,8 @@ function notesSection(title, key, value, placeholder) {
   `;
 }
 
-function statCard(label, value) {
-  return `<div class="stat-card"><span>${label}</span><strong>${escapeHtml(String(value ?? "—"))}</strong></div>`;
+function statCard(label, value, highlighted = false) {
+  return `<div class="stat-card${highlighted ? " stat-card-active-effect" : ""}"><span>${label}</span><strong>${escapeHtml(String(value ?? "—"))}</strong></div>`;
 }
 
 function reviewRow(label, value) {
