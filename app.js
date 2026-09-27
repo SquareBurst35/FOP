@@ -1,5 +1,5 @@
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=56";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=60";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=61";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -22,7 +22,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=59";
+} from "./rules.js?v=60";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -47,13 +47,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=57";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=59";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=60";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=61";
+} from "./choices.js?v=62";
 import {
   effortResource,
   beforeSoBonus,
@@ -67,7 +67,7 @@ import {
   turnSpendLimit,
   undoLastUse,
   useAbility,
-} from "./session.js?v=31";
+} from "./session.js?v=32";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -2576,8 +2576,8 @@ function renderItemPickerAction(item) {
   const route = currentRoute();
   const character = route.page === "ficha" ? getCharacter(route.id) : null;
   const quantity = character?.inventarioItens?.find((selected) => selected.itemId === item.id)?.quantity ?? 0;
-  const error = character ? inventoryAddError(character, item) : "";
-  return `<button class="button ${error ? "ghost" : "primary"} compact" type="button" data-item-add="${item.id}" ${error ? `disabled title="${escapeAttribute(error)}"` : ""}>${error ? "Limite atingido" : quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
+  const warning = character ? inventoryAddError(character, item) : "";
+  return `<button class="button ${warning ? "ghost" : "primary"} compact" type="button" data-item-add="${item.id}" ${warning ? `title="${escapeAttribute(warning)}"` : ""}>${quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
 }
 
 function categoryLimitError(character, item) {
@@ -4234,17 +4234,14 @@ function changeCustomItemQuantity(character, itemId, delta) {
   if (!Number.isFinite(delta) || delta === 0) return;
   const entry = (character.itensPersonalizados ?? []).find((item) => item.id === itemId);
   if (!entry) return;
-  if (delta > 0) {
-    const error = customItemQuantityError(character, entry);
-    if (error) return showToast(error);
-  }
+  const warning = delta > 0 ? customItemQuantityError(character, entry) : "";
   character.itensPersonalizados = character.itensPersonalizados.map((item) =>
     item.id === itemId ? { ...item, quantity: clamp(numberOr(item.quantity, 1) + delta, 1, 99) } : item,
   );
   upsertCharacter(character);
   renderSheet(character.id);
   document.querySelector(`[data-custom-item-quantity="${itemId}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
-  showToast("Quantidade atualizada.");
+  showToast(warning || "Quantidade atualizada.");
 }
 
 function bindItemAddButtons(character, resultsOnly) {
@@ -4254,25 +4251,18 @@ function bindItemAddButtons(character, resultsOnly) {
   document.querySelectorAll(selector).forEach((button) => {
     button.addEventListener("click", () => {
       const item = ITEM_BY_ID.get(button.dataset.itemAdd);
-      const error = inventoryAddError(character, item);
-      if (error) return showToast(error);
+      const warning = inventoryAddError(character, item);
       const wasOpen = Boolean(document.querySelector("#item-dialog")?.open);
       changeInventoryQuantity(character, button.dataset.itemAdd, 1, false);
       if (wasOpen) document.querySelector("#item-dialog")?.showModal();
-      showToast("Item adicionado ao inventário.");
+      showToast(warning || "Item adicionado ao inventário.");
     });
   });
 }
 
 function changeInventoryQuantity(character, itemId, delta, notify = true) {
   if (!ITEM_BY_ID.has(itemId) || !Number.isFinite(delta) || delta === 0) return;
-  if (delta > 0) {
-    const error = inventoryAddError(character, ITEM_BY_ID.get(itemId));
-    if (error) {
-      showToast(error);
-      return;
-    }
-  }
+  const warning = delta > 0 ? inventoryAddError(character, ITEM_BY_ID.get(itemId)) : "";
   const entries = [...(character.inventarioItens ?? [])];
   const index = entries.findIndex((selected) => selected.itemId === itemId);
   if (index < 0 && delta > 0) entries.push({ itemId, quantity: Math.min(99, delta) });
@@ -4286,7 +4276,7 @@ function changeInventoryQuantity(character, itemId, delta, notify = true) {
   upsertCharacter(character);
   renderSheet(character.id);
   document.querySelector(`[data-item-quantity="${itemId}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
-  if (notify) showToast("Quantidade atualizada.");
+  if (notify) showToast(warning || "Quantidade atualizada.");
 }
 
 function bindCustomWeaponDialog(character) {
@@ -4334,8 +4324,7 @@ function bindCustomWeaponDialog(character) {
       alcance: value("custom-item-alcance"),
       modificacoes: existing?.modificacoes ?? [],
     };
-    const error = customItemSaveError(character, entry);
-    if (error) return showToast(error);
+    const warning = customItemSaveError(character, entry);
     const entries = [...(character.itensPersonalizados ?? [])];
     const existingIndex = entries.findIndex((item) => item.id === entry.id);
     if (existingIndex >= 0) entries[existingIndex] = entry;
@@ -4344,7 +4333,7 @@ function bindCustomWeaponDialog(character) {
     editingCustomItemId = null;
     upsertCharacter(character);
     renderSheet(character.id);
-    showToast("Arma personalizada salva.");
+    showToast(warning || "Arma personalizada salva.");
   });
 }
 

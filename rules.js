@@ -1,4 +1,4 @@
-import { beforeSoBonus, turnSpendLimit } from "./session.js?v=31";
+import { beforeSoBonus, turnSpendLimit } from "./session.js?v=32";
 import { ITEM_BY_ID } from "./items.js?v=57";
 import { upgradedItem } from "./item-upgrades.js?v=56";
 export const ATTRIBUTE_TARGET = 9;
@@ -253,6 +253,16 @@ function hasSelectedPower(character, powerSlug) {
   );
 }
 
+// Poderes de origem não entram em habilidadesSelecionadas: eles são
+// automáticos a partir da origem escolhida (ver automaticAbilitiesFor em
+// app.js), inclusive uma segunda origem obtida via "Flashback".
+function hasOriginPower(character, powerName) {
+  if (findOrigin(character?.origem)?.power === powerName) return true;
+  return hasSelectedPower(character, "flashback") && (character?.habilidadeEscolhas ?? []).some(
+    (choice) => choice.type === "origem" && findOrigin(choice.valueId)?.power === powerName,
+  );
+}
+
 // Poderes passivos e incondicionais que somam um valor fixo numa perícia
 // específica, sempre que conhecidos (nenhum depende de ação, alvo ou item
 // equipado). Poderes que só valem contra um alvo específico (Envolto em
@@ -266,11 +276,21 @@ const ABILITY_SKILL_BONUSES = [
   ["muito-sorrateiro", "Furtividade", 3],
 ];
 
+// Mesma ideia, mas concedidos por uma origem em vez de uma habilidade.
+const ORIGIN_SKILL_BONUSES = [
+  ["Luta ou Fuga", "Vontade", 2],
+];
+
 export function abilitySkillBonus(character, skill) {
-  return ABILITY_SKILL_BONUSES.reduce(
+  const fromAbilities = ABILITY_SKILL_BONUSES.reduce(
     (sum, [slug, targetSkill, bonus]) => sum + (targetSkill === skill && hasSelectedPower(character, slug) ? bonus : 0),
     0,
   );
+  const fromOrigin = ORIGIN_SKILL_BONUSES.reduce(
+    (sum, [powerName, targetSkill, bonus]) => sum + (targetSkill === skill && hasOriginPower(character, powerName) ? bonus : 0),
+    0,
+  );
+  return fromAbilities + fromOrigin;
 }
 
 export function equippedProtections(character) {
@@ -294,24 +314,45 @@ function equipmentDefenseBonus(character) {
 }
 
 // Livro base: "Reflexos Defensivos" e "Precognição" são bônus passivos e
-// incondicionais (+2 na Defesa sempre que a habilidade é conhecida). "Tanque
-// de Guerra" e "Especialista em Proteção Leve" também são sempre ativos,
-// mas só enquanto a proteção do tipo certo (pesada/leve) estiver equipada —
-// dado que já lemos do inventário. Os demais bônus de Defesa do livro (ex.:
-// Combate Defensivo, Barreira do Oculto, rituais como Armadura de Sangue)
-// são condicionados a uma ação/reação ou a um efeito temporário de cena, não
-// a um estado permanente da ficha, então ficam de fora — o jogador aplica
-// na hora, como já faz com o resto do combate.
+// incondicionais (+2 na Defesa sempre que a habilidade é conhecida), assim
+// como "Patrulha" (poder da origem Policial). "Tanque de Guerra" e
+// "Especialista em Proteção Leve" também são sempre ativos, mas só enquanto
+// a proteção do tipo certo (pesada/leve) estiver equipada — dado que já
+// lemos do inventário. Os demais bônus de Defesa do livro (ex.: Combate
+// Defensivo, Barreira do Oculto, rituais como Armadura de Sangue) são
+// condicionados a uma ação/reação ou a um efeito temporário de cena, não a
+// um estado permanente da ficha, então ficam de fora — o jogador aplica na
+// hora, como já faz com o resto do combate.
 function abilityDefenseBonus(character) {
   let bonus = 0;
   if (hasSelectedPower(character, "reflexos-defensivos")) bonus += 2;
   if (hasSelectedPower(character, "precognicao")) bonus += 2;
+  if (hasOriginPower(character, "Patrulha")) bonus += 2;
   const proficiencies = equippedProtections(character).map(
     (item) => item.details?.find(([key]) => key === "Proficiência")?.[1] ?? "",
   );
   if (hasSelectedPower(character, "tanque-de-guerra") && proficiencies.some((value) => /pesada/i.test(value))) bonus += 2;
   if (hasSelectedPower(character, "especialista-em-protecao-leve") && proficiencies.some((value) => /leve/i.test(value))) bonus += 2;
   return bonus;
+}
+
+// "Fôlego de Nadador" (origem Mergulhador) soma +5 PV fixos. "Calejado"
+// (origem Desgarrado) soma +1 PV a cada 5% de NEX — não faz sentido pra um
+// personagem Sobrevivente, que progride por estágio em vez de NEX.
+function originVitalityBonus(character, nex) {
+  let bonus = 0;
+  if (hasOriginPower(character, "Fôlego de Nadador")) bonus += 5;
+  if (!isSurvivorCharacter(character) && hasOriginPower(character, "Calejado")) bonus += Math.floor(nex / 5);
+  return bonus;
+}
+
+// "Dedicação" (origem Universitário): +1 PE sempre, mais +1 PE a cada NEX
+// ímpar (15%, 25%, 35%...); essa escala não faz sentido pra Sobrevivente,
+// mas o +1 PE base continua valendo pra ele.
+function originEffortBonus(character, level) {
+  if (!hasOriginPower(character, "Dedicação")) return 0;
+  const oddNexSteps = isSurvivorCharacter(character) ? 0 : Math.floor(Math.max(0, level - 1) / 2);
+  return 1 + oddNexSteps;
 }
 
 function ritualDtItemBonus(character, ritual, knowsSangueRitual) {
@@ -365,6 +406,8 @@ export function calculateDerived(character) {
   const willEffortBonus = hasSelectedPower(character, "vontade-inabalavel")
     ? (isSurvivorCharacter(character) ? 0 : Math.floor(Math.max(0, level) / 2))
     : 0;
+  const originVitality = originVitalityBonus(character, nex);
+  const originEffort = originEffortBonus(character, level);
   const transcenderLevels = Array.isArray(character.transcenderNiveis)
     ? [...new Set(character.transcenderNiveis.map(Number).filter((value) => Number.isInteger(value) && value >= 1 && value <= level))]
     : [];
@@ -401,8 +444,8 @@ export function calculateDerived(character) {
       ? (stage >= 3 ? 6 : stage >= 2 ? 4 : 0)
       : 0;
     return {
-      pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus,
-      peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus,
+      pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus + originVitality,
+      peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus + originEffort,
       sanMax: classData.initial.san + advances * classData.gain.san,
       defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
       deslocamento: 9,
@@ -422,8 +465,8 @@ export function calculateDerived(character) {
   }
 
   return {
-    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus,
-    peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus,
+    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality,
+    peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade + beforeSoBonus(character) + equipmentDefenseBonus(character) + abilityDefenseBonus(character),
     deslocamento: 9,

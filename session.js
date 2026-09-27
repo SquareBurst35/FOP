@@ -67,13 +67,25 @@ export function beforeSoBonus(character) {
   return hasBeforeSo(character) && character?.antesSoSemAliados === true ? 1 : 0;
 }
 
+// "Dedicação" (poder da origem Universitário) soma +1 ao limite de PE por
+// turno; ver a origem correspondente em rules.js. Duplicado aqui (em vez de
+// importado) porque rules.js já importa deste módulo — evita import circular.
+function hasDedicacao(character) {
+  if (character?.origem === "Universitário") return true;
+  const selected = new Set(character?.habilidadesSelecionadas ?? []);
+  const flashback = "especialista-poderes-de-especialista-flashback";
+  return selected.has(flashback) && (character?.habilidadeEscolhas ?? []).some(
+    choice => choice.abilityId === flashback && choice.type === "origem" && choice.valueId === "Universitário",
+  );
+}
+
 export function turnSpendLimit(character) {
   // This budget is independent from ritual access and other progression rules.
   const stored = character?.nivel;
   const hasStoredLevel = (typeof stored === "number" || (typeof stored === "string" && stored.trim() !== ""))
     && Number.isFinite(Number(stored)) && Number(stored) >= 0;
   const level = hasStoredLevel ? Number(stored) : numberOr(character?.nex, 0) / 5;
-  return clamp(Math.trunc(level), 0, 20) + beforeSoBonus(character);
+  return clamp(Math.trunc(level), 0, 20) + beforeSoBonus(character) + (hasDedicacao(character) ? 1 : 0);
 }
 
 export function parseUseCost(cost) {
