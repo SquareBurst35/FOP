@@ -62,12 +62,14 @@ test('Antes Só adds exactly one to every level budget, for PE and PD; blocked u
     for(let level=0;level<=20;level++){c.nivel=level;assert.equal(session.turnSpendLimit(c),level+1);}
     c.nivel=6; assert.equal(use(c,7).ok,true);
     const key=determination?'pdAtual':'peAtual';assert.equal(c.recursos[key],93);
-    const before=structuredClone(c); assert.equal(use(c,1).reason,'turn');assert.deepEqual(c,before);
-    c.antesSoSemAliados=false; assert.equal(session.turnSpendLimit(c),6);assert.equal(use(c,1).reason,'turn');
-    assert.equal(c.controleSessao.gastoTurno,7);
-    session.startNextTurn(c);assert.equal(c.recursos[key],93);assert.equal(c.controleSessao.gastoTurno,0);
+    // Passar do limite por turno não bloqueia mais — só a falta de recurso bloquearia.
+    assert.equal(use(c,1).ok,true);assert.equal(c.recursos[key],92);
+    c.antesSoSemAliados=false; assert.equal(session.turnSpendLimit(c),6);assert.equal(use(c,1).ok,true);
+    assert.equal(c.recursos[key],91);
+    assert.equal(c.controleSessao.gastoTurno,9);
+    session.startNextTurn(c);assert.equal(c.recursos[key],91);assert.equal(c.controleSessao.gastoTurno,0);
     c.antesSoSemAliados=true;session.startNextTurn(c);assert.equal(session.beforeSoBonus(c),1);
-    session.startNextScene(c);assert.equal(session.beforeSoBonus(c),0);assert.equal(c.recursos[key],93);
+    session.startNextScene(c);assert.equal(session.beforeSoBonus(c),0);assert.equal(c.recursos[key],91);
   }
 });
 

@@ -27,25 +27,27 @@ test('PD uses the current level, including separate level/NEX and legacy NEX fal
   assert.equal(turnSpendLimit(character), 2);
 });
 
-test('3 + 2 PD shares the ability/ritual budget; another 2 is blocked without any debit or usage', () => {
+// O limite por turno não bloqueia mais (o jogador controla isso na mesa) — só a falta de PD
+// ainda bloqueia. gastoTurno continua sendo somado só como registro/histórico.
+test('3 + 2 PD shares the ability/ritual budget; spending past the turn budget still succeeds', () => {
   const character = agent();
   assert.equal(use(character, 3, { type: 'habilidade' }).ok, true);
   assert.equal(use(character, 2, { type: 'ritual', variant: 'Normal' }).ok, true);
   assert.equal(character.controleSessao.gastoTurno, 5);
   assert.equal(character.recursos.pdAtual, 45);
   assert.equal(character.recursos.peAtual, 12);
-  const before = structuredClone(character);
-  const blocked = use(character, 2, { sceneKey: 'once', sceneLimit: 1, sessionKey: 'once', sessionLimit: 1, turnLimit: 999 });
-  assert.deepEqual(blocked, { ok: false, reason: 'turn', message: 'Limite de PD por turno atingido.' });
-  assert.deepEqual(character, before);
+  const further = use(character, 2, { sceneKey: 'once', sceneLimit: 1, sessionKey: 'once', sessionLimit: 1, turnLimit: 999 });
+  assert.equal(further.ok, true);
+  assert.equal(character.controleSessao.gastoTurno, 7);
+  assert.equal(character.recursos.pdAtual, 43);
   assert.equal(use(character, 1).ok, true);
-  assert.equal(character.controleSessao.gastoTurno, 6);
+  assert.equal(character.controleSessao.gastoTurno, 8);
   assert.equal(use(character, 0).ok, true);
-  assert.equal(character.recursos.pdAtual, 44);
+  assert.equal(character.recursos.pdAtual, 42);
   assert.equal(character.recursos.pdMax, 50);
 });
 
-test('PD resets preserve current resources and scene/session restrictions; undo refunds an accepted use', () => {
+test('PD resets preserve current resources; scene/session limits are informational only; undo refunds a use', () => {
   const character = agent();
   const limits = { sceneKey: 'once', sceneLimit: 1, sessionKey: 'once', sessionLimit: 1 };
   use(character, 3, limits);
@@ -53,50 +55,48 @@ test('PD resets preserve current resources and scene/session restrictions; undo 
   assert.equal(character.controleSessao.gastoTurno, 0);
   assert.equal(character.controleSessao.turno, 2);
   assert.equal(character.recursos.pdAtual, 47);
-  assert.equal(use(character, 1, limits).reason, 'scene');
+  assert.equal(use(character, 1, limits).ok, true, 'a second use in the same scene is no longer blocked');
   use(character, 6);
-  assert.equal(use(character, 1).reason, 'turn');
+  assert.equal(use(character, 1).ok, true);
   undoLastUse(character);
-  assert.equal(character.recursos.pdAtual, 47);
-  assert.equal(character.controleSessao.gastoTurno, 0);
+  assert.equal(character.recursos.pdAtual, 40);
   use(character, 2);
   startNextScene(character);
   assert.equal(character.controleSessao.cena, 2);
   assert.equal(character.controleSessao.turno, 1);
   assert.equal(character.controleSessao.gastoTurno, 0);
   assert.deepEqual(character.controleSessao.usosCena, {});
-  assert.equal(use(character, 1, limits).reason, 'session');
-  assert.equal(character.recursos.pdAtual, 45);
+  assert.equal(use(character, 1, limits).ok, true);
   assert.equal(character.recursos.peAtual, 12);
 });
 
-test('saved and synced PD budgets survive reload, level increases and turn resets', () => {
+test('saved and synced PD budgets survive reload and level increases; spending is never blocked by them', () => {
   const local = storage(), remote = storage();
   const character = agent();
   use(character, 5);
   new CharacterStore(local).write([character]);
   const reloaded = new CharacterStore(local).read()[0];
-  assert.equal(use(reloaded, 2).reason, 'turn');
-  assert.equal(reloaded.recursos.pdAtual, 45);
+  assert.equal(use(reloaded, 2).ok, true);
+  assert.equal(reloaded.recursos.pdAtual, 43);
   const secondDevice = new CharacterStore(remote);
   secondDevice.select('pd-test-account');
   const sync = (data, version) => secondDevice.merge([decodeDocument(data.id, encodeDocument(data, `pd-${version}`, version))]);
   sync(reloaded, 1);
   let incoming = secondDevice.read()[0];
-  assert.equal(use(incoming, 2).reason, 'turn');
-  assert.equal(incoming.controleSessao.gastoTurno, 5);
+  assert.equal(use(incoming, 2).ok, true);
+  assert.equal(incoming.controleSessao.gastoTurno, 9);
   reloaded.nivel = 7;
   sync(reloaded, 2);
   incoming = secondDevice.read()[0];
   assert.equal(turnSpendLimit(incoming), 7);
   assert.equal(use(incoming, 2).ok, true);
-  assert.equal(incoming.recursos.pdAtual, 43);
-  assert.equal(incoming.controleSessao.gastoTurno, 7);
-  startNextTurn(incoming);
   secondDevice.write([incoming]);
   const reopened = new CharacterStore(remote);
   reopened.select('pd-test-account');
-  assert.equal(reopened.read()[0].controleSessao.gastoTurno, 0);
-  assert.equal(reopened.read()[0].recursos.pdAtual, 43);
   assert.equal(reopened.read()[0].recursos.peAtual, 12);
+  startNextTurn(incoming);
+  secondDevice.write([incoming]);
+  const afterReset = new CharacterStore(remote);
+  afterReset.select('pd-test-account');
+  assert.equal(afterReset.read()[0].controleSessao.gastoTurno, 0);
 });

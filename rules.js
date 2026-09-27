@@ -1,4 +1,4 @@
-import { beforeSoBonus, turnSpendLimit } from "./session.js?v=32";
+import { beforeSoBonus, turnSpendLimit } from "./session.js?v=33";
 import { ITEM_BY_ID } from "./items.js?v=57";
 import { upgradedItem } from "./item-upgrades.js?v=56";
 export const ATTRIBUTE_TARGET = 9;

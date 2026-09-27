@@ -390,48 +390,38 @@ function finish(ui) {
   assert.ok(saved.habilidadeEscolhas.some((entry) => entry.type === "alvo" && entry.valueId === target));
 }
 
-// O botão de uma habilidade ativa desconta PE, registra o uso e o novo turno renova o limite.
+// O botão de uma habilidade ativa desconta PE e registra o uso no histórico.
 {
   const palpite = GENERAL_POWERS.find((entry) => entry.name === "Palpite Confiante");
   const character = characterAtLevel({ id: "uso-habilidade", level: 5, abilities: [palpite.id] });
   const ui = await boot(character);
   ui.clickData("[data-sheet-tab]", "sheetTab", "habilidades");
   ui.clickData("[data-use-ability]", "useAbility", palpite.id);
-  let saved = ui.saved();
+  const saved = ui.saved();
   assert.equal(saved.recursos.peAtual, character.recursos.peAtual - 1);
   assert.equal(saved.controleSessao.gastoTurno, 1);
   assert.equal(saved.controleSessao.historico.at(-1).name, "Palpite Confiante");
-  ui.clickData("[data-session-action]", "sessionAction", "turn");
-  saved = ui.saved();
-  assert.equal(saved.controleSessao.turno, 2);
-  assert.equal(saved.controleSessao.gastoTurno, 0);
 }
 
 console.log("13 cenários de regressão do level up e da sessão passaram.");
 
-// The real UI blocks a second use at level 1 and exposes only the compact reset controls.
+// The UI no longer blocks a second use past the turn budget, and the old reset controls are gone.
 for (const determination of [false, true]) {
   const label = determination ? "PD" : "PE";
   const currentKey = determination ? "pdAtual" : "peAtual";
   const power = GENERAL_POWERS.find(entry => entry.name === "Palpite Confiante");
   const character = characterAtLevel({ id: `${label}-ui-limit`, level: 1, abilities: [power.id], optionalRules: { determination } });
   const ui = await boot(character);
-  assert.match(ui.html(), /Resetar turno/);
-  assert.match(ui.html(), /Resetar cena/);
+  assert.doesNotMatch(ui.html(), /Resetar turno/);
+  assert.doesNotMatch(ui.html(), /Resetar cena/);
   assert.doesNotMatch(ui.html(), /data-session-action="session"/);
-  assert.ok(ui.html().includes(`0/1 ${label}`));
   ui.clickData("[data-sheet-tab]", "sheetTab", "habilidades");
   ui.clickData("[data-use-ability]", "useAbility", power.id);
-  const beforeBlocked = ui.saved();
+  const afterFirst = ui.saved();
   ui.clickData("[data-use-ability]", "useAbility", power.id);
-  assert.deepEqual(ui.saved(), beforeBlocked);
-  assert.equal(ui.document.querySelector("#toast").textContent, `Limite de ${label} por turno atingido.`);
-  assert.ok(ui.html().includes(`1/1 ${label}`));
-  ui.clickData("[data-session-action]", "sessionAction", "turn");
-  assert.equal(ui.saved().recursos[currentKey], beforeBlocked.recursos[currentKey]);
-  assert.ok(ui.html().includes(`0/1 ${label}`));
-  ui.clickData("[data-use-ability]", "useAbility", power.id);
-  assert.equal(ui.saved().recursos[currentKey], beforeBlocked.recursos[currentKey] - 1);
+  const afterSecond = ui.saved();
+  assert.equal(afterSecond.recursos[currentKey], afterFirst.recursos[currentKey] - 1);
+  assert.equal(afterSecond.controleSessao.historico.length, 2);
 }
 
 // Ritual version selection is deferred until confirmation and persists its cost.
@@ -448,12 +438,12 @@ for (const determination of [false, true]) {
  ui.click('confirm-spend-dialog');
  assert.equal(ui.saved().recursos[currentKey],character.recursos[currentKey]-6);
  assert.equal(ui.saved().controleSessao.historico.at(-1).variant,'Verdadeiro');
- const beforeBlockedRitual=ui.saved();
+ const afterFirstCast=ui.saved();
  ui.clickData('[data-use-ritual]','useRitual',ritual.id);
  ui.clickData('[data-use-option]','useOption','verdadeiro');
  ui.click('confirm-spend-dialog');
- assert.deepEqual(ui.saved(),beforeBlockedRitual);
- assert.equal(ui.document.querySelector('#toast').textContent,`Limite de ${label} por turno atingido.`);
+ // Um segundo cast além do limite por turno não é mais bloqueado.
+ assert.equal(ui.saved().recursos[currentKey],afterFirstCast.recursos[currentKey]-6);
  assert.equal(ui.saved().aparencia,'feminino');
  ui.clickData('[data-sheet-tab]','sheetTab','inventario');assert.match(ui.html(),/data-appearance="feminino"/);
 }

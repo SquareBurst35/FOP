@@ -1,5 +1,5 @@
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=56";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=61";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=62";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -22,7 +22,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=60";
+} from "./rules.js?v=61";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -47,13 +47,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=57";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=60";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=61";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=62";
+} from "./choices.js?v=63";
 import {
   effortResource,
   beforeSoBonus,
@@ -61,13 +61,9 @@ import {
   normalizeSession,
   parseUseCost,
   rollUseCost,
-  startNextScene,
-  startNextTurn,
-  startNewSession,
-  turnSpendLimit,
   undoLastUse,
   useAbility,
-} from "./session.js?v=32";
+} from "./session.js?v=33";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -1790,22 +1786,13 @@ function renderSessionControl(character) {
   const resource = effortResource(character);
   const current = numberOr(character.recursos?.[resource.currentKey], 0);
   const maximum = numberOr(character.recursos?.[resource.maxKey], 0);
-  const limit = turnSpendLimit(character);
   const last = session.historico.at(-1);
   return `
-    <section class="session-control" aria-label="Turno e cena">
-      <div class="session-control-heading">
-        <span>Cena ${session.cena}</span><strong>Turno ${session.turno}</strong>
-      </div>
+    <section class="session-control" aria-label="Recurso de esforço">
       <dl class="session-budget">
         <div><dt>${resource.label} atual</dt><dd>${current}/${maximum}</dd></div>
-        <div class="session-turn-budget ${session.gastoTurno >= limit ? "at-limit" : ""}"><dt>Limite por turno</dt><dd>${session.gastoTurno}/${limit} ${resource.label}</dd></div>
       </dl>
       ${hasBeforeSo(character) ? `<label class="skill-option ${beforeSoBonus(character) ? "selected" : ""}"><input type="checkbox" data-before-so ${beforeSoBonus(character) ? "checked" : ""} /><span>Sem aliados em alcance curto<small>Antes Só: +1 Defesa, perícias e limite de ${resource.label} por turno.</small></span></label>` : ""}
-      <div class="session-control-actions">
-        <button type="button" data-session-action="turn">Resetar turno</button>
-        <button type="button" data-session-action="scene">Resetar cena</button>
-      </div>
       ${last ? `<details class="session-history"><summary>Último uso</summary><div class="session-last-use"><strong>${escapeHtml(last.name)}</strong><small>${last.cost ? `−${last.cost} ${escapeHtml(last.resource)}` : "Sem custo de recurso"}</small><button type="button" data-session-action="undo">Desfazer</button></div></details>` : ""}
     </section>
   `;
@@ -1825,19 +1812,21 @@ function abilityUseButton(entry, character) {
   const used = numberOr(character.controleSessao?.usosCena?.[sceneKey], 0);
   const sessionKey = `habilidade:${entry.id}`;
   const usedInSession = numberOr(character.controleSessao?.usosSessao?.[sessionKey], 0);
-  const disabled = (model.sceneLimit && used >= model.sceneLimit) || (model.sessionLimit && usedInSession >= model.sessionLimit);
+  // Limite de 1/cena e 1/sessão é só informativo — o jogador decide se ainda
+  // pode usar (o mestre controla o ritmo da mesa), o botão nunca desabilita.
+  const alreadyUsed = (model.sceneLimit && used >= model.sceneLimit) || (model.sessionLimit && usedInSession >= model.sessionLimit);
   const label = model.kind === "fixed"
     ? `Usar · ${model.min} ${resource}`
     : model.kind === "random"
       ? `Usar · rolar ${model.diceCount}d${model.diceSides} ${resource}`
     : model.kind === "scene"
-      ? disabled ? "Usada nesta cena" : "Usar · 1/cena"
+      ? alreadyUsed ? "Usar de novo · 1/cena" : "Usar · 1/cena"
     : model.kind === "session"
-      ? disabled ? "Usada nesta sessão" : "Usar · 1/sessão"
+      ? alreadyUsed ? "Usar de novo · 1/sessão" : "Usar · 1/sessão"
       : model.kind === "action"
         ? "Registrar uso"
         : "Usar · escolher custo";
-  return `<button class="entry-use-button" type="button" data-use-ability="${entry.id}" ${disabled ? "disabled" : ""}>${escapeHtml(label)}</button>`;
+  return `<button class="entry-use-button" type="button" data-use-ability="${entry.id}">${escapeHtml(label)}</button>`;
 }
 
 function ritualUseButton(entry, character) {
@@ -3942,21 +3931,10 @@ function bindSheetInteractions(character) {
 
   document.querySelectorAll("[data-session-action]").forEach((button) => {
     button.addEventListener("click", () => {
-      const action = button.dataset.sessionAction;
-      if (action === "turn") {
-        startNextTurn(character);
-        showToast("Turno resetado.");
-      } else if (action === "scene") {
-        startNextScene(character);
-        showToast("Cena resetada.");
-      } else if (action === "session") {
-        startNewSession(character);
-        showToast("Nova sessão: limites de uso foram renovados.");
-      } else if (action === "undo") {
-        const result = undoLastUse(character);
-        if (!result.ok) return showToast(result.message);
-        showToast(`${result.record.name}: último uso desfeito.`);
-      } else return;
+      if (button.dataset.sessionAction !== "undo") return;
+      const result = undoLastUse(character);
+      if (!result.ok) return showToast(result.message);
+      showToast(`${result.record.name}: último uso desfeito.`);
       upsertCharacter(character);
       renderSheet(character.id);
     });

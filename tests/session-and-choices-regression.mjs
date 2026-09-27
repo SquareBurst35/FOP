@@ -69,11 +69,12 @@ result = useAbility(spend, { id: "teste-2", name: "Teste 2", cost: 2, resource: 
 assert.equal(result.ok, true);
 assert.equal(spend.recursos.peAtual, 7);
 assert.equal(spend.controleSessao.gastoTurno, 5);
-assert.equal(useAbility(spend, { id: "bloqueado", name: "Bloqueado", cost: 1, resource: "effort" }).reason, "turn");
-assert.equal(spend.recursos.peAtual, 7);
+// Passar do limite por turno não bloqueia mais — só a falta de PE bloquearia.
+assert.equal(useAbility(spend, { id: "sem-bloqueio", name: "Sem bloqueio", cost: 1, resource: "effort" }).ok, true);
+assert.equal(spend.recursos.peAtual, 6);
 assert.equal(undoLastUse(spend).ok, true);
-assert.equal(spend.recursos.peAtual, 9);
-assert.equal(spend.controleSessao.gastoTurno, 3);
+assert.equal(spend.recursos.peAtual, 7);
+assert.equal(spend.controleSessao.gastoTurno, 5);
 
 const determination = character({ optionalRules: { separateLevelNex: false, determination: true } });
 result = useAbility(determination, { id: "pd", name: "Uso com PD", cost: 2, resource: "effort", turnLimit: 5 });
@@ -90,10 +91,11 @@ assert.equal(sanitySpend.controleSessao.gastoTurno, 0);
 const scene = character();
 result = useAbility(scene, { id: "cena", name: "Uma vez", cost: 0, resource: "effort", turnLimit: 5, sceneKey: "cena", sceneLimit: 1 });
 assert.equal(result.ok, true);
-assert.equal(useAbility(scene, { id: "cena", name: "Uma vez", cost: 0, resource: "effort", turnLimit: 5, sceneKey: "cena", sceneLimit: 1 }).reason, "scene");
+// 1/cena não bloqueia mais uma segunda invocação — só fica registrado em usosCena.
+assert.equal(useAbility(scene, { id: "cena", name: "Uma vez", cost: 0, resource: "effort", turnLimit: 5, sceneKey: "cena", sceneLimit: 1 }).ok, true);
 startNextTurn(scene);
 assert.equal(scene.controleSessao.gastoTurno, 0);
-assert.equal(scene.controleSessao.usosCena.cena, 1);
+assert.equal(scene.controleSessao.usosCena.cena, 2);
 startNextScene(scene);
 assert.equal(scene.controleSessao.turno, 1);
 assert.deepEqual(scene.controleSessao.usosCena, {});

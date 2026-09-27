@@ -159,16 +159,14 @@ export function rollUseCost(model, random = Math.random) {
 }
 
 export function useAbility(character, use) {
+  // Limite por turno/cena/sessão não bloqueia mais o uso (ver turnSpendLimit
+  // e renderSessionControl em app.js) — o jogador controla isso na mesa, a
+  // ficha só continua registrando o histórico e os totais. O único bloqueio
+  // que resta é não ter o recurso (PV/PE/PD/SAN) suficiente.
   const session = normalizeSession(character);
   const cost = Math.max(0, Math.trunc(numberOr(use.cost, 0)));
   const sceneKey = String(use.sceneKey ?? "");
   const sessionKey = String(use.sessionKey ?? "");
-  if (use.sceneLimit && numberOr(session.usosCena[sceneKey], 0) >= use.sceneLimit) {
-    return { ok: false, reason: "scene", message: "Esta habilidade já atingiu o limite nesta cena." };
-  }
-  if (use.sessionLimit && numberOr(session.usosSessao[sessionKey], 0) >= use.sessionLimit) {
-    return { ok: false, reason: "session", message: "Esta habilidade já atingiu o limite nesta sessão." };
-  }
 
   let currentKey = "";
   let maxKey = "";
@@ -188,11 +186,6 @@ export function useAbility(character, use) {
     maxKey = resource.maxKey;
     resourceLabel = resource.label;
     countsAgainstTurn = true;
-  }
-
-  // Both PE and its optional PD replacement share the per-turn effort budget.
-  if (countsAgainstTurn && session.gastoTurno + cost > turnSpendLimit(character)) {
-    return { ok: false, reason: "turn", message: `Limite de ${resourceLabel} por turno atingido.` };
   }
 
   if (currentKey && numberOr(character.recursos?.[currentKey], 0) < cost) {

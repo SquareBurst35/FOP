@@ -31,26 +31,28 @@ test('PE budget equals stored level for levels 0–20, with NEX fallback only wh
   assert.equal(turnSpendLimit(agent(), { hasFacingDeath: true, ritual: true, hasPowerfulPresence: true }), 6);
 });
 
-test('3 + 2 PE succeeds at level 6; another 2 PE is blocked atomically', () => {
+// O limite por turno não bloqueia mais o uso (o jogador controla isso na mesa) — só a falta
+// de recurso (PE/PV/PD/SAN insuficiente) ainda bloqueia. gastoTurno continua sendo somado só
+// como registro/histórico.
+test('spending past the turn budget still succeeds; only running out of PE blocks', () => {
   const character = agent();
   assert.equal(use(character, 3).ok, true);
   assert.equal(use(character, 2).ok, true);
   assert.equal(character.controleSessao.gastoTurno, 5);
   assert.equal(character.recursos.peAtual, 45);
-  const before = structuredClone(character);
-  const blocked = use(character, 2, { sceneKey: 'limited', sceneLimit: 1, sessionKey: 'limited', sessionLimit: 1 });
-  assert.equal(blocked.reason, 'turn');
-  assert.match(blocked.message, /Limite de PE por turno/);
-  assert.deepEqual(character, before, 'Blocked use must not spend PE, consume limited uses or add history');
+  const further = use(character, 2, { sceneKey: 'limited', sceneLimit: 1, sessionKey: 'limited', sessionLimit: 1 });
+  assert.equal(further.ok, true);
+  assert.equal(character.controleSessao.gastoTurno, 7);
+  assert.equal(character.recursos.peAtual, 43);
 });
 
-test('abilities and rituals share the same budget and cannot override it', () => {
+test('abilities and rituals share the same PE pool', () => {
   const character = agent();
   assert.equal(use(character, 3, { type: 'habilidade' }).ok, true);
   assert.equal(use(character, 3, { type: 'ritual', variant: 'Discente' }).ok, true);
   assert.equal(character.controleSessao.gastoTurno, 6);
-  assert.equal(use(character, 1, { turnLimit: 999 }).reason, 'turn');
-  assert.equal(character.recursos.peAtual, 44);
+  assert.equal(use(character, 1, { turnLimit: 999 }).ok, true);
+  assert.equal(character.recursos.peAtual, 43);
   assert.equal(character.recursos.peMax, 50);
 });
 
@@ -70,46 +72,47 @@ test('reset turn clears only the budget and advances the existing turn counter',
   assert.equal(character.recursos.peAtual, 41);
 });
 
-test('reset scene renews scene uses without restoring PE or renewing session uses', () => {
+test('reset scene renews scene uses without restoring PE; scene/session limits are informational only', () => {
   const character = agent();
   const limited = { sceneKey: 'once', sceneLimit: 1, sessionKey: 'once', sessionLimit: 1 };
   assert.equal(use(character, 3, limited).ok, true);
   startNextTurn(character);
-  assert.equal(use(character, 0, limited).reason, 'scene');
+  assert.equal(use(character, 0, limited).ok, true, 'a second use in the same scene is no longer blocked');
+  assert.equal(character.controleSessao.usosCena.once, 2);
   startNextScene(character);
   assert.equal(character.controleSessao.cena, 2);
   assert.equal(character.controleSessao.turno, 1);
   assert.equal(character.controleSessao.gastoTurno, 0);
   assert.equal(character.recursos.peAtual, 47);
   assert.deepEqual(character.controleSessao.usosCena, {});
-  assert.equal(use(character, 0, limited).reason, 'session');
+  assert.equal(use(character, 0, limited).ok, true);
   startNewSession(character);
   assert.equal(use(character, 0, limited).ok, true);
   assert.equal(character.recursos.peAtual, 47);
 });
 
-test('raising level updates the limit immediately without clearing spent PE', () => {
+test('raising level updates turnSpendLimit(); gastoTurno keeps accumulating regardless', () => {
   const character = agent();
   use(character, 5);
-  assert.equal(use(character, 2).reason, 'turn');
+  assert.equal(use(character, 2).ok, true);
   character.nivel = 7;
   character.nex = 35;
   assert.equal(turnSpendLimit(character), 7);
-  assert.equal(character.controleSessao.gastoTurno, 5);
-  assert.equal(use(character, 2).ok, true);
   assert.equal(character.controleSessao.gastoTurno, 7);
-  assert.equal(character.recursos.peAtual, 43);
+  assert.equal(use(character, 2).ok, true);
+  assert.equal(character.controleSessao.gastoTurno, 9);
+  assert.equal(character.recursos.peAtual, 41);
   const legacy = agent({ nivel: undefined });
   legacy.nex = 50;
   assert.equal(turnSpendLimit(legacy), 10);
 });
 
-test('legacy spending above the current level is preserved and blocks further PE use', () => {
+test('gastoTurno above turnSpendLimit no longer blocks further PE use', () => {
   const character = agent();
   character.controleSessao.gastoTurno = 9;
   normalizeSession(character);
   assert.equal(character.controleSessao.gastoTurno, 9);
-  assert.equal(use(character, 1).reason, 'turn');
+  assert.equal(use(character, 1).ok, true);
   assert.equal(use(character, 0).ok, true);
   startNextTurn(character);
   assert.equal(use(character, 6).ok, true);
@@ -129,10 +132,13 @@ test('PV, SAN, zero-cost actions and insufficient-resource checks keep their beh
   assert.deepEqual(poor, before);
 });
 
-test('undo refunds only a successful use and does not subtract from a later turn', () => {
+test('undo refunds a use regardless of the turn budget', () => {
   const character = agent();
   use(character, 5);
-  assert.equal(use(character, 2).reason, 'turn');
+  assert.equal(use(character, 2).ok, true);
+  assert.equal(undoLastUse(character).ok, true);
+  assert.equal(character.recursos.peAtual, 45);
+  assert.equal(character.controleSessao.gastoTurno, 5);
   assert.equal(undoLastUse(character).ok, true);
   assert.equal(character.recursos.peAtual, 50);
   assert.equal(character.controleSessao.gastoTurno, 0);
@@ -140,20 +146,19 @@ test('undo refunds only a successful use and does not subtract from a later turn
   startNextTurn(character);
   use(character, 2);
   undoLastUse(character);
-  undoLastUse(character);
   assert.equal(character.controleSessao.gastoTurno, 0);
-  assert.equal(character.recursos.peAtual, 50);
+  assert.equal(character.recursos.peAtual, 47);
 });
 
-test('reload and existing Firestore serialization preserve spent PE, resets and level changes', () => {
+test('reload and existing Firestore serialization preserve spent PE and level changes; spending is never blocked by them', () => {
   const localStorage = storage();
   const character = agent();
   use(character, 5);
   new CharacterStore(localStorage).write([character]);
   const reloaded = new CharacterStore(localStorage).read()[0];
   assert.equal(reloaded.controleSessao.gastoTurno, 5);
-  assert.equal(use(reloaded, 2).reason, 'turn');
-  assert.equal(reloaded.recursos.peAtual, 45);
+  assert.equal(use(reloaded, 2).ok, true);
+  assert.equal(reloaded.recursos.peAtual, 43);
 
   const secondStorage = storage();
   const secondDevice = new CharacterStore(secondStorage);
@@ -161,26 +166,24 @@ test('reload and existing Firestore serialization preserve spent PE, resets and 
   const sync = (data, version) => secondDevice.merge([decodeDocument(data.id, encodeDocument(data, `rev-${version}`, version))]);
   sync(reloaded, 1);
   let incoming = secondDevice.read()[0];
-  assert.equal(use(incoming, 2).reason, 'turn');
-  assert.equal(incoming.recursos.peAtual, 45);
+  assert.equal(use(incoming, 2).ok, true);
+  assert.equal(incoming.recursos.peAtual, 41);
 
   reloaded.nivel = 7;
   reloaded.nex = 35;
   sync(reloaded, 2);
   incoming = secondDevice.read()[0];
   assert.equal(turnSpendLimit(incoming), 7);
-  assert.equal(incoming.controleSessao.gastoTurno, 5);
   assert.equal(use(incoming, 2).ok, true);
   secondDevice.write([incoming]);
   const reopenedAccount = new CharacterStore(secondStorage);
   reopenedAccount.select('same-google-account');
-  assert.equal(reopenedAccount.read()[0].controleSessao.gastoTurno, 7);
-  assert.equal(reopenedAccount.read()[0].recursos.peAtual, 43);
+  assert.equal(reopenedAccount.read()[0].recursos.peAtual, 41);
 
   startNextTurn(incoming);
   secondDevice.write([incoming]);
   const afterReset = new CharacterStore(secondStorage);
   afterReset.select('same-google-account');
   assert.equal(afterReset.read()[0].controleSessao.gastoTurno, 0);
-  assert.equal(afterReset.read()[0].recursos.peAtual, 43);
+  assert.equal(afterReset.read()[0].recursos.peAtual, 41);
 });
