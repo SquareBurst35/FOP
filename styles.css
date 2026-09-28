@@ -4222,6 +4222,35 @@ body:has(dialog[open]) {
   .agent-identity.dossier-open > p.muted::after { display: none; }
 }
 
+/* Afinidade no centro dos atributos: o glifo do elemento com o movimento dele
+   (mesmos keyframes do fundo "Outro Lado", em otherside.css). */
+.attribute-core .core-affinity {
+  --tint: var(--blood);
+  display: grid;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 1px;
+}
+
+.attribute-core .core-affinity-morte { --tint: var(--death); }
+.attribute-core .core-affinity-conhecimento { --tint: var(--knowledge); }
+.attribute-core .core-affinity-energia { --tint: var(--energy); }
+
+.attribute-core .core-affinity .element-glyph {
+  width: 100%;
+  height: 100%;
+  color: color-mix(in srgb, var(--tint) 72%, #e6e8ea);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--tint), transparent 45%));
+}
+
+.attribute-core .core-affinity .element-glyph path,
+.attribute-core .core-affinity .element-glyph circle { stroke-width: 1.35; }
+
+.core-affinity-sangue .element-glyph { animation: otherside-heartbeat 3.6s ease-in-out infinite; }
+.core-affinity-morte .element-glyph { animation: otherside-clockwise 60s linear infinite; }
+.core-affinity-conhecimento .element-glyph { animation: otherside-turn 90s linear infinite, otherside-open 14s ease-in-out infinite alternate; }
+.core-affinity-energia .element-glyph { animation: otherside-flicker 7.3s linear infinite; }
+
 /* PV ou SAN em um quarto ou menos: vinheta fraca com batimento lento. */
 .critical-vignette {
   position: fixed;

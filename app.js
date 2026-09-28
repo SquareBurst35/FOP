@@ -1661,7 +1661,7 @@ function renderSummaryTab(character) {
       <div class="summary-side">
         <div class="sheet-section">
           <div class="section-heading"><h2>Atributos</h2><button class="icon-button" id="open-attribute-edit-dialog" type="button" aria-label="Ajustar atributos" title="Ajustar atributos">✎</button></div>
-          ${renderAttributeConstellation(character.atributos)}
+          ${renderAttributeConstellation(character.atributos, { affinity: character.afinidadeElemental })}
         </div>
         <div class="sheet-section">
           <div class="section-heading"><h2>Combate</h2></div>
@@ -5161,7 +5161,7 @@ function liveResource(label, key, current, max) {
   `;
 }
 
-function renderAttributeConstellation(attributes, { editable = false } = {}) {
+function renderAttributeConstellation(attributes, { editable = false, affinity = "" } = {}) {
   const nodes = Object.entries(ATTRIBUTE_LABELS).map(([key, abbreviation]) => {
     const name = ATTRIBUTE_NAMES[key];
     const value = numberOr(attributes?.[key], 1);
@@ -5174,6 +5174,12 @@ function renderAttributeConstellation(attributes, { editable = false } = {}) {
     return `<div class="attribute-node attribute-${key}" data-attribute-name="${escapeAttribute(name)}"><div class="attribute-ring">${valueMarkup}<span>${escapeHtml(name)}</span><small>${abbreviation}</small></div>${controls}</div>`;
   }).join("");
 
+  // O elemento de afinidade assina o centro da constelação; sem afinidade fica o alvo.
+  const affinitySlug = normalizeSearch(affinity);
+  const affinityMark = !editable && ELEMENT_GLYPHS[affinitySlug]
+    ? `<span class="core-affinity core-affinity-${affinitySlug}">${elementGlyph(affinity)}</span>`
+    : "<span>⌖</span>";
+
   return `
     <div class="attribute-constellation ${editable ? "is-editable" : "is-readonly"}" aria-label="Atributos do personagem">
       <svg class="attribute-geometry" viewBox="0 0 520 420" preserveAspectRatio="none" aria-hidden="true">
@@ -5182,7 +5188,7 @@ function renderAttributeConstellation(attributes, { editable = false } = {}) {
         <circle cx="260" cy="214" r="79" />
         <circle cx="260" cy="214" r="61" />
       </svg>
-      <div class="attribute-core" aria-hidden="true"><span>⌖</span><strong>ATRIBUTOS</strong><small>ARQUIVO FOP</small></div>
+      <div class="attribute-core" aria-hidden="true">${affinityMark}<strong>ATRIBUTOS</strong><small>ARQUIVO FOP</small></div>
       ${nodes}
     </div>
   `;
