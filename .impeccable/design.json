@@ -30,13 +30,7 @@
         "canonical": "#a453ff",
         "tonalRamp": ["#1f0c3d", "#33155f", "#4c1f8a", "#6c2fbb", "#a453ff", "#c187ff", "#dcb9ff", "#f2e3ff"]
       },
-      "fear": { "role": "tertiary", "displayName": "Medo (elemento)", "canonical": "#d9f7ff" },
-      "parchment-gold": {
-        "role": "signature",
-        "displayName": "Dourado-Pergaminho",
-        "canonical": "#b8a970",
-        "tonalRamp": ["#2b2412", "#453a1d", "#665628", "#8a7238", "#b8a970", "#cdc08f", "#e0d7b3", "#f2ecd9"]
-      }
+      "fear": { "role": "tertiary", "displayName": "Medo (elemento)", "canonical": "#d9f7ff" }
     },
     "typographyMeta": {
       "display": { "displayName": "Display", "purpose": "Título de página/seção principal; peso pesado com tracking negativo, sem uppercase." },
@@ -124,19 +118,11 @@
       "description": "Componente assinatura e o mais animado do sistema, de propósito: glifo de 20px original por elemento paranormal (Sangue/Morte/Conhecimento/Energia/Medo), desenhado a partir da descrição geométrica do símbolo real de cada elemento; substitui a antiga tarja lateral colorida nos cartões de ritual. O traço se desenha e 'acende' com um pop de escala+glow ao montar (stagger por índice numa lista), intensifica no hover, e respira num pulso lento contínuo enquanto o cartão-pai está aberto.",
       "html": "<svg class=\"ds-element-glyph\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path pathLength=\"70\" d=\"M5.5 7 L12 18 L18.5 7\"/><path pathLength=\"70\" d=\"M8.5 18 L12 9 L15.5 18\"/><path pathLength=\"70\" d=\"M10 4 L12.5 9 L10.5 12 L14 19\"/></svg>",
       "css": ".ds-element-glyph { width: 20px; height: 20px; color: #a453ff; --glyph-glow: rgba(164, 83, 255, 0.55); animation: ds-glyph-flare 950ms cubic-bezier(0.22, 1, 0.36, 1) both; transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), filter 200ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-element-glyph path { stroke-width: 1.6; stroke-dasharray: 70; animation: ds-geometry-trace 780ms cubic-bezier(0.22, 1, 0.36, 1) both; } @keyframes ds-geometry-trace { from { opacity: 0; stroke-dashoffset: 70; } to { opacity: 1; stroke-dashoffset: 0; } } @keyframes ds-glyph-flare { 0%, 60% { filter: drop-shadow(0 0 0 transparent); transform: scale(0.86) rotate(-6deg); } 82% { filter: drop-shadow(0 0 11px var(--glyph-glow)); transform: scale(1.16) rotate(2deg); } 100% { filter: drop-shadow(0 0 4px var(--glyph-glow)); transform: scale(1) rotate(0); } } .ds-element-glyph:hover { transform: scale(1.18); filter: drop-shadow(0 0 9px var(--glyph-glow)); }"
-    },
-    {
-      "name": "Paperdoll Panel",
-      "kind": "custom",
-      "refersTo": "paperdoll-panel",
-      "description": "Componente assinatura: painel de equipamento com paleta dourado-pergaminho e título serifado, o 'livro-razão' dentro do arquivo digital. Mostrado aqui sem o canvas de sprite ao vivo.",
-      "html": "<div class=\"ds-paperdoll\"><header class=\"ds-paperdoll-head\"><span class=\"ds-paperdoll-kicker\">Equipamento</span><span class=\"ds-paperdoll-state\">4/9 espaços</span></header><div class=\"ds-paperdoll-slot\"><span class=\"ds-paperdoll-slot-mark\">✓</span><span><strong>Arma principal</strong><small>Pistola tática</small></span></div></div>",
-      "css": ".ds-paperdoll { overflow: hidden; border: 1px solid rgba(176, 164, 111, 0.32); border-radius: 8px; background: linear-gradient(rgba(10, 11, 9, 0.65), rgba(10, 11, 9, 0.65)), repeating-linear-gradient(0deg, transparent 0 23px, rgba(220, 204, 132, 0.035) 23px 24px), #17170f; box-shadow: inset 0 0 44px rgba(0, 0, 0, 0.48); font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #c6bc91; } .ds-paperdoll-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 15px; border-bottom: 1px solid rgba(176, 164, 111, 0.24); background: rgba(5, 7, 7, 0.58); } .ds-paperdoll-kicker { color: #b8a970; font-size: 0.875rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; } .ds-paperdoll-state { padding: 5px 8px; border: 1px solid rgba(194, 178, 111, 0.28); border-radius: 4px; color: #c6bc91; font-size: 0.875rem; font-weight: 800; } .ds-paperdoll-slot { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 2px 8px; margin: 14px; padding: 9px 10px; border: 1px solid rgba(176, 164, 111, 0.19); border-radius: 5px; background: rgba(8, 10, 9, 0.6); color: #eee8d5; } .ds-paperdoll-slot-mark { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(194, 178, 111, 0.4); color: #b8a970; } .ds-paperdoll-slot small { color: #8a8262; font-size: 0.76rem; }"
     }
   ],
   "narrative": {
     "northStar": "O Arquivo Amaldiçoado",
-    "overview": "Cada ficha do FOP se comporta como um dossiê confidencial que a Ordo Realitas mantém sobre um agente: fundo quase preto, nevoeiro lento e composto ao redor da tela inicial, um selo oculto desenhado à mão (assets/archive-seal.svg, círculos quebrados e glifos originais) ecoado no próprio brand-mark do topo. O vermelho-sangue não decora — é o carimbo de alerta do arquivo: ações primárias, avisos e o indicador de foco em campos de formulário usam a mesma cor de \"isto importa agora\". Fora isso, o sistema é deliberadamente contido: superfícies escuras quase planas, uma paleta neutra de cinzas frios, e o vermelho reaparecendo com rara disciplina.\n\nO tom é investigativo e tenso, nunca festivo. Isto é explicitamente não uma ficha de fantasia colorida e whimsical (o oposto do estilo D&D Beyond) e não um dashboard SaaS genérico — não há cartões pastel, ícones fofos ou gradientes multicoloridos decorativos. A tensão é sugerida, não gritada: nevoeiro que se move devagar, brilho vermelho pontual em vez de alarme piscando, glifos ocultos quebrados em vez de completos.\n\nDentro desse mundo escuro vive uma exceção deliberada: o painel do boneco de equipamento (paperdoll) muda de paleta para um dourado-pergaminho envelhecido com títulos em serifada, como se fosse a página de um livro-razão físico dentro do dossiê digital — o \"arquivo dentro do arquivo\".",
+    "overview": "Cada ficha do FOP se comporta como um dossiê confidencial que a Ordo Realitas mantém sobre um agente: fundo quase preto, nevoeiro lento e composto ao redor da tela inicial, um selo oculto desenhado à mão (assets/archive-seal.svg, círculos quebrados e glifos originais) ecoado no próprio brand-mark do topo. O vermelho-sangue não decora — é o carimbo de alerta do arquivo: ações primárias, avisos e o indicador de foco em campos de formulário usam a mesma cor de \"isto importa agora\". Fora isso, o sistema é deliberadamente contido: superfícies escuras quase planas, uma paleta neutra de cinzas frios, e o vermelho reaparecendo com rara disciplina.\n\nO tom é investigativo e tenso, nunca festivo. Isto é explicitamente não uma ficha de fantasia colorida e whimsical (o oposto do estilo D&D Beyond) e não um dashboard SaaS genérico — não há cartões pastel, ícones fofos ou gradientes multicoloridos decorativos. A tensão é sugerida, não gritada: nevoeiro que se move devagar, brilho vermelho pontual em vez de alarme piscando, glifos ocultos quebrados em vez de completos.",
     "keyCharacteristics": [
       "Fundo quase preto (#060708) com nevoeiro/textura sutil, nunca uma superfície limpa e clara.",
       "Vermelho-sangue como único sinal de urgência/ação primária; todo o resto é neutro.",
@@ -149,10 +135,9 @@
       { "name": "A Regra do Selo Único", "body": "O vermelho-sangue é reservado para ação/alerta/foco. Nenhum outro elemento de UI genérico pode usar essa cor — sua raridade é o que faz o olhar ir direto a ela.", "section": "colors" },
       { "name": "A Regra da Paleta Elemental", "body": "Sangue, Morte, Conhecimento, Energia e Medo só podem colorir algo que seja, de fato, aquele elemento paranormal ou o recurso da ficha com o mesmo nome. Nunca usar essas cores como acento decorativo genérico fora desse contexto.", "section": "colors" },
       { "name": "A Regra do Sussurro e do Grito", "body": "Um título nunca usa uppercase nem tracking largo; um rótulo secundário nunca deixa de usar. A hierarquia é sempre essa oposição de voz, não apenas tamanho.", "section": "typography" },
-      { "name": "A Exceção do Livro-Razão", "body": "Só o cabeçalho do painel de equipamento (.paperdoll-panel h3) troca para serifada (Georgia, \"Times New Roman\", serif). É a única quebra da regra de fonte única no sistema inteiro.", "section": "typography" },
       { "name": "A Regra do Container Único", "body": "Nenhuma tela foge do container de 1120px centralizado; telas mais densas usam colunas internas em vez de alargar o container.", "section": "layout" },
       { "name": "A Regra do Brilho, Não da Sombra", "body": "Uma superfície nunca ganha profundidade empilhando sombras escuras entre camadas. Se algo precisa parecer ativo ou em foco, a resposta é um glow colorido, não mais elevação.", "section": "elevation" },
-      { "name": "A Regra do Pixel Intacto", "body": "Toda arte do boneco de equipamento e dos ícones de item usa image-rendering: pixelated. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como ilustração vetorial.", "section": "elevation" },
+      { "name": "A Regra do Pixel Intacto", "body": "Toda arte dos ícones de item usa image-rendering: pixelated. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como ilustração vetorial.", "section": "elevation" },
       { "name": "A Regra do Glifo do Elemento", "body": "Um elemento paranormal é identificado pelo glifo original (elementGlyph()), nunca só por uma tarja lateral colorida. Border-left/border-right grosso como tarja de identidade é banido — é o tell mais reconhecível de UI genérica gerada por IA.", "section": "components" },
       { "name": "A Regra do Momento Raro", "body": "Tratamento de tela-cheia (Cast Flourish ao conjurar, Level-Up Ceremony ao evoluir) é reservado só para eventos de fato raros e importantes. Nunca usar esse nível de teatralidade para uma ação rotineira.", "section": "components" }
     ],
@@ -161,17 +146,16 @@
       "Do usar as cinco cores de elemento paranormal (Sangue, Morte, Conhecimento, Energia, Medo) só quando o conteúdo é literalmente daquele elemento ou daquele recurso da ficha.",
       "Do manter superfícies quase planas e expressar estado/interatividade como brilho colorido, não como sombra empilhada.",
       "Do opor título quieto (peso pesado, tracking negativo, sem uppercase) a rótulo gritado (uppercase, tracking largo) para toda nova hierarquia de texto.",
-      "Do renderizar toda arte pixel (paperdoll, ícones de item) com image-rendering: pixelated, nunca suavizada.",
+      "Do renderizar toda arte pixel (ícones de item) com image-rendering: pixelated, nunca suavizada.",
       "Do respeitar prefers-reduced-motion desligando nevoeiro/transformações de hover, como home.css já faz.",
       "Do identificar um elemento paranormal pelo glifo original (elementGlyph()), nunca só por uma tarja lateral colorida.",
       "Do revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (content-reveal, 360-420ms, curva --motion) — nunca um corte seco.",
       "Do reservar o tratamento de tela-cheia (Cast Flourish, Level-Up Ceremony) só para os momentos de fato raros e importantes — nunca para ações rotineiras."
     ],
     "donts": [
-      "Don't introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, com a única exceção documentada do cabeçalho do paperdoll.",
+      "Don't introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, sem exceções.",
       "Don't adicionar cores saturadas/pastel fora da paleta estabelecida (vermelho, ciano, os cinco elementos, neutros) — isso quebra o tom investigativo e tenso confirmado para o produto.",
       "Don't empilhar sombras escuras entre camadas para simular profundidade; a resposta certa é glow, não elevação.",
-      "Don't tratar o painel de equipamento como só mais um cartão escuro — sua paleta dourado-pergaminho e a serifada no título são intencionais e não devem vazar para o resto da interface.",
       "Don't usar border-left/border-right grosso como tarja de identidade em card, callout ou alerta — a resposta certa é o glifo do elemento, um glow, ou um fundo tingido uniforme."
     ]
   }

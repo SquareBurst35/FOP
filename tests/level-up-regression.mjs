@@ -429,7 +429,7 @@ for (const determination of [false, true]) {
  const label=determination?'PD':'PE',currentKey=determination?'pdAtual':'peAtual';
  const ritual=RITUALS.find(r=>r.name==='Amaldiçoar Arma (Sangue)');
  const character=characterAtLevel({id:`ritual-versoes-${label}`,level:11,className:'Ocultista',rituals:[ritual.id],optionalRules:{determination}});
- character.afinidadeElemental='Sangue';character.aparencia='feminino';
+ character.afinidadeElemental='Sangue';
  const ui=await boot(character);ui.clickData('[data-sheet-tab]','sheetTab','rituais');
  ui.clickData('[data-use-ritual]','useRitual',ritual.id);
  assert.match(ui.html(),/data-use-option="normal"/);assert.match(ui.html(),/data-use-option="discente"/);assert.match(ui.html(),/data-use-option="verdadeiro"/);
@@ -444,8 +444,6 @@ for (const determination of [false, true]) {
  ui.click('confirm-spend-dialog');
  // Um segundo cast além do limite por turno não é mais bloqueado.
  assert.equal(ui.saved().recursos[currentKey],afterFirstCast.recursos[currentKey]-6);
- assert.equal(ui.saved().aparencia,'feminino');
- ui.clickData('[data-sheet-tab]','sheetTab','inventario');assert.match(ui.html(),/data-appearance="feminino"/);
 }
 // New catalog entry, capacity bonus and attached upgrades survive save/reload.
 {

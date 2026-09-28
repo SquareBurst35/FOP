@@ -240,7 +240,6 @@ function createBlankCharacter() {
     nome: "",
     jogador: "",
     foto: "",
-    aparencia: "masculino",
     origem: "",
     classe: "Mundano",
     trilha: "",
@@ -316,7 +315,6 @@ function createBlankCharacter() {
 
 function normalizeCharacter(character) {
   if (!character || typeof character !== "object") return character;
-  character.aparencia=character.aparencia==="feminino"?"feminino":"masculino";
   // Foto enviada pelo jogador: já sai comprimida/redimensionada de resizeImageToDataUrl,
   // então um valor gigante ou fora do formato esperado só pode ser corrupção — descarta.
   character.foto = typeof character.foto === "string" && /^data:image\//.test(character.foto) && character.foto.length <= 300000
@@ -1036,8 +1034,6 @@ function renderCreatorStep() {
       <div class="form-grid">
         ${field("Nome do agente", "nome", creatorState.nome, "Ex.: Arthur Cervero", true)}
         ${field("Nome do jogador", "jogador", creatorState.jogador, "Ex.: Pedro")}
-        <div class="field"><label for="aparencia">Personagem</label><select id="aparencia" name="aparencia"><option value="masculino" ${creatorState.aparencia!=="feminino"?"selected":""}>Masculino</option><option value="feminino" ${creatorState.aparencia==="feminino"?"selected":""}>Feminino</option></select><small class="field-help">Define a pixel art do inventário.</small></div>
-        <div class="creator-appearance-preview"><canvas id="creator-appearance-preview" width="420" height="600" aria-label="Prévia do personagem"></canvas></div>
       </div>
     `;
   }
@@ -1441,7 +1437,6 @@ function saveCreatorFields() {
   const value = (id) => document.querySelector(`#${id}`)?.value;
 
   if (currentStep === 0) {
-    creatorState.aparencia=value("aparencia")==="feminino"?"feminino":"masculino";
     creatorState.nome = value("nome")?.trim() || creatorState.nome;
     creatorState.jogador = value("jogador")?.trim() || "";
   }
@@ -2520,7 +2515,7 @@ function renderInventoryTab(character) {
       ? "warning"
       : "complete";
   return `
-    <section class="sheet-section inventory-section" data-appearance="${character.aparencia==="feminino"?"feminino":"masculino"}">
+    <section class="sheet-section inventory-section">
       <div class="section-heading stacked-mobile">
         <div><h2>Inventário</h2><p class="muted small">Escolha o equipamento; espaços e categorias são somados automaticamente.</p></div>
         <button class="button primary compact" id="open-item-picker" type="button">+ Adicionar item</button>

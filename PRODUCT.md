@@ -16,11 +16,11 @@ FOP é uma ficha de personagem interativa para Ordem Paranormal RPG. Ela guia a 
 
 ## Positioning
 
-A combinação que nenhuma outra ficha digital de Ordem Paranormal reproduz: automação real na criação e no uso da ficha (nada de preenchimento manual), um boneco em pixel art que se personaliza visualmente conforme o equipamento vestido, e o catálogo mecânico completo do sistema (origens, trilhas, poderes, rituais, itens) com resumos originais e números conferidos contra os livros — tudo gratuito, sem cadastro obrigatório.
+A combinação que nenhuma outra ficha digital de Ordem Paranormal reproduz: automação real na criação e no uso da ficha (nada de preenchimento manual) e o catálogo mecânico completo do sistema (origens, trilhas, poderes, rituais, itens) com resumos originais e números conferidos contra os livros — tudo gratuito, sem cadastro obrigatório.
 
 ## Operating Context
 
-Uso típico é à mesa, durante ou entre sessões de RPG, em computador ou celular. O jogador cria o agente pelo fluxo guiado, equipa itens e vê o boneco em pixel art refletir isso no paperdoll, e consulta poderes/rituais/itens do catálogo em busca de números mecânicos exatos (dano, dados, DT, alcance, custo em PE) em vez de flavor text. A ficha salva automaticamente no navegador; entrar com Google é opcional e sincroniza a mesma ficha entre dispositivos sem substituir o armazenamento local.
+Uso típico é à mesa, durante ou entre sessões de RPG, em computador ou celular. O jogador cria o agente pelo fluxo guiado, monta o inventário (cada item com seu ícone em pixel art) e consulta poderes/rituais/itens do catálogo em busca de números mecânicos exatos (dano, dados, DT, alcance, custo em PE) em vez de flavor text. A ficha salva automaticamente no navegador; entrar com Google é opcional e sincroniza a mesma ficha entre dispositivos sem substituir o armazenamento local.
 
 ## Capabilities and Constraints
 
@@ -43,7 +43,7 @@ Não há depoimentos, estudos de caso ou imprensa (projeto de fã, sem essa form
 
 - Automação em vez de preenchimento manual: criação guiada e cálculo automático são o motivo de existir do site, não um extra sobre uma ficha estática.
 - Precisão mecânica antes de tudo: todo número na tela precisa ser verificável contra um livro; quando o livro não dá o número, o site também não dá.
-- Personalização visual sem custo de produção por item: o paperdoll em pixel art escala reaproveitando sprites existentes, não desenhando um novo por item.
+- Ícones sem custo de produção por item: itens novos reaproveitam os sprites em pixel art já existentes, em vez de desenhar um novo por item.
 - Zero fricção de entrada: funciona por completo sem cadastro; sincronização é opt-in e aditiva, nunca um bloqueio de acesso.
 - Fidelidade sem violar direitos autorais: resumo mecânico original sempre, cópia literal do livro nunca.
 

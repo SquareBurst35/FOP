@@ -23,7 +23,6 @@ colors:
   knowledge: "#d5aa55"
   energy: "#a453ff"
   fear: "#d9f7ff"
-  parchment-gold: "#b8a970"
 typography:
   display:
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -96,8 +95,6 @@ Cada ficha do FOP se comporta como um dossiê confidencial que a Ordo Realitas m
 
 O tom é investigativo e tenso, nunca festivo. Isto é explicitamente **não** uma ficha de fantasia colorida e whimsical (o oposto do estilo D&D Beyond) e **não** um dashboard SaaS genérico — não há cartões pastel, ícones fofos ou gradientes multicoloridos decorativos. A tensão é sugerida, não gritada: nevoeiro que se move devagar, brilho vermelho pontual em vez de alarme piscando, glifos ocultos quebrados em vez de completos.
 
-Dentro desse mundo escuro vive uma exceção deliberada: o painel do boneco de equipamento (paperdoll) muda de paleta para um dourado-pergaminho envelhecido com títulos em serifada, como se fosse a página de um livro-razão físico dentro do dossiê digital — o "arquivo dentro do arquivo".
-
 **Key Characteristics:**
 - Fundo quase preto (`#060708`) com nevoeiro/textura sutil, nunca uma superfície limpa e clara.
 - Vermelho-sangue como único sinal de urgência/ação primária; todo o resto é neutro.
@@ -120,7 +117,7 @@ A paleta é quase monocromática (preto, cinza-carvão, branco-osso) com vermelh
 Estas cinco cores pertencem ao próprio sistema de Ordem Paranormal (Sangue, Morte, Conhecimento, Energia, Medo) e no site codificam ao mesmo tempo os rituais por elemento e os recursos da ficha que compartilham esse nome:
 - **Sangue** (`#df2938`): PV (pontos de vida) e rituais do elemento Sangue.
 - **Morte** (`#aeb4b7`, cinza-osso): rituais do elemento Morte.
-- **Conhecimento** (`#d5aa55`, dourado): Sanidade e rituais do elemento Conhecimento — também é a base do dourado-pergaminho do paperdoll.
+- **Conhecimento** (`#d5aa55`, dourado): Sanidade e rituais do elemento Conhecimento.
 - **Energia** (`#a453ff`, roxo): PD (pontos de deslocamento/dano, conforme a mecânica) e rituais do elemento Energia.
 - **Medo** (`#d9f7ff`, ciano-pálido quase branco): rituais do elemento Medo.
 - **PP** (`#ff7690`, rosa): sexto recurso da ficha, fora da paleta de elementos — cor própria por não ter um elemento paranormal correspondente.
@@ -152,13 +149,11 @@ Estas cinco cores pertencem ao próprio sistema de Ordem Paranormal (Sangue, Mor
 ### Named Rules
 **A Regra do Sussurro e do Grito.** Um título nunca usa uppercase nem tracking largo; um rótulo secundário nunca deixa de usar. A hierarquia é sempre essa oposição de voz, não apenas tamanho.
 
-**A Exceção do Livro-Razão.** Só dois elementos do painel de equipamento trocam para serifada (`Georgia, "Times New Roman", serif`): o cabeçalho (`.paperdoll-panel h3`) e a marca de slot preenchido (`.paperdoll-slot-mark`). É a única quebra da regra de fonte única no sistema inteiro, e existe só ali para marcar aquele painel como um objeto físico dentro do arquivo digital. Fora do paperdoll, todo numeral (incluindo o da constelação de atributos) segue a Regra do Numeral: Inter, peso 900, `tabular-nums`.
-
 ## Layout
 
 Container principal centralizado em `min(1120px, calc(100% - 32px))`, com respiro lateral mínimo de 16px. O ritmo de espaçamento observado gira em torno de uma escala curta e prática — 8px, 12px, 14px, 18px, 22px, 34px — sem uma variável CSS formal para isso; cartões e painéis usam 18–22px de padding interno, grades de cartão (`character-grid`, `resource-grid`) usam 10–18px de gap.
 
-Dois breakpoints de responsividade: **820px** (colunas de wizard/ficha colapsam para pilha única) e **600px** (compactação final de cabeçalho, grades e paperdoll). Não há um terceiro breakpoint de "desktop largo" — o layout satura em 1120px e centraliza o excedente.
+Dois breakpoints de responsividade: **820px** (colunas de wizard/ficha colapsam para pilha única) e **600px** (compactação final de cabeçalho e grades). Não há um terceiro breakpoint de "desktop largo" — o layout satura em 1120px e centraliza o excedente.
 
 ### Named Rules
 **A Regra do Container Único.** Nenhuma tela foge do container de 1120px centralizado; telas mais densas (ficha, wizard) usam colunas internas (sidebar + conteúdo) em vez de alargar o container.
@@ -181,7 +176,7 @@ O sistema é quase plano por escolha, não por limitação: cartões e painéis 
 O vocabulário de forma tem três registros claros: **círculo** para tudo que representa uma pessoa ou um selo (avatar, brand-mark, marcador de passo do wizard, `border-radius: 50%`); **cantos levemente arredondados** (`--radius: 12px` para cartões/painéis, `--radius-small: 7px` para botões e campos) para praticamente todo o resto; e **pílula** (`border-radius: 999px`) só para badges/etiquetas. O selo oculto (`archive-seal.svg`) e o brand-mark reforçam o motivo circular com anéis quebrados e quadrados sobrepostos rotacionados — geometria "ritual", nunca um ícone genérico.
 
 ### Named Rules
-**A Regra do Pixel Intacto.** Toda arte do boneco de equipamento e dos ícones de item usa `image-rendering: pixelated`. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como se fossem ilustração vetorial — o serrilhado é o material, não um defeito.
+**A Regra do Pixel Intacto.** Toda arte dos ícones de item usa `image-rendering: pixelated`. Nunca suavizar, redimensionar com antialiasing ou tratar esses sprites como se fossem ilustração vetorial — o serrilhado é o material, não um defeito.
 
 ## Components
 
@@ -219,9 +214,6 @@ Cada um dos cinco elementos paranormais (Sangue, Morte, Conhecimento, Energia, M
 
 É o componente mais animado do sistema, de propósito — é o "sigilo" do ritual, e é onde a metáfora de algo sendo inscrito/ativado ganha corpo: ao aparecer, o traço se desenha (`stroke-dasharray`/`pathLength` + `geometry-trace`, 780ms) e o glifo "acende" no fim com um pop de escala e glow (`glyph-flare`, 950ms). Cartões numa lista acendem em sequência, não juntos (stagger de 60-70ms por índice, via `--glyph-delay`). Passar o mouse no cabeçalho do cartão intensifica o glow; enquanto o cartão está aberto, o glifo respira num pulso lento e contínuo (`glyph-pulse`, 2.4s) — o ritual "ativo" tem vida própria. Fora dessas situações (montagem, hover, aberto) o glifo fica quieto: a riqueza de movimento é toda concentrada nesse componente, não espalhada pelo resto da interface.
 
-### Paperdoll Panel (componente assinatura)
-O único painel do sistema com paleta própria: dourado-pergaminho (`#b8a970` / `rgba(176,164,111,…)`) sobre fundo verde-oliva quase preto (`#17170f`), com textura de linhas horizontais finas simulando papel riscado e uma sombra interna profunda (`inset 0 0 44px rgba(0,0,0,0.48)`) que aproxima o painel de uma página de livro-razão física. Título em serifada (ver Typography). O boneco em pixel art fica ao centro (`image-rendering: pixelated`, sombra projetada suave), ladeado por slots de equipamento em grade; cada slot preenchido ganha uma borda/realce dourados.
-
 ### Cast Flourish (momento assinatura)
 Ao conjurar um ritual (confirmar o gasto no diálogo de uso), o glifo do elemento correspondente aparece grande (até 220px) no centro da tela por ~950ms: se desenha, acende com um pop de escala e glow intenso na cor do elemento, e dissipa — com um leve véu radial da mesma cor lavando a tela por trás. Elemento `#cast-flourish`, fixo, `aria-hidden`, `pointer-events: none` — nunca bloqueia a interface, só reage ao "Confirmar uso" de um ritual (não de uma habilidade comum). Reaproveita `geometry-trace` para o traço do glifo, mesma disciplina dos Element Glyphs.
 
@@ -238,15 +230,14 @@ O selo de fundo da tela inicial (`archive-seal.svg`) não é mais estático: gir
 - **Do** usar as cinco cores de elemento paranormal (Sangue, Morte, Conhecimento, Energia, Medo) só quando o conteúdo é literalmente daquele elemento ou daquele recurso da ficha.
 - **Do** manter superfícies quase planas e expressar estado/interatividade como brilho colorido, não como sombra empilhada.
 - **Do** opor título quieto (peso pesado, tracking negativo, sem uppercase) a rótulo gritado (uppercase, tracking largo) para toda nova hierarquia de texto.
-- **Do** renderizar toda arte pixel (paperdoll, ícones de item) com `image-rendering: pixelated`, nunca suavizada.
+- **Do** renderizar toda arte pixel (ícones de item) com `image-rendering: pixelated`, nunca suavizada.
 - **Do** respeitar `prefers-reduced-motion` desligando nevoeiro/transformações de hover, como `home.css` já faz.
 - **Do** identificar um elemento paranormal pelo glifo original (`elementGlyph()`), nunca só por uma tarja lateral colorida.
 - **Do** revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (`content-reveal`, 360-420ms, curva `--motion`) — nunca um corte seco.
 - **Do** reservar o tratamento de tela-cheia (Cast Flourish, Level-Up Ceremony) só para os momentos de fato raros e importantes (conjurar, evoluir) — nunca para ações rotineiras (salvar campo, marcar checkbox).
 
 ### Don't:
-- **Don't** introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, com a única exceção documentada do cabeçalho do paperdoll.
+- **Don't** introduzir uma segunda fonte de exibição — Inter cobre a interface inteira, sem exceções.
 - **Don't** adicionar cores saturadas/pastel fora da paleta estabelecida (vermelho, ciano, os cinco elementos, neutros) — isso quebra o tom investigativo e tenso confirmado para o produto.
 - **Don't** empilhar sombras escuras entre camadas para simular profundidade; a resposta certa é glow, não elevação.
 - **Don't** usar `border-left`/`border-right` grosso como tarja de identidade em card, callout ou alerta — é o "tell" mais reconhecível de UI genérica gerada por IA; a resposta certa é o glifo do elemento, um glow, ou um fundo tingido uniforme (como os cartões de aviso vermelhos, que usam borda fina de 1px em todo o contorno).
-- **Don't** tratar o painel de equipamento como só mais um cartão escuro — sua paleta dourado-pergaminho e a serifada no título são intencionais e não devem vazar para o resto da interface, nem o resto da interface deve emprestar essa paleta.
