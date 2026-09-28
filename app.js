@@ -145,6 +145,27 @@ function elementGlyph(element, delayMs = 0) {
   return `<svg class="element-glyph element-glyph-${slug}"${delayStyle} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 }
 
+// Camada de fundo "Outro Lado": névoa e os glifos dos elementos se desenhando e
+// se apagando, cada um com o comportamento do seu elemento (ver otherside.css).
+// [elemento, lado, topo em vh, tamanho em px, atraso em s, ciclo em s]
+const OUTER_GLYPHS = [
+  ["conhecimento", "left", 12, 170, 6, 66],
+  ["energia", "right", 15, 150, 22, 58],
+  ["sangue", "left", 46, 150, 34, 72],
+  ["morte", "right", 34, 180, 48, 80],
+  ["medo", "left", 74, 160, 15, 62],
+];
+
+function renderOuterSide() {
+  const layer = document.querySelector("#outer-side");
+  if (!layer) return;
+  layer.innerHTML = `
+    <i class="mist mist-a"></i><i class="mist mist-b"></i><i class="mist mist-floor"></i>
+    <i class="seal-echo"></i>
+    ${OUTER_GLYPHS.map(([element, side, top, size, delay, cycle]) => `<span class="outer-glyph outer-glyph-${element} from-${side}" style="--top: ${top}vh; --size: ${size}px; --delay: ${delay}s; --cycle: ${cycle}s">${elementGlyph(element)}</span>`).join("")}
+  `;
+}
+
 const PARANORMAL_ELEMENTS = ["Conhecimento", "Energia", "Morte", "Sangue"];
 
 const NON_USABLE_ABILITY_NAMES = new Set([
@@ -5437,6 +5458,7 @@ function keepLoopsInPhase() {
 }
 if (typeof MutationObserver === "function") new MutationObserver(keepLoopsInPhase).observe(app, { childList: true, subtree: true });
 
+renderOuterSide();
 if (!window.location.hash) window.location.hash = "#home";
 else renderRoute();
 

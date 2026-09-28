@@ -1,0 +1,219 @@
+/* Camada de fundo "Outro Lado". Só decoração: sem significado de regra.
+   Base pesquisada (interpretação própria, nada copiado de arte oficial):
+   - Membrana e Névoa: onde a Membrana está fraca surge uma névoa branca; quanto
+     mais aparente, mais danificada (Ordem Paranormal Wiki, "Membrana").
+   - Círculo ritual: o ocultista se concentra no símbolo e a névoa do Outro Lado
+     cobre um raio ao redor, reforçando os rituais ("Rituais").
+   - Formas dos elementos ("Símbolos Ocultistas", "Elementos do Outro Lado"):
+     Sangue = quadrados/figura humana; Conhecimento = triângulos; Morte = círculos
+     e espiral horária, ligada a um tempo distorcido (ora lento, ora rápido);
+     Energia = "V"/caos, luz e faísca, aleatoriedade; Medo = curva de
+     interrogação e o branco da névoa. Cada glifo se move do jeito do elemento. */
+
+.outer-side {
+  --fog: 196, 210, 222;
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Névoa: duas manchas largas à deriva e uma faixa parada no chão. */
+.outer-side .mist {
+  position: absolute;
+  display: block;
+}
+
+.mist-a, .mist-b { will-change: transform; }
+
+.mist-a {
+  top: -18vh;
+  left: -18vw;
+  width: 60vw;
+  height: 54vh;
+  opacity: 0.09;
+  background: radial-gradient(closest-side, rgba(var(--fog), 1), transparent);
+  animation: otherside-drift-a 110s ease-in-out infinite alternate;
+}
+
+.mist-b {
+  right: -18vw;
+  bottom: 4vh;
+  width: 56vw;
+  height: 50vh;
+  opacity: 0.075;
+  background: radial-gradient(closest-side, rgba(var(--fog), 1), transparent);
+  animation: otherside-drift-b 140s ease-in-out infinite alternate;
+}
+
+.mist-floor {
+  right: 0;
+  bottom: -12vh;
+  left: 0;
+  height: 46vh;
+  background: linear-gradient(to top, rgba(var(--fog), 0.55), transparent);
+  opacity: 0.05;
+}
+
+@keyframes otherside-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(14vw, 9vh, 0) scale(1.12); }
+}
+
+@keyframes otherside-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.08); }
+  to { transform: translate3d(-12vw, -7vh, 0) scale(0.96); }
+}
+
+/* Segundo anel do círculo ritual, atrás do selo da tela inicial: mesmo centro,
+   menor, refletido e girando ao contrário, devagar. */
+.seal-echo {
+  display: none;
+}
+
+body:has(.agent-home) .seal-echo {
+  --seal: min(52vw, 620px);
+  position: absolute;
+  display: block;
+  right: calc(-110px + var(--seal) * 0.19);
+  bottom: calc(-140px + var(--seal) * 0.19);
+  width: calc(var(--seal) * 0.62);
+  aspect-ratio: 1;
+  background: url("assets/archive-seal.svg") center / contain no-repeat;
+  opacity: 0.1;
+  will-change: transform;
+  animation: otherside-echo-turn 380s linear infinite, otherside-echo-breathe 22s ease-in-out infinite;
+}
+
+@keyframes otherside-echo-turn {
+  from { transform: scaleX(-1) rotate(0deg); }
+  to { transform: scaleX(-1) rotate(360deg); }
+}
+
+@keyframes otherside-echo-breathe {
+  0%, 100% { opacity: 0.07; }
+  50% { opacity: 0.15; }
+}
+
+/* Glifos: cada um nasce se desenhando, fica um tempo e se apaga. Só dois ou
+   três aparecem juntos (atrasos e ciclos diferentes). */
+.outer-glyph {
+  position: absolute;
+  top: var(--top);
+  width: var(--size);
+  height: var(--size);
+  opacity: 0;
+  animation: otherside-life var(--cycle) ease-in-out var(--delay) infinite;
+}
+
+.outer-glyph.from-left { left: calc((100vw - min(1120px, 100vw - 32px)) / 4 - var(--size) / 2); }
+.outer-glyph.from-right { right: calc((100vw - min(1120px, 100vw - 32px)) / 4 - var(--size) / 2); }
+
+.outer-glyph .element-glyph {
+  width: 100%;
+  height: 100%;
+  filter: none;
+  transition: none;
+  will-change: transform, opacity;
+}
+
+.outer-glyph .element-glyph path,
+.outer-glyph .element-glyph circle {
+  stroke-width: 0.5;
+  stroke-dasharray: 70;
+  animation: otherside-inscribe var(--cycle) ease-out var(--delay) infinite both;
+}
+
+.outer-glyph-sangue { --tint: var(--blood); --peak: 0.2; }
+.outer-glyph-morte { --tint: var(--death); --peak: 0.2; }
+.outer-glyph-conhecimento { --tint: var(--knowledge); --peak: 0.2; }
+.outer-glyph-energia { --tint: var(--energy); --peak: 0.26; }
+.outer-glyph-medo { --tint: var(--fear); --peak: 0.16; }
+
+.outer-glyph .element-glyph {
+  color: color-mix(in srgb, var(--tint) 45%, #cfd4d6);
+}
+
+@keyframes otherside-life {
+  0% { opacity: 0; }
+  9% { opacity: var(--peak, 0.2); }
+  68% { opacity: var(--peak, 0.2); }
+  100% { opacity: 0; }
+}
+
+@keyframes otherside-inscribe {
+  0% { stroke-dashoffset: 70; }
+  15%, 100% { stroke-dashoffset: 0; }
+}
+
+/* Sangue: batimento duplo, como o corpo (a figura humana do símbolo). */
+.outer-glyph-sangue .element-glyph { animation: otherside-heartbeat 3.6s ease-in-out infinite; }
+
+@keyframes otherside-heartbeat {
+  0%, 46%, 100% { transform: scale(1); }
+  10% { transform: scale(1.05); }
+  20% { transform: scale(1); }
+  30% { transform: scale(1.035); }
+}
+
+/* Morte: gira no sentido horário, mas o tempo é distorcido, com trechos quase
+   parados e disparos rápidos. */
+.outer-glyph-morte .element-glyph { animation: otherside-clockwise 120s linear infinite; }
+
+@keyframes otherside-clockwise {
+  0% { transform: rotate(0deg); }
+  17% { transform: rotate(24deg); }
+  20% { transform: rotate(118deg); }
+  52% { transform: rotate(134deg); }
+  55% { transform: rotate(226deg); }
+  84% { transform: rotate(246deg); }
+  87% { transform: rotate(346deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Conhecimento: giro lento e regular, com o desenho se abrindo e fechando. */
+.outer-glyph-conhecimento .element-glyph { animation: otherside-turn 160s linear infinite, otherside-open 18s ease-in-out infinite alternate; }
+
+@keyframes otherside-turn {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+@keyframes otherside-open {
+  from { transform: scale(0.96); }
+  to { transform: scale(1.05); }
+}
+
+/* Energia: instável, falhas de luz em momentos irregulares. */
+.outer-glyph-energia .element-glyph { animation: otherside-flicker 7.3s linear infinite; }
+
+@keyframes otherside-flicker {
+  0%, 5%, 9%, 36%, 40%, 74%, 78%, 100% { opacity: 1; transform: translate(0, 0); }
+  6% { opacity: 0.2; transform: translate(1px, 0); }
+  7% { opacity: 0.85; transform: translate(-1px, 0); }
+  8% { opacity: 0.35; transform: translate(0, 1px); }
+  37% { opacity: 0.4; transform: translate(-1px, 0); }
+  38% { opacity: 1; }
+  39% { opacity: 0.15; }
+  75% { opacity: 0.5; transform: translate(1px, 0); }
+  76% { opacity: 0.9; }
+  77% { opacity: 0.3; }
+}
+
+/* Medo: sobe devagar e se dissolve como a névoa. */
+.outer-glyph-medo .element-glyph { animation: otherside-float 34s ease-in-out infinite alternate; }
+
+@keyframes otherside-float {
+  from { transform: translateY(10px) scale(0.97); }
+  to { transform: translateY(-18px) scale(1.06); }
+}
+
+/* Na ficha os painéis cobrem o fundo, então nada disso apareceria: desliga a
+   camada inteira para não gastar processamento onde se passa mais tempo. No
+   celular não há espaço lateral para os glifos. */
+body:has(.sheet-layout) .outer-side { display: none; }
+
+@media (max-width: 1100px) {
+  .outer-glyph { display: none; }
+}

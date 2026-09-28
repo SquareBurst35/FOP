@@ -214,6 +214,13 @@ Cada um dos cinco elementos paranormais (Sangue, Morte, Conhecimento, Energia, M
 
 É o componente mais animado do sistema, de propósito — é o "sigilo" do ritual, e é onde a metáfora de algo sendo inscrito/ativado ganha corpo: ao aparecer, o traço se desenha (`stroke-dasharray`/`pathLength` + `geometry-trace`, 780ms) e o glifo "acende" no fim com um pop de escala e glow (`glyph-flare`, 950ms). Cartões numa lista acendem em sequência, não juntos (stagger de 60-70ms por índice, via `--glyph-delay`). Passar o mouse no cabeçalho do cartão intensifica o glow; enquanto o cartão está aberto, o glifo respira num pulso lento e contínuo (`glyph-pulse`, 2.4s) — o ritual "ativo" tem vida própria. Fora dessas situações (montagem, hover, aberto) o glifo fica quieto: a riqueza de movimento é toda concentrada nesse componente, não espalhada pelo resto da interface.
 
+### Camada "Outro Lado" (fundo)
+Em `otherside.css`, atrás das telas com fundo livre (início, criação, ameaças) e desligada na ficha, onde os painéis cobrem o fundo. Só decoração, sempre discreta (opacidade máxima ~0,2), e some com `prefers-reduced-motion`. Baseada no universo (Ordem Paranormal Wiki: "Membrana", "Rituais", "Símbolos Ocultistas", "Elementos do Outro Lado"), em interpretação própria:
+- **Névoa** de tom branco-frio à deriva (a névoa do Outro Lado onde a Membrana está fraca, cor do Medo).
+- **Segundo anel** do selo da tela inicial, refletido e girando ao contrário (o círculo ritual).
+- **Glifos dos cinco elementos** que se desenham e se apagam nas laterais, cada um com o jeito do elemento: Sangue com batimento duplo, Morte girando no sentido horário com o tempo distorcido (trechos parados e disparos), Conhecimento em giro lento, Energia com falhas de luz irregulares, Medo subindo e se dissolvendo.
+Os glifos usam o tom do elemento só como um traço de cor sobre o cinza-osso; a regra da paleta elemental continua valendo para qualquer conteúdo de verdade.
+
 ### Cast Flourish (momento assinatura)
 Ao conjurar um ritual (confirmar o gasto no diálogo de uso), o glifo do elemento correspondente aparece grande (até 220px) no centro da tela por ~950ms: se desenha, acende com um pop de escala e glow intenso na cor do elemento, e dissipa — com um leve véu radial da mesma cor lavando a tela por trás. Elemento `#cast-flourish`, fixo, `aria-hidden`, `pointer-events: none` — nunca bloqueia a interface, só reage ao "Confirmar uso" de um ritual (não de uma habilidade comum). Reaproveita `geometry-trace` para o traço do glifo, mesma disciplina dos Element Glyphs.
 
