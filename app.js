@@ -3987,6 +3987,24 @@ function bindSheetInteractions(character) {
     });
   });
 
+  document.querySelectorAll("[data-resource-input]").forEach((input) => {
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") input.blur();
+    });
+    input.addEventListener("change", () => {
+      const resource = input.dataset.resourceInput;
+      const currentKey = `${resource}Atual`;
+      const maxKey = `${resource}Max`;
+      character.recursos[currentKey] = clamp(
+        Math.trunc(numberOr(input.value, 0)),
+        0,
+        numberOr(character.recursos[maxKey], 0),
+      );
+      upsertCharacter(character);
+      renderSheet(character.id);
+    });
+  });
+
   document.querySelector("[data-before-so]")?.addEventListener("change", (event) => {
     if (!hasBeforeSo(character)) return;
     character.antesSoSemAliados = event.target.checked === true;
@@ -4963,7 +4981,9 @@ function liveResource(label, key, current, max) {
       <div class="resource-meter" aria-hidden="true"><span></span></div>
       <div class="live-resource-controls">
         <button type="button" data-resource-action="${key}:decrease" aria-label="Diminuir ${label}">−</button>
-        <div class="live-resource-value"><strong>${numberOr(current, 0)}</strong> / ${numberOr(max, 0)}</div>
+        <div class="live-resource-value">
+          <input type="number" inputmode="numeric" class="resource-current-input" data-resource-input="${escapeAttribute(key)}" value="${numberOr(current, 0)}" min="0" max="${numberOr(max, 0)}" aria-label="${label} atual" /> / ${numberOr(max, 0)}
+        </div>
         <button type="button" data-resource-action="${key}:increase" aria-label="Aumentar ${label}">+</button>
       </div>
     </div>

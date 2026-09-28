@@ -1232,12 +1232,37 @@ fieldset.skill-choice-block {
   text-align: center;
 }
 
-.live-resource-value strong {
-  display: inline-block;
+.resource-current-input {
+  width: 2.6ch;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   font-size: 1.3rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
-.live-resource-value.pulse strong {
+.resource-current-input::-webkit-outer-spin-button,
+.resource-current-input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.resource-current-input {
+  appearance: textfield;
+}
+
+.resource-current-input:focus {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.live-resource-value.pulse .resource-current-input {
   animation: value-pulse 420ms var(--motion) both;
 }
 
