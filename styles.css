@@ -3708,6 +3708,9 @@ body:has(dialog[open]) {
   animation: details-reveal 300ms var(--motion) both;
 }
 
+/* Card reaberto pelo redesenho da ficha (não por um clique): sem revelação. */
+.entry-card[data-kept][open] .entry-body { animation: none; }
+
 .chevron {
   transition: color 160ms ease, transform 280ms var(--motion);
 }

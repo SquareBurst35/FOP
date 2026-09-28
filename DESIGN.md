@@ -238,7 +238,8 @@ O selo de fundo da tela inicial (`archive-seal.svg`) não é mais estático: gir
 - **Do** manter superfícies quase planas e expressar estado/interatividade como brilho colorido, não como sombra empilhada.
 - **Do** opor título quieto (peso pesado, tracking negativo, sem uppercase) a rótulo gritado (uppercase, tracking largo) para toda nova hierarquia de texto.
 - **Do** renderizar toda arte pixel (ícones de item) com `image-rendering: pixelated`, nunca suavizada.
-- **Do** respeitar `prefers-reduced-motion` desligando nevoeiro/transformações de hover, como `home.css` já faz.
+- **Do** respeitar `prefers-reduced-motion` desligando nevoeiro/transformações de hover, como `home.css` já faz. O botão "Efeitos: normais / reduzidos" (`effects.js`) liga o mesmo comportamento por escolha do jogador via `data-effects="reduced"`; toda regra nova dentro de `@media (prefers-reduced-motion)` precisa do espelho em `effects.css`.
+- **Do** manter, no redesenho da ficha, o que só existe no DOM (cards abertos, rolagem das colunas, foco em botões): `sheet-ui-state.js` anota antes e devolve depois. Estado novo de interface que se perderia no `innerHTML` entra ali.
 - **Do** identificar um elemento paranormal pelo glifo original (`elementGlyph()`), nunca só por uma tarja lateral colorida.
 - **Do** revelar conteúdo novo (troca de aba, novo passo do wizard, entrada de lista) com uma pequena animação de chegada (`content-reveal`, 360-420ms, curva `--motion`) — nunca um corte seco.
 - **Do** reservar o tratamento de tela-cheia (Cast Flourish, Level-Up Ceremony) só para os momentos de fato raros e importantes (conjurar, evoluir) — nunca para ações rotineiras (salvar campo, marcar checkbox).

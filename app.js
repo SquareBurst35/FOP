@@ -1,3 +1,4 @@
+import { captureSheetUi, restoreSheetUi } from "./sheet-ui-state.js?v=1";
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=57";
 import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=64";
 import {
@@ -579,7 +580,10 @@ function renderRoute() {
     renderHome();
   }
 
-  app.focus({ preventScroll: true });
+  // Redesenho da mesma ficha devolve o foco ao botão em uso; só leva o foco
+  // ao painel quando ele ficou solto (troca de tela).
+  const focused = document.activeElement;
+  if (!focused || focused === document.body || !app.contains?.(focused)) app.focus({ preventScroll: true });
 }
 
 function renderHome() {
@@ -1537,8 +1541,9 @@ function renderSheet(id) {
 
   const meterLevels = readResourceMeters();
   const dossier = dossierState(character.id);
+  const keptUi = captureSheetUi(app, character.id, activeSheetTab);
   app.innerHTML = `
-    <section class="sheet-layout">
+    <section class="sheet-layout" data-character="${escapeAttribute(character.id)}" data-tab="${escapeAttribute(activeSheetTab)}">
       <aside class="sheet-sidebar panel">
         <div class="agent-identity${dossier ? " dossier-open" : ""}"${dossier ? ` style="--dossier-elapsed: -${dossier.elapsed}ms"` : ""}>
           <p class="eyebrow">Arquivo ativo</p>
@@ -1594,6 +1599,7 @@ function renderSheet(id) {
     ${renderPhotoEditDialog(character)}
   `;
 
+  restoreSheetUi(app, keptUi);
   const feedbackHold = sheetFeedbackHold;
   sheetFeedbackHold = 0;
   syncResourceFeedback(character, meterLevels, feedbackHold);
