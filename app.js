@@ -1569,7 +1569,10 @@ function renderSheet(id) {
     ${renderPhotoEditDialog(character)}
   `;
 
-  syncResourceFeedback(character, meterLevels);
+  const feedbackHold = sheetFeedbackHold;
+  sheetFeedbackHold = 0;
+  syncResourceFeedback(character, meterLevels, feedbackHold);
+  syncAttributeFeedback(character, feedbackHold);
   bindSheetInteractions(character);
 }
 
@@ -3924,6 +3927,7 @@ function applyLevelUp(character) {
   const saved = upsertCharacter(preview);
   levelUpState = null;
   activeSheetTab = "resumo";
+  sheetFeedbackHold = LEVEL_UP_CEREMONY_MS - 250;
   renderSheet(saved.id);
   showToast(`Evolução para o nível ${plan.toLevel} aplicada.`);
   const ceremonyLabel = isSurvivorCharacter(saved) ? `Estágio ${survivorStage(saved)}` : `Nível ${characterLevel(saved)}`;
@@ -4973,6 +4977,10 @@ const RESOURCE_KEYS = ["pv", "pe", "san", "pd", "pp"];
 const RESOURCE_FEEDBACK_MS = { damage: 520, glitch: 460, drain: 520, mend: 720 };
 const RESOURCE_BURST_GAP_MS = 600;
 let resourceWatch = { id: null, values: {}, bursts: {} };
+const LEVEL_UP_CEREMONY_MS = 2050;
+// A cerimônia de evolução cobre a tela logo após o re-render; o retorno visual
+// da ficha (recursos e atributos) espera ela sair para não tocar escondido.
+let sheetFeedbackHold = 0;
 
 function resourceFeedbackKind(key, delta) {
   if (delta > 0) return "mend";
@@ -5024,7 +5032,7 @@ function countResourceValue(card, from, to) {
   requestAnimationFrame(step);
 }
 
-function syncResourceFeedback(character, meterLevels = {}) {
+function syncResourceFeedback(character, meterLevels = {}, hold = 0) {
   const now = Date.now();
   const values = Object.fromEntries(RESOURCE_KEYS.map((key) => [key, numberOr(character.recursos?.[`${key}Atual`], 0)]));
   if (resourceWatch.id !== character.id) resourceWatch = { id: character.id, values, bursts: {} };
@@ -5035,11 +5043,18 @@ function syncResourceFeedback(character, meterLevels = {}) {
     const card = document.querySelector(`.resource-${key}`);
     const max = numberOr(character.recursos?.[`${key}Max`], 0);
     const level = max > 0 ? clamp(values[key] / max, 0, 1) : 0;
-    if (card && key in meterLevels && Math.abs(meterLevels[key] - level) > 0.001) slideResourceMeter(card, meterLevels[key]);
-    if (card && Math.abs(delta) >= 2 && key !== typed) countResourceValue(card, resourceWatch.values[key], values[key]);
+    const later = (run) => (hold ? window.setTimeout(run, hold) : run());
+    if (card && key in meterLevels && Math.abs(meterLevels[key] - level) > 0.001) {
+      const from = meterLevels[key];
+      later(() => slideResourceMeter(card, from));
+    }
+    if (card && Math.abs(delta) >= 2 && key !== typed) {
+      const from = resourceWatch.values[key];
+      later(() => countResourceValue(card, from, values[key]));
+    }
     let burst = resourceWatch.bursts[key];
     if (delta && (!burst || now - burst.last > RESOURCE_BURST_GAP_MS)) {
-      burst = resourceWatch.bursts[key] = { kind: resourceFeedbackKind(key, delta), start: now, last: now };
+      burst = resourceWatch.bursts[key] = { kind: resourceFeedbackKind(key, delta), start: now + hold, last: now };
     } else if (delta) {
       burst.last = now;
     }
@@ -5054,6 +5069,28 @@ function syncResourceFeedback(character, meterLevels = {}) {
     return max > 0 && values[key] <= max * 0.25;
   };
   setCriticalVignette(low("pv") || (!calculateDerived(character).usesDetermination && low("san")));
+}
+
+// Atributo que mudou (ajuste manual ou evolução) acende o anel uma vez; um
+// re-render durante o efeito o retoma de onde estava, como nos recursos.
+const ATTRIBUTE_FEEDBACK_MS = 1100;
+let attributeWatch = { id: null, values: {}, changes: {} };
+
+function syncAttributeFeedback(character, hold = 0) {
+  const now = Date.now();
+  const values = Object.fromEntries(Object.keys(ATTRIBUTE_LABELS).map((key) => [key, numberOr(character.atributos?.[key], 1)]));
+  if (attributeWatch.id !== character.id) attributeWatch = { id: character.id, values, changes: {} };
+  for (const key of Object.keys(ATTRIBUTE_LABELS)) {
+    const delta = values[key] - attributeWatch.values[key];
+    if (delta) attributeWatch.changes[key] = { kind: delta > 0 ? "up" : "down", start: now + hold };
+    const change = attributeWatch.changes[key];
+    if (!change || now - change.start >= ATTRIBUTE_FEEDBACK_MS) continue;
+    const node = document.querySelector(`.attribute-node.attribute-${key}`);
+    if (!node) continue;
+    node.dataset.changed = change.kind;
+    node.style?.setProperty?.("--changed-delay", `${change.start - now}ms`);
+  }
+  attributeWatch.values = values;
 }
 
 // Fica fora de #app para o pulso não reiniciar a cada re-render da ficha.
@@ -5188,7 +5225,7 @@ function playLevelUpCeremony(label, nex) {
   void levelUpCeremonyElement.offsetWidth;
   levelUpCeremonyElement.classList.add("play");
   window.clearTimeout(levelUpCeremonyTimer);
-  levelUpCeremonyTimer = window.setTimeout(() => levelUpCeremonyElement.classList.remove("play"), 2050);
+  levelUpCeremonyTimer = window.setTimeout(() => levelUpCeremonyElement.classList.remove("play"), LEVEL_UP_CEREMONY_MS);
 }
 
 // Diálogo de ajuste de foto: o quadro de exibição (photoEditState.dx/dy

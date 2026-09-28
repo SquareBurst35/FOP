@@ -3992,6 +3992,73 @@ body:has(dialog[open]) {
 .sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(9) { animation-delay: 360ms; }
 .sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(n+10) { animation-delay: 405ms; }
 
+/* Habilidades e rituais chegam em sequência ao abrir a aba. Nos rituais o
+   passo acompanha o --glyph-delay (70ms), então cada glifo acende junto do
+   seu cartão. */
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell {
+  animation: content-reveal 380ms var(--motion) both;
+}
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(2) { animation-delay: 45ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(3) { animation-delay: 90ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(4) { animation-delay: 135ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(5) { animation-delay: 180ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(6) { animation-delay: 225ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(7) { animation-delay: 270ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(8) { animation-delay: 315ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(9) { animation-delay: 360ms; }
+.sheet-tab-content.view-enter .entry-list > .entry-card-shell:nth-child(n+10) { animation-delay: 405ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(2) { animation-delay: 70ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(3) { animation-delay: 140ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(4) { animation-delay: 210ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(5) { animation-delay: 280ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(6) { animation-delay: 350ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(7) { animation-delay: 420ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(8) { animation-delay: 490ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(9) { animation-delay: 560ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(10) { animation-delay: 630ms; }
+.sheet-tab-content.view-enter .ritual-selected-list > .entry-card-shell:nth-child(n+11) { animation-delay: 700ms; }
+
+/* Atributo alterado: o anel acende e uma onda sai do círculo interno, uma
+   vez. Queda de valor usa cinza em vez de vermelho. */
+.attribute-node[data-changed] {
+  --changed-glow: rgba(217, 35, 50, 0.5);
+  --changed-edge: rgba(255, 90, 100, 0.9);
+}
+
+.attribute-node[data-changed="down"] {
+  --changed-glow: rgba(174, 180, 183, 0.35);
+  --changed-edge: rgba(214, 218, 221, 0.8);
+}
+
+.attribute-node[data-changed] .attribute-ring {
+  animation: attribute-flare 1100ms var(--motion) var(--changed-delay, 0ms) both;
+}
+
+.attribute-node[data-changed] .attribute-ring::after {
+  animation: attribute-shock 900ms ease-out var(--changed-delay, 0ms) backwards;
+}
+
+.attribute-node[data-changed] .attribute-number {
+  animation: attribute-number-pop 700ms var(--motion) var(--changed-delay, 0ms) both;
+}
+
+@keyframes attribute-flare {
+  28% {
+    border-color: #fff;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06), 0 0 0 8px var(--changed-glow), inset 0 0 30px var(--changed-glow), 0 0 34px var(--changed-glow);
+  }
+}
+
+@keyframes attribute-shock {
+  from { inset: 8px; opacity: 1; border-color: var(--changed-edge); }
+  to { inset: -26px; opacity: 0; border-color: var(--changed-edge); }
+}
+
+@keyframes attribute-number-pop {
+  0%, 100% { transform: scale(1); text-shadow: none; }
+  30% { transform: scale(1.25); text-shadow: 0 0 16px var(--changed-glow); }
+}
+
 /* PV ou SAN em um quarto ou menos: vinheta fraca com batimento lento. */
 .critical-vignette {
   position: fixed;
