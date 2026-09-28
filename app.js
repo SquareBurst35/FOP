@@ -201,6 +201,7 @@ let editingCustomItemId = null;
 let levelUpState = null;
 let abilityChoiceState = null;
 let spendState = null;
+let photoEditState = null;
 let lastViewKey = "";
 let viewEnterTimer;
 let sheetTabDirection = "";
@@ -1568,6 +1569,7 @@ function renderSheet(id) {
     ${renderLevelUpDialog(character)}
     ${renderAbilityChoiceDialog(character)}
     ${renderSpendDialog(character)}
+    ${renderPhotoEditDialog(character)}
   `;
 
   bindSheetInteractions(character);
@@ -4013,10 +4015,7 @@ function bindSheetInteractions(character) {
     if (!file) return;
     if (!file.type.startsWith("image/")) return showToast("Escolha um arquivo de imagem.");
     try {
-      character.foto = await resizeImageToDataUrl(file);
-      upsertCharacter(character);
-      renderSheet(character.id);
-      showToast("Foto atualizada.");
+      await openPhotoEditor(character, file);
     } catch {
       showToast("Não foi possível carregar essa imagem.");
     }
@@ -4073,6 +4072,7 @@ function bindSheetInteractions(character) {
   bindLevelUpDialog(character);
   bindAbilityChoiceDialog(character);
   bindSpendDialog(character);
+  bindPhotoEditDialog(character);
 }
 
 function bindAbilityDialog(character) {
@@ -5075,11 +5075,26 @@ function playLevelUpCeremony(label, nex) {
   levelUpCeremonyTimer = window.setTimeout(() => levelUpCeremonyElement.classList.remove("play"), 2050);
 }
 
-// Recorta ao quadrado central e redimensiona antes de guardar: a foto vai
-// direto pro localStorage (e pro Firestore, se sincronizar) como data URL
-// dentro do personagem, então precisa ficar pequena (~poucos KB) mesmo que
-// o arquivo original seja uma foto de câmera de vários MB.
-function resizeImageToDataUrl(file, maxSize = 240, quality = 0.85) {
+// Diálogo de ajuste de foto: o quadro de exibição (photoEditState.dx/dy
+// vivem nesse espaço, em px CSS) é menor que o recorte final gravado
+// (PHOTO_OUTPUT_SIZE), que sai comprimido pra caber numa data URL pequena —
+// a foto vai direto pro localStorage (e pro Firestore, se sincronizar)
+// dentro do próprio personagem, sem upload pra servidor nenhum.
+const PHOTO_FRAME_SIZE = 220;
+const PHOTO_OUTPUT_SIZE = 240;
+
+function photoDisplaySize(state) {
+  const scale = (PHOTO_FRAME_SIZE / Math.min(state.naturalWidth, state.naturalHeight)) * state.zoom;
+  return { width: state.naturalWidth * scale, height: state.naturalHeight * scale, scale };
+}
+
+function clampPhotoOffset(state) {
+  const { width, height } = photoDisplaySize(state);
+  state.dx = clamp(state.dx, PHOTO_FRAME_SIZE - width, 0);
+  state.dy = clamp(state.dy, PHOTO_FRAME_SIZE - height, 0);
+}
+
+function openPhotoEditor(character, file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(reader.error);
@@ -5087,26 +5102,141 @@ function resizeImageToDataUrl(file, maxSize = 240, quality = 0.85) {
       const img = new Image();
       img.onerror = () => reject(new Error("invalid image"));
       img.onload = () => {
-        const side = Math.min(img.width, img.height);
-        const canvas = document.createElement("canvas");
-        canvas.width = maxSize;
-        canvas.height = maxSize;
-        canvas.getContext("2d").drawImage(
-          img,
-          (img.width - side) / 2,
-          (img.height - side) / 2,
-          side,
-          side,
-          0,
-          0,
-          maxSize,
-          maxSize,
-        );
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        photoEditState = {
+          characterId: character.id,
+          src: reader.result,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight,
+          zoom: 1,
+          dx: 0,
+          dy: 0,
+        };
+        const { width, height } = photoDisplaySize(photoEditState);
+        photoEditState.dx = (PHOTO_FRAME_SIZE - width) / 2;
+        photoEditState.dy = (PHOTO_FRAME_SIZE - height) / 2;
+        renderSheet(character.id);
+        document.querySelector("#photo-edit-dialog")?.showModal();
+        resolve();
       };
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoEditDialog(character) {
+  if (!photoEditState || photoEditState.characterId !== character.id) {
+    return `<dialog class="picker-dialog photo-edit-dialog" id="photo-edit-dialog"></dialog>`;
+  }
+  const { width, height } = photoDisplaySize(photoEditState);
+  return `
+    <dialog class="picker-dialog photo-edit-dialog" id="photo-edit-dialog" aria-labelledby="photo-edit-dialog-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Foto do agente</p><h2 id="photo-edit-dialog-title">Ajustar posição</h2></div>
+        <button class="dialog-close" id="close-photo-edit-dialog" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="photo-edit-body">
+        <div class="photo-edit-frame" id="photo-edit-frame">
+          <img id="photo-edit-image" src="${photoEditState.src}" draggable="false" alt="" style="width:${width}px;height:${height}px;transform:translate(${photoEditState.dx}px, ${photoEditState.dy}px)" />
+        </div>
+        <label class="photo-edit-zoom">
+          <span>Distância</span>
+          <input type="range" id="photo-edit-zoom-input" min="1" max="3" step="0.01" value="${photoEditState.zoom}" />
+        </label>
+        <p class="field-help">Arraste a imagem pra reposicionar.</p>
+      </div>
+      <div class="choice-dialog-footer">
+        <button class="button ghost" id="cancel-photo-edit" type="button">Cancelar</button>
+        <span></span>
+        <button class="button primary" id="confirm-photo-edit" type="button">Salvar foto</button>
+      </div>
+    </dialog>
+  `;
+}
+
+function applyPhotoTransform() {
+  const img = document.querySelector("#photo-edit-image");
+  if (!img || !photoEditState) return;
+  const { width, height } = photoDisplaySize(photoEditState);
+  img.style.width = `${width}px`;
+  img.style.height = `${height}px`;
+  img.style.transform = `translate(${photoEditState.dx}px, ${photoEditState.dy}px)`;
+}
+
+function bindPhotoEditDialog(character) {
+  const dialog = document.querySelector("#photo-edit-dialog");
+  const close = () => {
+    photoEditState = null;
+    renderSheet(character.id);
+  };
+  document.querySelector("#close-photo-edit-dialog")?.addEventListener("click", close);
+  document.querySelector("#cancel-photo-edit")?.addEventListener("click", close);
+  closeDialogOnBackdrop(dialog);
+  if (!photoEditState || photoEditState.characterId !== character.id) return;
+
+  const frame = document.querySelector("#photo-edit-frame");
+  let dragging = false;
+  let startX = 0;
+  let startY = 0;
+  let startDx = 0;
+  let startDy = 0;
+  frame?.addEventListener("pointerdown", (event) => {
+    dragging = true;
+    startX = event.clientX;
+    startY = event.clientY;
+    startDx = photoEditState.dx;
+    startDy = photoEditState.dy;
+    frame.setPointerCapture(event.pointerId);
+  });
+  frame?.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    photoEditState.dx = startDx + (event.clientX - startX);
+    photoEditState.dy = startDy + (event.clientY - startY);
+    clampPhotoOffset(photoEditState);
+    applyPhotoTransform();
+  });
+  const stopDrag = () => { dragging = false; };
+  frame?.addEventListener("pointerup", stopDrag);
+  frame?.addEventListener("pointercancel", stopDrag);
+  frame?.addEventListener("pointerleave", stopDrag);
+
+  document.querySelector("#photo-edit-zoom-input")?.addEventListener("input", (event) => {
+    const state = photoEditState;
+    const before = photoDisplaySize(state);
+    const fracX = (PHOTO_FRAME_SIZE / 2 - state.dx) / before.width;
+    const fracY = (PHOTO_FRAME_SIZE / 2 - state.dy) / before.height;
+    state.zoom = clamp(numberOr(event.target.value, 1), 1, 3);
+    const after = photoDisplaySize(state);
+    state.dx = PHOTO_FRAME_SIZE / 2 - fracX * after.width;
+    state.dy = PHOTO_FRAME_SIZE / 2 - fracY * after.height;
+    clampPhotoOffset(state);
+    applyPhotoTransform();
+  });
+
+  document.querySelector("#confirm-photo-edit")?.addEventListener("click", () => {
+    const state = photoEditState;
+    const img = document.querySelector("#photo-edit-image");
+    if (!state || !img) return;
+    const { scale } = photoDisplaySize(state);
+    const canvas = document.createElement("canvas");
+    canvas.width = PHOTO_OUTPUT_SIZE;
+    canvas.height = PHOTO_OUTPUT_SIZE;
+    canvas.getContext("2d").drawImage(
+      img,
+      -state.dx / scale,
+      -state.dy / scale,
+      PHOTO_FRAME_SIZE / scale,
+      PHOTO_FRAME_SIZE / scale,
+      0,
+      0,
+      PHOTO_OUTPUT_SIZE,
+      PHOTO_OUTPUT_SIZE,
+    );
+    character.foto = canvas.toDataURL("image/jpeg", 0.85);
+    photoEditState = null;
+    upsertCharacter(character);
+    renderSheet(character.id);
+    showToast("Foto atualizada.");
   });
 }
 

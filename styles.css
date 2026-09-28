@@ -4670,6 +4670,55 @@ body:has(dialog[open]) {
 .custom-item-form .dialog-actions { display:flex; justify-content:flex-end; gap:10px; padding-top:14px; margin-top:6px; border-top:1px solid var(--border); }
 @media(max-width:480px) { .spend-presets { grid-template-columns:1fr; } .creator-appearance-preview { grid-column:1/-1; } }
 
+.photo-edit-dialog {
+  width: min(360px, calc(100vw - 24px));
+  height: auto;
+}
+
+.photo-edit-body {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  overflow: auto;
+}
+
+.photo-edit-frame {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: #0b0d0f;
+  cursor: grab;
+  touch-action: none;
+}
+
+.photo-edit-frame:active {
+  cursor: grabbing;
+}
+
+.photo-edit-frame img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.photo-edit-zoom {
+  display: grid;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.photo-edit-zoom input[type="range"] {
+  width: 100%;
+}
+
 /* --- Ameaças (fichas de mestre) -------------------------------------- */
 
 .topbar-nav-group {
