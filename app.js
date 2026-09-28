@@ -548,7 +548,10 @@ function currentRoute() {
 function renderRoute() {
   const route = currentRoute();
   headerActions.innerHTML = "";
-  if (route.page !== "ficha") setCriticalVignette(false);
+  if (route.page !== "ficha") {
+    setCriticalVignette(false);
+    dossierOpening = null;
+  }
   // A ficha usa a tela inteira (colunas fixas + rolagem interna); as demais
   // telas continuam com a largura central de leitura.
   if (route.page === "ficha" && route.id) {
@@ -1533,10 +1536,11 @@ function renderSheet(id) {
   `;
 
   const meterLevels = readResourceMeters();
+  const dossier = dossierState(character.id);
   app.innerHTML = `
     <section class="sheet-layout">
       <aside class="sheet-sidebar panel">
-        <div class="agent-identity">
+        <div class="agent-identity${dossier ? " dossier-open" : ""}"${dossier ? ` style="--dossier-elapsed: -${dossier.elapsed}ms"` : ""}>
           <p class="eyebrow">Arquivo ativo</p>
           <h1>${escapeHtml(character.nome || "Agente sem nome")}</h1>
           <p class="muted">${escapeHtml(character.jogador || "Jogador não informado")}</p>
@@ -4989,6 +4993,19 @@ function renderTrainedSkills(character) {
       </div>
     </div>
   `;
+}
+
+// Ao abrir uma ficha (não a cada redesenho) o bloco de identidade toca a
+// abertura do dossiê: tarjas que se levantam e uma leitura de scanner. O
+// tempo decorrido volta como atraso negativo, então um redesenho no meio dela
+// continua de onde estava em vez de recomeçar ou cortar.
+const DOSSIER_OPEN_MS = 1500;
+let dossierOpening = null;
+
+function dossierState(id) {
+  if (dossierOpening?.id !== id) dossierOpening = { id, start: Date.now() };
+  const elapsed = Date.now() - dossierOpening.start;
+  return elapsed < DOSSIER_OPEN_MS ? { elapsed } : null;
 }
 
 // Mudanças de PV/PE/SAN/PD/PP ganham uma animação por rajada: clicar várias
