@@ -5424,6 +5424,19 @@ function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
 }
 
+// Animações em loop (órbita do anel dos atributos, respiração dos selos)
+// recomeçam do zero sempre que a tela é redesenhada, e mexer em PV/PD redesenha
+// a ficha. Ancorar as recém-criadas na linha do tempo da página mantém a fase
+// de antes, então o anel segue girando de onde estava. Só as pendentes são
+// tocadas; as que já rodam não pulam.
+function keepLoopsInPhase() {
+  if (typeof document.getAnimations !== "function") return;
+  for (const animation of document.getAnimations()) {
+    if (animation.pending && animation.effect?.getComputedTiming().iterations === Infinity) animation.startTime = 0;
+  }
+}
+if (typeof MutationObserver === "function") new MutationObserver(keepLoopsInPhase).observe(app, { childList: true, subtree: true });
+
 if (!window.location.hash) window.location.hash = "#home";
 else renderRoute();
 
