@@ -112,22 +112,160 @@ function revealInventoryCard(card) {
   card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
 }
 
+// A native <select>'s open option list is styled by the OS, not by us (it shows up
+// blue with a plain scrollbar on Windows/Chrome no matter what CSS we write here), so
+// the paperdoll slots use this button+listbox combobox instead to stay on-theme.
+function createStyledSelect(id) {
+  const root = document.createElement("div");
+  root.className = "styled-select";
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.id = id;
+  trigger.className = "styled-select-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  const valueLabel = document.createElement("span");
+  trigger.append(valueLabel);
+  const list = document.createElement("ul");
+  list.id = `${id}-list`;
+  list.className = "styled-select-list";
+  list.setAttribute("role", "listbox");
+  list.hidden = true;
+  trigger.setAttribute("aria-controls", list.id);
+  root.append(trigger, list);
+
+  const state = { options: [{ value: "", label: "Vazio", disabled: false }], value: "", disabled: false, activeIndex: -1 };
+  const changeListeners = [];
+  const optionEls = () => [...list.children];
+
+  function renderTrigger() {
+    const current = state.options.find((option) => option.value === state.value);
+    valueLabel.textContent = current ? current.label : "Vazio";
+    trigger.title = current ? current.label : "Vazio";
+    trigger.disabled = state.disabled;
+  }
+
+  function renderOptions() {
+    list.replaceChildren(...state.options.map((option, index) => {
+      const item = document.createElement("li");
+      item.id = `${id}-option-${index}`;
+      item.className = "styled-select-option";
+      item.setAttribute("role", "option");
+      item.textContent = option.label;
+      item.setAttribute("aria-selected", String(option.value === state.value));
+      if (option.disabled) item.setAttribute("aria-disabled", "true");
+      item.addEventListener("click", () => {
+        if (option.disabled) return;
+        setValue(option.value, true);
+        close();
+        trigger.focus();
+      });
+      return item;
+    }));
+  }
+
+  function setValue(value, fire) {
+    state.value = value;
+    renderTrigger();
+    renderOptions();
+    if (fire) for (const listener of changeListeners) listener();
+  }
+
+  function setActive(index) {
+    for (const el of optionEls()) el.classList.remove("is-active");
+    state.activeIndex = index;
+    const el = optionEls()[index];
+    if (el) {
+      el.classList.add("is-active");
+      el.scrollIntoView({ block: "nearest" });
+      trigger.setAttribute("aria-activedescendant", el.id);
+    } else {
+      trigger.removeAttribute("aria-activedescendant");
+    }
+  }
+
+  function moveActive(delta) {
+    if (!state.options.length) return;
+    let index = state.activeIndex;
+    for (let step = 0; step < state.options.length; step++) {
+      index = (index + delta + state.options.length) % state.options.length;
+      if (!state.options[index].disabled) break;
+    }
+    setActive(index);
+  }
+
+  function onOutsideClick(event) {
+    if (!root.contains(event.target)) close();
+  }
+
+  function open() {
+    if (state.disabled || state.options.length <= 1 || !list.hidden) return;
+    list.hidden = false;
+    root.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+    const currentIndex = state.options.findIndex((option) => option.value === state.value && !option.disabled);
+    setActive(Math.max(0, currentIndex));
+    document.addEventListener("pointerdown", onOutsideClick, true);
+  }
+
+  function close() {
+    if (list.hidden) return;
+    list.hidden = true;
+    root.classList.remove("open");
+    trigger.setAttribute("aria-expanded", "false");
+    setActive(-1);
+    document.removeEventListener("pointerdown", onOutsideClick, true);
+  }
+
+  trigger.addEventListener("click", () => (list.hidden ? open() : close()));
+  trigger.addEventListener("keydown", (event) => {
+    if (list.hidden) {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
+        event.preventDefault();
+        open();
+      }
+      return;
+    }
+    if (event.key === "Escape") { event.preventDefault(); close(); trigger.focus(); }
+    else if (event.key === "ArrowDown") { event.preventDefault(); moveActive(1); }
+    else if (event.key === "ArrowUp") { event.preventDefault(); moveActive(-1); }
+    else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      const option = state.options[state.activeIndex];
+      if (option && !option.disabled) { setValue(option.value, true); close(); trigger.focus(); }
+    }
+  });
+
+  renderTrigger();
+  renderOptions();
+
+  return {
+    root,
+    id,
+    get value() { return state.value; },
+    set value(value) { setValue(value, false); },
+    get disabled() { return state.disabled; },
+    set disabled(value) { state.disabled = value; renderTrigger(); },
+    set title(value) { trigger.title = value; },
+    get options() { return state.options; },
+    set options(next) { state.options = next; renderTrigger(); renderOptions(); },
+    refreshOptions: renderOptions,
+    addEventListener(type, listener) { if (type === "change") changeListeners.push(listener); },
+  };
+}
+
 function makeEquipmentSlot(definition, entries, controls, changeSelection) {
   const element = document.createElement("div");
   element.className = `paperdoll-slot slot-${definition.id}`;
   const mark = makeText("span", "paperdoll-slot-mark", definition.mark);
   mark.setAttribute("aria-hidden", "true");
   const label = makeText("label", "", definition.label);
-  const select = document.createElement("select");
-  select.id = `paperdoll-select-${definition.id}`;
+  const select = createStyledSelect(`paperdoll-select-${definition.id}`);
   label.htmlFor = select.id;
-  select.append(makeText("option", "", "Vazio"));
-  select.options[0].value = "";
-  for (const entry of candidatesFor(definition.id, entries)) {
-    const option = makeText("option", "", entry.name);
-    option.value = entry.id;
-    select.append(option);
-  }
+  select.options = [
+    { value: "", label: "Vazio", disabled: false },
+    ...candidatesFor(definition.id, entries).map((entry) => ({ value: entry.id, label: entry.name, disabled: false })),
+  ];
   select.disabled = select.options.length === 1;
   select.addEventListener("change", () => changeSelection(definition.id, select.value));
   const details = makeText("button", "paperdoll-details", "Ver item");
@@ -137,7 +275,7 @@ function makeEquipmentSlot(definition, entries, controls, changeSelection) {
     if (selected) revealInventoryCard(selected.card);
   });
   controls.set(definition.id, { element, select, details, mark, definition });
-  element.append(mark, label, select, details);
+  element.append(mark, label, select.root, details);
   return element;
 }
 
@@ -225,6 +363,7 @@ function enhanceInventory() {
         const usedElsewhere = Object.entries(equipped).filter(([other, item]) => other !== slot && item?.id === option.value).length;
         option.disabled = Boolean(candidate && usedElsewhere >= candidate.quantity);
       }
+      control.select.refreshOptions();
     }
     const visibleStates = paperdollVisibleStates(placements);
     const visibleIds = new Set(visibleStates.map(state => `${state.slot}:${state.id}`));
