@@ -1511,6 +1511,7 @@ function renderSheet(id) {
     <button class="button primary compact" id="start-level-up" type="button" ${atLevelCap ? "disabled" : ""}>${atLevelCap ? (isSurvivorCharacter(character) ? "Estágio máximo" : "Nível máximo") : (isSurvivorCharacter(character) ? "↑ Avançar estágio" : "↑ Subir nível")}</button>
   `;
 
+  const meterLevels = readResourceMeters();
   app.innerHTML = `
     <section class="sheet-layout">
       <aside class="sheet-sidebar panel">
@@ -1568,7 +1569,7 @@ function renderSheet(id) {
     ${renderPhotoEditDialog(character)}
   `;
 
-  syncResourceFeedback(character);
+  syncResourceFeedback(character, meterLevels);
   bindSheetInteractions(character);
 }
 
@@ -3996,6 +3997,7 @@ function bindSheetInteractions(character) {
         0,
         numberOr(character.recursos[maxKey], 0),
       );
+      resourceWatch.typed = resource;
       upsertCharacter(character);
       renderSheet(character.id);
     });
@@ -4979,12 +4981,62 @@ function resourceFeedbackKind(key, delta) {
   return "drain";
 }
 
-function syncResourceFeedback(character) {
+// Posição visual das barras antes do re-render: se uma estava deslizando, a
+// nova continua do mesmo ponto em vez de pular para o valor final.
+function readResourceMeters() {
+  const levels = {};
+  if (typeof getComputedStyle !== "function") return levels;
+  for (const key of RESOURCE_KEYS) {
+    const bar = document.querySelector(`.resource-${key} .resource-meter span`);
+    const match = bar && getComputedStyle(bar).transform.match(/^matrix\(([-\d.e]+)/);
+    if (match) levels[key] = Number(match[1]);
+  }
+  return levels;
+}
+
+function slideResourceMeter(card, from) {
+  const bar = card.querySelector?.(".resource-meter span");
+  if (!bar?.style || typeof getComputedStyle !== "function") return;
+  bar.style.transition = "none";
+  bar.style.transform = `scaleX(${from})`;
+  getComputedStyle(bar).transform;
+  bar.style.transition = "";
+  bar.style.transform = "";
+}
+
+// Mudanças grandes de uma vez (gasto de ritual, descanso, desfazer) rolam o
+// número até o valor novo; valor digitado pelo jogador aparece direto.
+function countResourceValue(card, from, to) {
+  const input = card.querySelector?.(".resource-current-input");
+  if (!input || typeof requestAnimationFrame !== "function") return;
+  const start = performance.now();
+  const step = (time) => {
+    if (!input.isConnected) return;
+    if (document.activeElement === input) {
+      input.value = String(to);
+      return;
+    }
+    const t = Math.min(1, (time - start) / 460);
+    input.value = String(Math.round(from + (to - from) * (1 - (1 - t) ** 3)));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  input.value = String(from);
+  requestAnimationFrame(step);
+}
+
+function syncResourceFeedback(character, meterLevels = {}) {
   const now = Date.now();
   const values = Object.fromEntries(RESOURCE_KEYS.map((key) => [key, numberOr(character.recursos?.[`${key}Atual`], 0)]));
   if (resourceWatch.id !== character.id) resourceWatch = { id: character.id, values, bursts: {} };
+  const typed = resourceWatch.typed;
+  resourceWatch.typed = null;
   for (const key of RESOURCE_KEYS) {
     const delta = values[key] - resourceWatch.values[key];
+    const card = document.querySelector(`.resource-${key}`);
+    const max = numberOr(character.recursos?.[`${key}Max`], 0);
+    const level = max > 0 ? clamp(values[key] / max, 0, 1) : 0;
+    if (card && key in meterLevels && Math.abs(meterLevels[key] - level) > 0.001) slideResourceMeter(card, meterLevels[key]);
+    if (card && Math.abs(delta) >= 2 && key !== typed) countResourceValue(card, resourceWatch.values[key], values[key]);
     let burst = resourceWatch.bursts[key];
     if (delta && (!burst || now - burst.last > RESOURCE_BURST_GAP_MS)) {
       burst = resourceWatch.bursts[key] = { kind: resourceFeedbackKind(key, delta), start: now, last: now };
@@ -4992,7 +5044,6 @@ function syncResourceFeedback(character) {
       burst.last = now;
     }
     if (!burst || now - burst.start >= RESOURCE_FEEDBACK_MS[burst.kind]) continue;
-    const card = document.querySelector(`.resource-${key}`);
     if (!card) continue;
     card.dataset.feedback = burst.kind;
     card.style?.setProperty?.("--feedback-delay", `${burst.start - now}ms`);

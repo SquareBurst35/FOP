@@ -3977,6 +3977,21 @@ body:has(dialog[open]) {
   100% { opacity: 0; transform: translateY(-100%); }
 }
 
+/* Itens do inventário chegam em sequência só ao abrir a aba (view-enter);
+   mudar quantidade redesenha a lista sem repetir a entrada. */
+.sheet-tab-content.view-enter .inventory-list > .item-card {
+  animation: content-reveal 380ms var(--motion) both;
+}
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(2) { animation-delay: 45ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(3) { animation-delay: 90ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(4) { animation-delay: 135ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(5) { animation-delay: 180ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(6) { animation-delay: 225ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(7) { animation-delay: 270ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(8) { animation-delay: 315ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(9) { animation-delay: 360ms; }
+.sheet-tab-content.view-enter .inventory-list > .item-card:nth-child(n+10) { animation-delay: 405ms; }
+
 /* PV ou SAN em um quarto ou menos: vinheta fraca com batimento lento. */
 .critical-vignette {
   position: fixed;
