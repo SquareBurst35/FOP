@@ -527,6 +527,7 @@ function currentRoute() {
 function renderRoute() {
   const route = currentRoute();
   headerActions.innerHTML = "";
+  if (route.page !== "ficha") setCriticalVignette(false);
   // A ficha usa a tela inteira (colunas fixas + rolagem interna); as demais
   // telas continuam com a largura central de leitura.
   if (route.page === "ficha" && route.id) {
@@ -1567,6 +1568,7 @@ function renderSheet(id) {
     ${renderPhotoEditDialog(character)}
   `;
 
+  syncResourceFeedback(character);
   bindSheetInteractions(character);
 }
 
@@ -3978,7 +3980,6 @@ function bindSheetInteractions(character) {
       );
       upsertCharacter(character);
       renderSheet(character.id);
-      document.querySelector(`.resource-${resource} .live-resource-value`)?.classList.add("pulse");
     });
   });
 
@@ -4961,6 +4962,55 @@ function renderTrainedSkills(character) {
       </div>
     </div>
   `;
+}
+
+// Mudanças de PV/PE/SAN/PD/PP ganham uma animação por rajada: clicar várias
+// vezes no +/- não a repete, e como cada clique redesenha a ficha, a animação
+// em andamento é reaplicada com atraso negativo para continuar de onde estava.
+const RESOURCE_KEYS = ["pv", "pe", "san", "pd", "pp"];
+const RESOURCE_FEEDBACK_MS = { damage: 520, glitch: 460, drain: 520, mend: 720 };
+const RESOURCE_BURST_GAP_MS = 600;
+let resourceWatch = { id: null, values: {}, bursts: {} };
+
+function resourceFeedbackKind(key, delta) {
+  if (delta > 0) return "mend";
+  if (key === "pv") return "damage";
+  if (key === "san") return "glitch";
+  return "drain";
+}
+
+function syncResourceFeedback(character) {
+  const now = Date.now();
+  const values = Object.fromEntries(RESOURCE_KEYS.map((key) => [key, numberOr(character.recursos?.[`${key}Atual`], 0)]));
+  if (resourceWatch.id !== character.id) resourceWatch = { id: character.id, values, bursts: {} };
+  for (const key of RESOURCE_KEYS) {
+    const delta = values[key] - resourceWatch.values[key];
+    let burst = resourceWatch.bursts[key];
+    if (delta && (!burst || now - burst.last > RESOURCE_BURST_GAP_MS)) {
+      burst = resourceWatch.bursts[key] = { kind: resourceFeedbackKind(key, delta), start: now, last: now };
+    } else if (delta) {
+      burst.last = now;
+    }
+    if (!burst || now - burst.start >= RESOURCE_FEEDBACK_MS[burst.kind]) continue;
+    const card = document.querySelector(`.resource-${key}`);
+    if (!card) continue;
+    card.dataset.feedback = burst.kind;
+    card.style?.setProperty?.("--feedback-delay", `${burst.start - now}ms`);
+  }
+  resourceWatch.values = values;
+  const low = (key) => {
+    const max = numberOr(character.recursos?.[`${key}Max`], 0);
+    return max > 0 && values[key] <= max * 0.25;
+  };
+  setCriticalVignette(low("pv") || (!calculateDerived(character).usesDetermination && low("san")));
+}
+
+// Fica fora de #app para o pulso não reiniciar a cada re-render da ficha.
+function setCriticalVignette(active) {
+  const vignette = document.querySelector("#critical-vignette");
+  if (!vignette) return;
+  if (active) vignette.classList.add("active");
+  else vignette.classList.remove("active");
 }
 
 function liveResource(label, key, current, max) {
