@@ -5224,6 +5224,7 @@ function playCastFlourish(element) {
     medo: "var(--fear)",
   }[slug];
   castFlourishElement.style.setProperty("--cast-color", glowVar);
+  castFlourishElement.dataset.element = slug;
   castFlourishElement.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
   castFlourishElement.classList.remove("play");
   void castFlourishElement.offsetWidth;
