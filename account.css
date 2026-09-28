@@ -3,7 +3,7 @@
 .account-controls { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; max-width:440px; }
 .account-controls [hidden] { display:none; }
 .account-name { font-size:.78rem; color:var(--text); overflow-wrap:anywhere; }
-.account-status { font-size:.73rem; color:var(--muted); }
+.account-status { min-width:17ch; text-align:right; font-size:.73rem; color:var(--muted); transition:color 400ms ease; }
 .account-controls[data-state="error"] .account-status { color:var(--warning); }
 .account-controls[data-state="synced"] .account-status { color:var(--green); }
 @media(max-width:600px) { .header-account-area { max-width:64%; } .account-controls { gap:5px; } .account-status { width:100%; text-align:right; } }

@@ -2,6 +2,7 @@ import { firebaseConfigured } from './firebase-config.js?v=25';
 import { createFirebaseClient } from './firebase-client.js?v=25';
 import { CharacterStore, GUEST_KEY, accountKey } from './character-sync.js?v=25';
 import { SyncController } from './sync-controller.js?v=25';
+import { createStatusPresenter } from './status-presenter.js?v=1';
 
 const panel = document.querySelector('#account-controls');
 const store = new CharacterStore(localStorage);
@@ -18,14 +19,18 @@ retry.className = 'button ghost compact'; retry.type = 'button'; retry.textConte
 panel.append(name, status, login, logout, retry);
 const busy = () => Boolean(window.fopSyncBusy?.());
 const notify = type => window.dispatchEvent(new Event(type));
+const messages = {
+  local: 'Salvo neste dispositivo', loading: 'Carregando fichas da conta…',
+  syncing: 'Sincronizando…',
+  synced: 'Fichas sincronizadas', offline: 'Sem conexão · alterações salvas neste dispositivo',
+  conflict: 'Versões diferentes foram preservadas em fichas separadas.',
+};
+const present = createStatusPresenter(show);
 function message(state, error) {
-  const messages = {
-    local: 'Salvo neste dispositivo', loading: 'Carregando fichas da conta…',
-    syncing: 'Sincronizando…', pending: 'Alterações salvas neste dispositivo · aguardando envio',
-    synced: 'Fichas sincronizadas', offline: 'Sem conexão · alterações salvas neste dispositivo',
-    conflict: 'Versões diferentes foram preservadas em fichas separadas.',
-  };
   if (state === 'conflict') { window.fopSyncNotice?.(messages.conflict); return; }
+  present(state, error);
+}
+function show(state, error) {
   const errors = {
     'auth/popup-blocked': 'Permita o pop-up do Google e tente novamente.',
     'auth/popup-closed-by-user': 'Login cancelado. As fichas locais continuam salvas.',
@@ -35,8 +40,11 @@ function message(state, error) {
     'permission-denied': 'Acesso ao Firestore negado. Verifique a configuração das regras.',
     'unavailable': 'Sem conexão com a nuvem. A cópia local foi mantida.',
   };
-  status.textContent = state === 'error' ? (errors[error?.code] || 'Não foi possível sincronizar. As fichas locais foram mantidas.') : messages[state] || '';
-  panel.dataset.state = state;
+  const text = state === 'error' ? (errors[error?.code] || 'Não foi possível sincronizar. As fichas locais foram mantidas.') : messages[state] || '';
+  // Rewriting identical text still re-announces the live region and repaints.
+  if (status.textContent !== text) status.textContent = text;
+  if (panel.dataset.state !== state) panel.dataset.state = state;
+  status.title = state === 'syncing' ? 'As alterações já estão salvas neste dispositivo e estão sendo enviadas para a conta.' : '';
   retry.hidden = state !== 'error';
 }
 window.fopPersistence = {
