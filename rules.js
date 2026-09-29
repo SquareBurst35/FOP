@@ -314,11 +314,20 @@ const ABILITY_SKILL_BONUSES = [
   ["vitalidade-reforcada", "Fortitude", 2],
   ["adaptacao-climatica", "Fortitude", 2],
   ["muito-sorrateiro", "Furtividade", 3],
+  // Ocultista já é treinado em Ocultismo por classe, então o livro dá um
+  // +2 direto em vez do "torna-se treinado ou +2" das outras duas classes.
+  ["ser-escarificado", "Ocultismo", 2],
 ];
 
 // Mesma ideia, mas concedidos por uma origem em vez de uma habilidade.
 const ORIGIN_SKILL_BONUSES = [
   ["Luta ou Fuga", "Vontade", 2],
+];
+
+// Bônus que só valem com Afinidade no elemento do poder (livro base p.116:
+// Sangue de Ferro dá +2 PV/NEX sempre, e mais +5 Fortitude com Afinidade).
+const AFFINITY_SKILL_BONUSES = [
+  ["sangue-de-ferro", "Sangue", "Fortitude", 5],
 ];
 
 export function abilitySkillBonus(character, skill) {
@@ -330,7 +339,13 @@ export function abilitySkillBonus(character, skill) {
     (sum, [powerName, targetSkill, bonus]) => sum + (targetSkill === skill && hasOriginPower(character, powerName) ? bonus : 0),
     0,
   );
-  return fromAbilities + fromOrigin;
+  const fromAffinity = AFFINITY_SKILL_BONUSES.reduce(
+    (sum, [slug, element, targetSkill, bonus]) => sum + (
+      targetSkill === skill && character?.afinidadeElemental === element && hasSelectedPower(character, slug) ? bonus : 0
+    ),
+    0,
+  );
+  return fromAbilities + fromOrigin + fromAffinity;
 }
 
 export function equippedProtections(character) {
@@ -482,6 +497,16 @@ export function calculateDerived(character) {
   const willEffortBonus = hasSelectedPower(character, "vontade-inabalavel")
     ? (isSurvivorCharacter(character) ? 0 : Math.floor(Math.max(0, level) / 2))
     : 0;
+  // Combatente Esforçado (poder de classe): +1 PE máximo por nível de NEX,
+  // mesmo cálculo do Sangue de Ferro acima, só que para PE em vez de PV.
+  const combatenteEsforcadoBonus = hasSelectedPower(character, "combatente-esforcado")
+    ? (isSurvivorCharacter(character) ? 0 : Math.max(0, level))
+    : 0;
+  // Potencial Aprimorado (paranormal de Morte, livro base p.115): +1 PE
+  // máximo por NEX, e +2 por NEX com Afinidade de Morte.
+  const potencialAprimoradoBonus = hasSelectedPower(character, "potencial-aprimorado")
+    ? (isSurvivorCharacter(character) ? 0 : Math.max(0, level) * (character.afinidadeElemental === "Morte" ? 2 : 1))
+    : 0;
   const originVitality = originVitalityBonus(character, nex);
   const originEffort = originEffortBonus(character, level);
   const transcenderLevels = Array.isArray(character.transcenderNiveis)
@@ -542,7 +567,7 @@ export function calculateDerived(character) {
 
   return {
     pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality + sangueDeFerroBonus,
-    peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort,
+    peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort + combatenteEsforcadoBonus + potencialAprimoradoBonus,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
     deslocamento: 9,
@@ -567,8 +592,10 @@ function uniqueSkills(skills) {
 
 const POWER_SKILL_GRANTS = [
   ["-acrobatico", "Acrobacia"],
+  ["-apaixonado-por-veiculos", "Pilotagem"],
   ["-as-do-volante", "Pilotagem"],
   ["-atletico", "Atletismo"],
+  ["-direcao-defensiva", "Pilotagem"],
   ["-dedos-ageis", "Crime"],
   ["-detector-de-mentiras", "Intuição"],
   ["-especialista-em-emergencias", "Medicina"],
