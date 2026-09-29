@@ -1,6 +1,6 @@
 import { captureSheetUi, restoreSheetUi } from "./sheet-ui-state.js?v=1";
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=57";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=69";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=70";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -27,7 +27,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=68";
+} from "./rules.js?v=69";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -52,13 +52,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=58";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=68";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=69";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=70";
+} from "./choices.js?v=71";
 import {
   effortResource,
   beforeSoBonus,
@@ -2357,7 +2357,7 @@ function applyGrantedChoiceEffects(character, entry, staged) {
     }
     character.transcenderNiveis = [...new Set([...(character.transcenderNiveis ?? []), characterLevel(character)])].sort((a, b) => a - b);
   }
-  if (["Expansão de Conhecimento", "Dominar Habilidade Ritualística"].includes(entry.name)) {
+  if (["Expansão de Conhecimento", "Dominar Habilidade Ritualística", "Traços do Outro Lado"].includes(entry.name)) {
     for (const choice of [...chosen("poder"), ...chosen("habilidade")]) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), choice.valueId])];
   }
   if (["Especialista Diletante", "Ele Me Ensina"].includes(entry.name)) {
@@ -2383,8 +2383,16 @@ function applyGrantedChoiceEffects(character, entry, staged) {
       character.outrosBonusPericia.Profissão = numberOr(character.outrosBonusPericia?.Profissão, 0) + 5;
     }
   }
-  if (["Aprender Ritual", "Mácula Ritualística", "Invenção Paranormal"].includes(entry.name)) {
+  if (["Aprender Ritual", "Mácula Ritualística", "Invenção Paranormal", "Iniciado"].includes(entry.name)) {
     for (const choice of chosen("ritual")) character.rituaisSelecionados = [...new Set([...(character.rituaisSelecionados ?? []), choice.valueId])];
+  }
+  if (entry.name === "Esperto") {
+    for (const choice of chosen("pericia")) {
+      if (numberOr(character.grausPericia?.[choice.valueId], 0) === 0) {
+        character.grausPericia[choice.valueId] = 5;
+        character.periciasAdicionais = [...new Set([...(character.periciasAdicionais ?? []), choice.valueId])];
+      }
+    }
   }
 }
 

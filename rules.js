@@ -655,6 +655,12 @@ export function calculateDerived(character) {
     };
   }
 
+  // Traços do Outro Lado (origem Cultista Arrependido, livro base p.18):
+  // começa o jogo com metade da Sanidade inicial da classe (a perda vale só
+  // para o valor inicial, não para o ganho por avanço).
+  const classInitialSan = hasOriginPower(character, "Traços do Outro Lado")
+    ? Math.floor(classData.initial.san / 2)
+    : classData.initial.san;
 
   if (isSurvivorCharacter(character)) {
     const survivorDurability = character.trilha === "Durão"
@@ -663,7 +669,7 @@ export function calculateDerived(character) {
     return {
       pvMax: classData.initial.pv + vigor + advances * classData.gain.pv + survivorDurability + vitalityBonus + originVitality,
       peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus + originEffort,
-      sanMax: classData.initial.san + advances * classData.gain.san,
+      sanMax: classInitialSan + advances * classData.gain.san,
       defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
       deslocamento: 9,
       advances,
@@ -684,7 +690,7 @@ export function calculateDerived(character) {
   return {
     pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality + sangueDeFerroBonus,
     peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort + combatenteEsforcadoBonus + potencialAprimoradoBonus,
-    sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
+    sanMax: Math.max(0, classInitialSan + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
     deslocamento: 9,
     advances,

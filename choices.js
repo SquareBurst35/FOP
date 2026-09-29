@@ -7,7 +7,7 @@ import {
   TRAIL_ABILITIES,
 } from "./content.js?v=56";
 import { ITEMS } from "./items.js?v=58";
-import { ORIGINS, SKILLS } from "./rules.js?v=68";
+import { ORIGINS, SKILLS } from "./rules.js?v=69";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",
@@ -122,8 +122,12 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
       help: "Se já for treinado na perícia escolhida, a ficha aplicará +2 em Outros bônus.",
     })];
   }
-  if (name === "A Força do Saber") {
+  if (name === "A Força do Saber" || name === "Conhecimento Prático") {
     return [spec(entry.id, "pericia", "Escolha a perícia que passará a usar Intelecto", SKILLS.map((skill) => option(skill, skill)))];
+  }
+  if (name === "Esperto") {
+    const untrained = SKILLS.filter((skill) => Number(character.grausPericia?.[skill] ?? 0) === 0);
+    return [spec(entry.id, "pericia", "Escolha a perícia treinada adicional", untrained.map((skill) => option(skill, skill)))];
   }
   if (name === "Mascate" || name === "Laboratório de Campo") {
     const professions = ["Armeiro", "Engenheiro", "Químico"];
@@ -165,24 +169,35 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
       help: "A redução fica ligada a este tipo de item.",
     })];
   }
+  if (name === "Ferramenta Favorita") {
+    const useful = ITEMS.filter((item) => item.group !== "Armas");
+    return [spec(entry.id, "item", "Escolha o item favorito (exceto armas)", itemOptions(useful), {
+      help: "A redução de categoria fica ligada a este item.",
+    })];
+  }
+  if (name === "Ferramenta de Trabalho") {
+    return [spec(entry.id, "item", "Escolha a arma usada como ferramenta", itemOptions(ITEMS.filter((item) => item.group === "Armas")))];
+  }
   if (
     name === "Especialista em Elemento" ||
     name === "Acostumado à Maldição de <Elemento>" ||
     name === "Ser Amaldiçoado" ||
     name === "Ser Experimentado" ||
-    name === "Ser Escarificado"
+    name === "Ser Escarificado" ||
+    name === "Barreira do Oculto"
   ) {
     return [spec(entry.id, "elemento", "Escolha o elemento", elementOptions())];
   }
-  if (name === "Mestre em Elemento") {
-    const specialistIds = [...(context.abilityById?.values?.() ?? [])]
-      .filter((ability) => ability.name === "Especialista em Elemento")
+  if (name === "Mestre em Elemento" || name === "Grão-Mestre em Elemento") {
+    const prerequisiteName = name === "Mestre em Elemento" ? "Especialista em Elemento" : "Mestre em Elemento";
+    const prerequisiteIds = [...(context.abilityById?.values?.() ?? [])]
+      .filter((ability) => ability.name === prerequisiteName)
       .map((ability) => ability.id);
     const selected = new Set((character.habilidadeEscolhas ?? [])
-      .filter((choice) => specialistIds.includes(choice.abilityId) && choice.type === "elemento")
+      .filter((choice) => prerequisiteIds.includes(choice.abilityId) && choice.type === "elemento")
       .map((choice) => choice.valueId));
     return [spec(entry.id, "elemento", "Escolha um elemento já especializado", elementOptions().filter((item) => selected.has(item.id)), {
-      help: "Primeiro adquira Especialista em Elemento para este mesmo elemento.",
+      help: `Primeiro adquira ${prerequisiteName} para este mesmo elemento.`,
     })];
   }
   if (name === "Ritual Predileto") {
@@ -230,8 +245,12 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
   if (name === "Invenção Paranormal") {
     return [spec(entry.id, "ritual", "Escolha o ritual de 1º círculo do invento", ritualOptions(RITUALS.filter((ritual) => ritual.circle === 1)))];
   }
+  if (name === "Iniciado") {
+    const known = new Set(character.rituaisSelecionados ?? []);
+    return [spec(entry.id, "ritual", "Escolha o ritual de 1º círculo aprendido", ritualOptions(RITUALS.filter((ritual) => ritual.circle === 1 && !known.has(ritual.id))))];
+  }
   if (name === "A Culpa é das Estrelas") {
-    return [spec(entry.id, "numero", "Escolha o número da sorte", Array.from({ length: 20 }, (_, index) => option(index + 1, String(index + 1))))];
+    return [spec(entry.id, "numero", "Escolha o número da sorte", Array.from({ length: 6 }, (_, index) => option(index + 1, String(index + 1))))];
   }
   if (name === "Mácula Ritualística") {
     const specs = [spec(entry.id, "elemento", "Escolha o elemento da mácula", elementOptions())];
@@ -261,6 +280,13 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
     if (chosen) return [];
     return [spec(entry.id, "elemento", "Escolha o elemento resistido por O Que Restou", elementOptions(), {
       help: "Depois de confirmada, essa escolha não pode ser trocada.",
+    })];
+  }
+  if (name === "Traços do Outro Lado") {
+    const chosen = (character.habilidadeEscolhas ?? []).some((choice) => choice.abilityId === entry.id && choice.type === "poder");
+    if (chosen) return [];
+    return [spec(entry.id, "poder", "Escolha o poder paranormal", abilityOptions(PARANORMAL_POWERS), {
+      help: "Depois de confirmada, essa escolha não pode ser trocada. Você começa o jogo com metade da Sanidade normal da classe.",
     })];
   }
   if (name === "Expansão de Conhecimento") {
