@@ -393,15 +393,24 @@ function abilityDefenseBonus(character) {
   return bonus;
 }
 
-// Rituais que, uma vez conjurados, ficam com um efeito numérico simples e
-// contínuo até o jogador cancelar (ver character.efeitosAtivos, ligado pelo
-// botão "Conjurar" e desligado por "Cancelar" na ficha — não expira sozinho
+// Rituais que, uma vez conjurados, ficam com um efeito simples e contínuo
+// até o jogador cancelar (ver character.efeitosAtivos, ligado pelo botão
+// "Conjurar" e desligado por "Cancelar" na ficha — não expira sozinho
 // porque cena/rodada não são mais rastreados automaticamente, ver o commit
-// que tirou Resetar turno/cena). "Armadura de Sangue" tem uma regra própria:
-// não acumula com a Defesa do equipamento (só com outros bônus).
+// que tirou Resetar turno/cena). Cada variante guarda { defense } e,
+// quando o livro também dá resistência a dano nessa variante (só
+// Armadura de Sangue Discente/Verdadeiro), { resistanceLabel,
+// resistanceValue } — isso alimenta tanto a Defesa quanto a caixa de
+// Resistências (characterResistances, aba Resumo). "Armadura de Sangue"
+// tem uma regra própria: não acumula com a Defesa do equipamento.
 export const RITUAL_ACTIVE_EFFECTS = {
-  "Armadura de Sangue": { Normal: 5, Discente: 10, Verdadeiro: 15, excludesEquipmentDefense: true },
-  "Embaralhar": { Normal: 6, Discente: 10, Verdadeiro: 16 },
+  "Armadura de Sangue": {
+    Normal: { defense: 5 },
+    Discente: { defense: 10, resistanceLabel: "Balístico, corte, impacto e perfuração", resistanceValue: 5 },
+    Verdadeiro: { defense: 15, resistanceLabel: "Balístico, corte, impacto e perfuração", resistanceValue: 10 },
+    excludesEquipmentDefense: true,
+  },
+  "Embaralhar": { Normal: { defense: 6 }, Discente: { defense: 10 }, Verdadeiro: { defense: 16 } },
 };
 
 // Mesma ideia, mas para uma habilidade (não ritual) cujo bônus só vale
@@ -411,12 +420,16 @@ export const RITUAL_ACTIVE_EFFECTS = {
 // de +5 é automática; o +1 extra por acerto crítico do Rítmo Contagiante
 // fica por conta do jogador.
 export const ABILITY_ACTIVE_EFFECTS = {
-  "Rítmo Contagiante": { Ativo: 5 },
+  "Rítmo Contagiante": { Ativo: { defense: 5 } },
 };
+
+export function activeEffectData(effect) {
+  return RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant] ?? ABILITY_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
+}
 
 function activeEffectDefenseBonus(character) {
   return (character?.efeitosAtivos ?? []).reduce((sum, effect) => {
-    const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant] ?? ABILITY_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
+    const bonus = activeEffectData(effect)?.defense;
     return sum + (typeof bonus === "number" ? bonus : 0);
   }, 0);
 }
@@ -446,17 +459,24 @@ const COMBATENTE_MONSTRUOSO_RESISTANCE_TYPES = {
   Energia: "Corte, eletricidade, fogo e Energia",
 };
 
-// Resistências a dano permanentes e sempre-calculáveis (aba Rituais, seção
-// "Resistências"). Cobre poderes/habilidades/origens com valor automático e
-// claro — fica de fora o que depende de uma ação específica (Casca Grossa
-// só ao bloquear), de equipamento (Tanque de Guerra) ou é um efeito
-// temporário de ritual (já aparece na própria carta do ritual). `rituals`/
-// `paranormalPowers` são injetados pelo chamador (rules.js não importa o
-// catálogo de content.js) só para o Sofrimento de Sangue, que conta quantos
-// rituais/poderes de Sangue o personagem conhece.
+// Resistências a dano — permanentes ou ligadas agora por um efeito ativo de
+// ritual/habilidade (aba Resumo, seção "Resistências"). Cobre poderes/
+// habilidades/origens/efeitos ativos com valor automático e claro — fica de
+// fora o que depende de uma ação específica (Casca Grossa só ao bloquear)
+// ou de equipamento (Tanque de Guerra). `rituals`/`paranormalPowers` são
+// injetados pelo chamador (rules.js não importa o catálogo de content.js)
+// só para o Sofrimento de Sangue, que conta quantos rituais/poderes de
+// Sangue o personagem conhece.
 export function characterResistances(character, { rituals = [], paranormalPowers = [] } = {}) {
   const list = [];
   const hurt = isCharacterHurt(character);
+
+  for (const effect of character?.efeitosAtivos ?? []) {
+    const data = activeEffectData(effect);
+    if (data?.resistanceValue) {
+      list.push({ label: data.resistanceLabel, value: data.resistanceValue, source: `${effect.name} (${effect.variant})` });
+    }
+  }
 
   const resistirEscolhas = (character?.habilidadeEscolhas ?? []).filter(
     (choice) => choice.type === "elemento" && String(choice.abilityId).endsWith("-resistir-a-elemento"),
