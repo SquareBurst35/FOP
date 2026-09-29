@@ -1411,6 +1411,50 @@ fieldset.skill-choice-block {
   margin-top: 14px;
 }
 
+.resistances-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-raised);
+}
+
+.resistances-title {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.resistances-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resistance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.78rem;
+  cursor: help;
+}
+
+.resistance-chip strong {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .history-card {
   margin-top: 14px;
 }
@@ -1980,6 +2024,12 @@ fieldset.skill-choice-block {
   border-color: rgba(126, 208, 214, 0.45);
   background: rgba(126, 208, 214, 0.09);
   color: #c9f7fa;
+}
+
+.entry-use-button.ghost {
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+  color: var(--muted);
 }
 
 .entry-use-button:hover:not(:disabled),

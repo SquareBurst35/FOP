@@ -7,7 +7,7 @@ import {
   TRAIL_ABILITIES,
 } from "./content.js?v=56";
 import { ITEMS } from "./items.js?v=58";
-import { ORIGINS, SKILLS } from "./rules.js?v=65";
+import { ORIGINS, SKILLS } from "./rules.js?v=66";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",

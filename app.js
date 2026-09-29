@@ -1,18 +1,20 @@
 import { captureSheetUi, restoreSheetUi } from "./sheet-ui-state.js?v=1";
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=57";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=66";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=67";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
   CLASSES,
   ORIGINS,
   SKILLS,
+  ABILITY_ACTIVE_EFFECTS,
   abilitySkillBonus,
   applyDerived,
   attributeBudget,
   attributeTarget,
   calculateDerived,
   characterLevel,
+  characterResistances,
   findOrigin,
   getSkillConfiguration,
   isMundaneCharacter,
@@ -24,7 +26,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=65";
+} from "./rules.js?v=66";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -49,13 +51,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=58";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=65";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=66";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=67";
+} from "./choices.js?v=68";
 import {
   effortResource,
   beforeSoBonus,
@@ -1864,7 +1866,7 @@ function renderActiveEffects(character) {
     <div class="active-effects">
       <span class="active-effects-label">Efeitos ativos</span>
       ${effects.map((effect) => {
-        const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
+        const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant] ?? ABILITY_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
         return `
           <div class="active-effect-chip">
             <span><strong>${escapeHtml(effect.name)}</strong><small>${escapeHtml(effect.variant)}${typeof bonus === "number" ? ` · +${bonus} Defesa` : ""}</small></span>
@@ -1883,6 +1885,12 @@ function abilityUseModel(entry) {
 }
 
 function abilityUseButton(entry, character) {
+  const activeEffect = ABILITY_ACTIVE_EFFECTS[entry.name];
+  if (activeEffect) {
+    const active = (character.efeitosAtivos ?? []).some((effect) => effect.name === entry.name);
+    const bonus = Object.values(activeEffect)[0];
+    return `<button class="entry-use-button ${active ? "ghost" : ""}" type="button" data-toggle-ability-effect="${entry.id}">${active ? "Desativar" : `Ativar · +${bonus} Defesa`}</button>`;
+  }
   const model = abilityUseModel(entry);
   if (model.kind === "none") return "";
   const resource = model.resource === "pv" ? "PV" : model.resource === "san" ? "SAN" : effortResource(character).label;
@@ -2039,12 +2047,26 @@ function renderAbilityPickerAction(entry) {
   return `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ability-toggle="${entry.id}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`;
 }
 
+function renderResistancesSection(character) {
+  const resistances = characterResistances(character, { rituals: RITUALS, paranormalPowers: PARANORMAL_POWERS });
+  if (!resistances.length) return "";
+  return `
+    <section class="resistances-panel" aria-label="Resistências a dano">
+      <span class="resistances-title">Resistências</span>
+      <div class="resistances-list">
+        ${resistances.map((entry) => `<span class="resistance-chip" title="${escapeAttribute(entry.source)}"><strong>${escapeHtml(entry.label)}</strong>${entry.value}</span>`).join("")}
+      </div>
+    </section>
+  `;
+}
+
 function renderRitualsTab(character) {
   const selected = (character.rituaisSelecionados ?? [])
     .map((id) => RITUAL_BY_ID.get(id))
     .filter(Boolean)
     .sort((a, b) => a.circle - b.circle || a.element.localeCompare(b.element) || a.name.localeCompare(b.name));
   return `
+    ${renderResistancesSection(character)}
     <section class="sheet-section">
       <div class="section-heading stacked-mobile">
         <div><h2>Rituais</h2><p class="muted small">Rituais do 1º ao 4º círculo, separados por elemento e fonte.</p></div>
@@ -4059,6 +4081,20 @@ function bindSheetInteractions(character) {
 
   document.querySelectorAll("[data-cancel-effect]").forEach((button) => {
     button.addEventListener("click", () => cancelActiveEffect(character, button.dataset.cancelEffect));
+  });
+
+  document.querySelectorAll("[data-toggle-ability-effect]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const entry = ABILITY_BY_ID.get(button.dataset.toggleAbilityEffect);
+      if (!entry || !ABILITY_ACTIVE_EFFECTS[entry.name]) return;
+      const active = (character.efeitosAtivos ?? []).some((effect) => effect.name === entry.name);
+      character.efeitosAtivos = active
+        ? (character.efeitosAtivos ?? []).filter((effect) => effect.name !== entry.name)
+        : [...(character.efeitosAtivos ?? []), { id: `${entry.id}-${Date.now().toString(36)}`, name: entry.name, variant: "Ativo" }];
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast(active ? `${entry.name} desativado.` : `${entry.name} ativado. Lembre de desativar quando sair de combate.`);
+    });
   });
 
   document.querySelector("#photo-upload-input")?.addEventListener("change", async (event) => {

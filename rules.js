@@ -384,6 +384,7 @@ function abilityDefenseBonus(character) {
   if (hasSelectedPower(character, "reflexos-defensivos")) bonus += 2;
   if (hasSelectedPower(character, "precognicao")) bonus += 2;
   if (hasOriginPower(character, "Patrulha")) bonus += 2;
+  if (hasSelectedPower(character, "inquebravel") && isCharacterHurt(character)) bonus += 5;
   const proficiencies = equippedProtections(character).map(
     (item) => item.details?.find(([key]) => key === "Proficiência")?.[1] ?? "",
   );
@@ -403,15 +404,104 @@ export const RITUAL_ACTIVE_EFFECTS = {
   "Embaralhar": { Normal: 6, Discente: 10, Verdadeiro: 16 },
 };
 
+// Mesma ideia, mas para uma habilidade (não ritual) cujo bônus só vale
+// "durante uma cena de combate" — a ficha não sabe quando isso começa ou
+// termina, então é o jogador quem ativa/desativa (mesmo botão Cancelar dos
+// efeitos de ritual, ver renderActiveEffects em app.js). Só a Defesa base
+// de +5 é automática; o +1 extra por acerto crítico do Rítmo Contagiante
+// fica por conta do jogador.
+export const ABILITY_ACTIVE_EFFECTS = {
+  "Rítmo Contagiante": { Ativo: 5 },
+};
+
 function activeEffectDefenseBonus(character) {
   return (character?.efeitosAtivos ?? []).reduce((sum, effect) => {
-    const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
+    const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant] ?? ABILITY_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
     return sum + (typeof bonus === "number" ? bonus : 0);
   }, 0);
 }
 
 function activeEffectsExcludeEquipmentDefense(character) {
   return (character?.efeitosAtivos ?? []).some((effect) => RITUAL_ACTIVE_EFFECTS[effect.name]?.excludesEquipmentDefense);
+}
+
+// "Machucado" (livro base): PV atual <= metade do PV máximo, arredondado
+// para baixo — mesma conta já usada para as ameaças (ver machucadoEm em
+// threats.js).
+export function isCharacterHurt(character) {
+  const pvMax = Number(character?.recursos?.pvMax) || 0;
+  const pvAtual = Number(character?.recursos?.pvAtual) || 0;
+  return pvMax > 0 && pvAtual <= Math.floor(pvMax / 2);
+}
+
+// Tipos de dano da progressão de resistência da trilha Monstruoso de
+// Combatente (Sobrevivendo ao Horror p.17-20) — só essa classe descreve a
+// trilha como uma escada simples de RD por elemento; Especialista e
+// Ocultista Monstruoso trocam RD por mecânicas que dependem de gastar
+// pontos de atributo a cada uso, então ficam fora daqui.
+const COMBATENTE_MONSTRUOSO_RESISTANCE_TYPES = {
+  Sangue: "Balístico e Sangue",
+  Morte: "Perfuração e Morte",
+  Conhecimento: "Balístico e Conhecimento",
+  Energia: "Corte, eletricidade, fogo e Energia",
+};
+
+// Resistências a dano permanentes e sempre-calculáveis (aba Rituais, seção
+// "Resistências"). Cobre poderes/habilidades/origens com valor automático e
+// claro — fica de fora o que depende de uma ação específica (Casca Grossa
+// só ao bloquear), de equipamento (Tanque de Guerra) ou é um efeito
+// temporário de ritual (já aparece na própria carta do ritual). `rituals`/
+// `paranormalPowers` são injetados pelo chamador (rules.js não importa o
+// catálogo de content.js) só para o Sofrimento de Sangue, que conta quantos
+// rituais/poderes de Sangue o personagem conhece.
+export function characterResistances(character, { rituals = [], paranormalPowers = [] } = {}) {
+  const list = [];
+  const hurt = isCharacterHurt(character);
+
+  const resistirEscolhas = (character?.habilidadeEscolhas ?? []).filter(
+    (choice) => choice.type === "elemento" && String(choice.abilityId).endsWith("-resistir-a-elemento"),
+  );
+  for (const choice of resistirEscolhas) {
+    const value = character?.afinidadeElemental === choice.valueId ? 20 : 10;
+    list.push({ label: choice.valueId, value, source: "Resistir a Elemento" });
+  }
+
+  if (character?.classe === "Combatente" && character?.trilha === "Monstruoso") {
+    const element = monstrousElement(character);
+    const value = hasSelectedPower(character, "ser-aterrorizante") ? 20
+      : hasSelectedPower(character, "ser-assustador") ? 15
+        : hasSelectedPower(character, "ser-macabro") ? 10
+          : hasSelectedPower(character, "ser-amaldicoado") ? 5
+            : 0;
+    if (element && value) list.push({ label: COMBATENTE_MONSTRUOSO_RESISTANCE_TYPES[element], value, source: "Trilha Monstruoso" });
+  }
+
+  if (hasSelectedPower(character, "sangue-prazeroso") && hurt) {
+    list.push({ label: "Sangue", value: 5, source: "Sangue Prazeroso" });
+  }
+  if (hasSelectedPower(character, "inquebravel") && hurt) {
+    list.push({ label: "Geral", value: 5, source: "Inquebrável" });
+  }
+  if (hasSelectedPower(character, "inabalavel")) {
+    list.push({ label: "Mental e paranormal", value: 10, source: "Inabalável" });
+  }
+  if (hasOriginPower(character, "Eu Já Sabia")) {
+    const intelecto = Number(character?.atributos?.intelecto) || 0;
+    if (intelecto > 0) list.push({ label: "Mental", value: intelecto, source: "Eu Já Sabia" });
+  }
+  if (hasOriginPower(character, "Mutação")) {
+    list.push({ label: "Geral", value: 2, source: "Mutação" });
+  }
+  if (hasOriginPower(character, "Sofrimento de Sangue")) {
+    const knownAbilityIds = new Set(character?.habilidadesSelecionadas ?? []);
+    const sangueRituals = (character?.rituaisSelecionados ?? []).filter(
+      (id) => rituals.find((entry) => entry.id === id)?.elements?.includes("Sangue"),
+    ).length;
+    const sanguePowers = paranormalPowers.filter((entry) => entry.group === "Sangue" && knownAbilityIds.has(entry.id)).length;
+    list.push({ label: "Mental", value: 2 + Math.floor((sangueRituals + sanguePowers) / 2), source: "Sofrimento de Sangue" });
+  }
+
+  return list;
 }
 
 // "Fôlego de Nadador" (origem Mergulhador) soma +5 PV fixos. "Calejado"
