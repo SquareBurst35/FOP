@@ -253,6 +253,46 @@ function hasSelectedPower(character, powerSlug) {
   );
 }
 
+// Trilha Monstruoso (Sobrevivendo ao Horror p.17 para Combatente;
+// Arquivos Secretos #7 p.81 e p.85 para Especialista e Ocultista): cada
+// classe escolhe o mesmo elemento (Sangue/Morte/Conhecimento/Energia),
+// mas o atributo que passa a calcular PE (e, só para Ocultista, a DT dos
+// rituais) libera em NEX diferentes por classe — Especialista e Ocultista
+// já na primeira habilidade da trilha (NEX 10%), Combatente só na
+// segunda (Ser Macabro, NEX 40%).
+const MONSTROUS_TRAIT_ABILITY = {
+  Combatente: "ser-amaldicoado",
+  Especialista: "ser-experimentado",
+  Ocultista: "ser-escarificado",
+};
+const MONSTROUS_SWAP_ABILITY = {
+  Combatente: "ser-macabro",
+  Especialista: "ser-experimentado",
+  Ocultista: "ser-escarificado",
+};
+const MONSTROUS_ELEMENT_ATTRIBUTE = {
+  Sangue: "forca",
+  Morte: "vigor",
+  Conhecimento: "intelecto",
+  Energia: "agilidade",
+};
+
+function monstrousElement(character) {
+  const traitAbility = MONSTROUS_TRAIT_ABILITY[character?.classe];
+  if (!traitAbility || character?.trilha !== "Monstruoso") return null;
+  const choice = (character.habilidadeEscolhas ?? []).find(
+    (entry) => entry.type === "elemento" && String(entry.abilityId).endsWith(`-${traitAbility}`),
+  );
+  return choice?.valueId ?? null;
+}
+
+function monstrousEffortAttribute(character) {
+  const swapAbility = MONSTROUS_SWAP_ABILITY[character?.classe];
+  if (!swapAbility || !hasSelectedPower(character, swapAbility)) return null;
+  const element = monstrousElement(character);
+  return MONSTROUS_ELEMENT_ATTRIBUTE[element] ?? null;
+}
+
 // Poderes de origem não entram em habilidadesSelecionadas: eles são
 // automáticos a partir da origem escolhida (ver automaticAbilitiesFor em
 // app.js), inclusive uma segunda origem obtida via "Flashback".
@@ -396,13 +436,18 @@ function ritualDtItemBonus(character, ritual, knowsSangueRitual) {
 // turno + o atributo indicado (Presença, para rituais). "A Antena" e o
 // Cajado da Cruz de Sangue (Arquivos Secretos #7, só pra rituais de Sangue
 // com um ocultista que já conheça um) somam bônus fixos quando possuídos.
+// Ocultista Monstruoso (Ser Escarificado, Arquivos Secretos #7 p.85) troca
+// Presença pelo atributo do elemento escolhido também para essa DT.
 export function ritualDifficulty(character, ritual, knowsSangueRitual = false) {
   const presenca = Number(character?.atributos?.presenca) || 0;
-  return 10 + turnSpendLimit(character) + presenca + ritualDtItemBonus(character, ritual, knowsSangueRitual);
+  const monstrousAttribute = character?.classe === "Ocultista" ? monstrousEffortAttribute(character) : null;
+  const dtAttribute = monstrousAttribute ? Number(character?.atributos?.[monstrousAttribute]) || 0 : presenca;
+  return 10 + turnSpendLimit(character) + dtAttribute + ritualDtItemBonus(character, ritual, knowsSangueRitual);
 }
 
 export function calculateDerived(character) {
   const classData = CLASSES[character.classe];
+  const forca = Number(character.atributos?.forca) || 0;
   const vigor = Number(character.atributos?.vigor) || 0;
   const presenca = Number(character.atributos?.presenca) || 0;
   const intelecto = Number(character.atributos?.intelecto) || 0;
@@ -419,12 +464,20 @@ export function calculateDerived(character) {
   const usesDetermination = Boolean(
     character.optionalRules?.determination && classData?.determination,
   );
-  const effortAttribute = hasSelectedPower(character, "racionalidade-inflexivel")
-    ? intelecto
-    : presenca;
+  const monstrousAttribute = monstrousEffortAttribute(character);
+  const attributeValues = { forca, vigor, presenca, intelecto, agilidade };
+  const effortAttribute = monstrousAttribute
+    ? attributeValues[monstrousAttribute]
+    : hasSelectedPower(character, "racionalidade-inflexivel")
+      ? intelecto
+      : presenca;
   const personalityEffort = hasSelectedPower(character, "personalidade-esoterica") ? 3 : 0;
   const vitalityBonus = hasSelectedPower(character, "vitalidade-reforcada")
     ? (isSurvivorCharacter(character) ? 0 : Math.max(0, level))
+    : 0;
+  // Sangue de Ferro (livro base p.116): +2 PV máximos por NEX (por nível).
+  const sangueDeFerroBonus = hasSelectedPower(character, "sangue-de-ferro")
+    ? (isSurvivorCharacter(character) ? 0 : 2 * Math.max(0, level))
     : 0;
   const willEffortBonus = hasSelectedPower(character, "vontade-inabalavel")
     ? (isSurvivorCharacter(character) ? 0 : Math.floor(Math.max(0, level) / 2))
@@ -488,7 +541,7 @@ export function calculateDerived(character) {
   }
 
   return {
-    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality,
+    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality + sangueDeFerroBonus,
     peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort,
     sanMax: Math.max(0, classData.initial.san + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),

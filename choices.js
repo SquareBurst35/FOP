@@ -7,7 +7,7 @@ import {
   TRAIL_ABILITIES,
 } from "./content.js?v=56";
 import { ITEMS } from "./items.js?v=58";
-import { ORIGINS, SKILLS } from "./rules.js?v=63";
+import { ORIGINS, SKILLS } from "./rules.js?v=64";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",
@@ -165,7 +165,13 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
       help: "A redução fica ligada a este tipo de item.",
     })];
   }
-  if (name === "Especialista em Elemento" || name === "Acostumado à Maldição de <Elemento>" || name === "Ser Amaldiçoado") {
+  if (
+    name === "Especialista em Elemento" ||
+    name === "Acostumado à Maldição de <Elemento>" ||
+    name === "Ser Amaldiçoado" ||
+    name === "Ser Experimentado" ||
+    name === "Ser Escarificado"
+  ) {
     return [spec(entry.id, "elemento", "Escolha o elemento", elementOptions())];
   }
   if (name === "Mestre em Elemento") {
