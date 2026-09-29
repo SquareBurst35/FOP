@@ -520,6 +520,12 @@ export function characterResistances(character, { rituals = [], paranormalPowers
     const sanguePowers = paranormalPowers.filter((entry) => entry.group === "Sangue" && knownAbilityIds.has(entry.id)).length;
     list.push({ label: "Mental", value: 2 + Math.floor((sangueRituals + sanguePowers) / 2), source: "Sofrimento de Sangue" });
   }
+  if (hasOriginPower(character, "O Que Restou")) {
+    const element = (character?.habilidadeEscolhas ?? []).find(
+      (choice) => choice.type === "elemento" && String(choice.abilityId).endsWith("-o-que-restou"),
+    )?.valueId;
+    if (element) list.push({ label: element, value: 5, source: "O Que Restou" });
+  }
 
   return list;
 }

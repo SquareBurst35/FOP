@@ -7,7 +7,7 @@ import {
   TRAIL_ABILITIES,
 } from "./content.js?v=56";
 import { ITEMS } from "./items.js?v=58";
-import { ORIGINS, SKILLS } from "./rules.js?v=67";
+import { ORIGINS, SKILLS } from "./rules.js?v=68";
 
 export const CHOICE_TYPE_LABELS = {
   alvo: "Alvo aprimorado",
@@ -255,6 +255,13 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
   if (name === "Resistir a Elemento") {
     const used = new Set((character.habilidadeEscolhas ?? []).filter((choice) => choice.abilityId === entry.id && choice.type === "elemento").map((choice) => choice.valueId));
     return [spec(entry.id, "elemento", "Escolha o elemento resistido", elementOptions().filter((item) => !used.has(item.id)))];
+  }
+  if (name === "O Que Restou") {
+    const chosen = (character.habilidadeEscolhas ?? []).some((choice) => choice.abilityId === entry.id && choice.type === "elemento");
+    if (chosen) return [];
+    return [spec(entry.id, "elemento", "Escolha o elemento resistido por O Que Restou", elementOptions(), {
+      help: "Depois de confirmada, essa escolha não pode ser trocada.",
+    })];
   }
   if (name === "Expansão de Conhecimento") {
     const powers = CLASS_POWERS.filter((power) => power.category !== character.classe && power.name !== "Transcender" && power.unlockNex <= levelNex);

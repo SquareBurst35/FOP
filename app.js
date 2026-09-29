@@ -1,6 +1,6 @@
 import { captureSheetUi, restoreSheetUi } from "./sheet-ui-state.js?v=1";
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=57";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=68";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=69";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -27,7 +27,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=67";
+} from "./rules.js?v=68";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -52,13 +52,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=58";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=67";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=68";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=69";
+} from "./choices.js?v=70";
 import {
   effortResource,
   beforeSoBonus,
