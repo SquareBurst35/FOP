@@ -1,18 +1,21 @@
 import { captureSheetUi, restoreSheetUi } from "./sheet-ui-state.js?v=1";
 import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=57";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=64";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=70";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
   CLASSES,
   ORIGINS,
   SKILLS,
+  ABILITY_ACTIVE_EFFECTS,
   abilitySkillBonus,
+  activeEffectData,
   applyDerived,
   attributeBudget,
   attributeTarget,
   calculateDerived,
   characterLevel,
+  characterResistances,
   findOrigin,
   getSkillConfiguration,
   isMundaneCharacter,
@@ -24,7 +27,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=63";
+} from "./rules.js?v=69";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -49,13 +52,13 @@ import {
   inventoryUsage,
 } from "./items.js?v=58";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=63";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=69";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=65";
+} from "./choices.js?v=71";
 import {
   effortResource,
   beforeSoBonus,
@@ -1680,6 +1683,7 @@ function renderSummaryTab(character) {
             ${statCard("Deslocamento", `${character.deslocamento} m`)}
             ${statCard("Proteção", character.protecao || "Nenhuma")}
           </div>
+          ${renderResistancesSection(character)}
         </div>
       </div>
       <div class="summary-main">
@@ -1868,10 +1872,14 @@ function renderActiveEffects(character) {
     <div class="active-effects">
       <span class="active-effects-label">Efeitos ativos</span>
       ${effects.map((effect) => {
-        const bonus = RITUAL_ACTIVE_EFFECTS[effect.name]?.[effect.variant];
+        const data = activeEffectData(effect);
+        const parts = [
+          typeof data?.defense === "number" ? `+${data.defense} Defesa` : "",
+          data?.resistanceValue ? `resistência ${data.resistanceValue} a ${data.resistanceLabel}` : "",
+        ].filter(Boolean).join(" · ");
         return `
           <div class="active-effect-chip">
-            <span><strong>${escapeHtml(effect.name)}</strong><small>${escapeHtml(effect.variant)}${typeof bonus === "number" ? ` · +${bonus} Defesa` : ""}</small></span>
+            <span><strong>${escapeHtml(effect.name)}</strong><small>${escapeHtml(effect.variant)}${parts ? ` · ${parts}` : ""}</small></span>
             <button type="button" data-cancel-effect="${escapeAttribute(effect.id)}" aria-label="Cancelar ${escapeAttribute(effect.name)}">Cancelar</button>
           </div>
         `;
@@ -1887,6 +1895,12 @@ function abilityUseModel(entry) {
 }
 
 function abilityUseButton(entry, character) {
+  const activeEffect = ABILITY_ACTIVE_EFFECTS[entry.name];
+  if (activeEffect) {
+    const active = (character.efeitosAtivos ?? []).some((effect) => effect.name === entry.name);
+    const bonus = Object.values(activeEffect)[0]?.defense;
+    return `<button class="entry-use-button ${active ? "ghost" : ""}" type="button" data-toggle-ability-effect="${escapeAttribute(entry.id)}">${active ? "Desativar" : `Ativar · +${bonus} Defesa`}</button>`;
+  }
   const model = abilityUseModel(entry);
   if (model.kind === "none") return "";
   const resource = model.resource === "pv" ? "PV" : model.resource === "san" ? "SAN" : effortResource(character).label;
@@ -2041,6 +2055,19 @@ function renderAbilityPickerAction(entry) {
   const selected = character.habilidadesSelecionadas.includes(entry.id);
   if (selected && abilityCanRepeatChoice(entry)) return `<button class="button primary compact" type="button" data-ability-choice="${escapeAttribute(entry.id)}" data-choice-return="picker">+ Nova escolha</button>`;
   return `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ability-toggle="${escapeAttribute(entry.id)}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`;
+}
+
+function renderResistancesSection(character) {
+  const resistances = characterResistances(character, { rituals: RITUALS, paranormalPowers: PARANORMAL_POWERS });
+  if (!resistances.length) return "";
+  return `
+    <section class="resistances-panel" aria-label="Resistências a dano">
+      <span class="resistances-title">Resistências</span>
+      <div class="resistances-list">
+        ${resistances.map((entry) => `<span class="resistance-chip" title="${escapeAttribute(entry.source)}"><strong>${escapeHtml(entry.label)}</strong>${entry.value}</span>`).join("")}
+      </div>
+    </section>
+  `;
 }
 
 function renderRitualsTab(character) {
@@ -2334,7 +2361,7 @@ function applyGrantedChoiceEffects(character, entry, staged) {
     }
     character.transcenderNiveis = [...new Set([...(character.transcenderNiveis ?? []), characterLevel(character)])].sort((a, b) => a - b);
   }
-  if (["Expansão de Conhecimento", "Dominar Habilidade Ritualística"].includes(entry.name)) {
+  if (["Expansão de Conhecimento", "Dominar Habilidade Ritualística", "Traços do Outro Lado"].includes(entry.name)) {
     for (const choice of [...chosen("poder"), ...chosen("habilidade")]) character.habilidadesSelecionadas = [...new Set([...(character.habilidadesSelecionadas ?? []), choice.valueId])];
   }
   if (["Especialista Diletante", "Ele Me Ensina"].includes(entry.name)) {
@@ -2360,8 +2387,16 @@ function applyGrantedChoiceEffects(character, entry, staged) {
       character.outrosBonusPericia.Profissão = numberOr(character.outrosBonusPericia?.Profissão, 0) + 5;
     }
   }
-  if (["Aprender Ritual", "Mácula Ritualística", "Invenção Paranormal"].includes(entry.name)) {
+  if (["Aprender Ritual", "Mácula Ritualística", "Invenção Paranormal", "Iniciado"].includes(entry.name)) {
     for (const choice of chosen("ritual")) character.rituaisSelecionados = [...new Set([...(character.rituaisSelecionados ?? []), choice.valueId])];
+  }
+  if (entry.name === "Esperto") {
+    for (const choice of chosen("pericia")) {
+      if (numberOr(character.grausPericia?.[choice.valueId], 0) === 0) {
+        character.grausPericia[choice.valueId] = 5;
+        character.periciasAdicionais = [...new Set([...(character.periciasAdicionais ?? []), choice.valueId])];
+      }
+    }
   }
 }
 
@@ -2496,13 +2531,14 @@ function commitEntryUse(character, entry, type, cost, resource, sceneLimit = 0, 
   spendState = null;
   let activationNote = "";
   if (type === "ritual" && RITUAL_ACTIVE_EFFECTS[entry.name]) {
-    const bonus = RITUAL_ACTIVE_EFFECTS[entry.name][variant];
-    if (typeof bonus === "number") {
+    const data = RITUAL_ACTIVE_EFFECTS[entry.name][variant];
+    if (typeof data?.defense === "number") {
       character.efeitosAtivos = [
         ...(character.efeitosAtivos ?? []).filter((effect) => effect.name !== entry.name),
         { id: `${entry.id}-${Date.now().toString(36)}`, name: entry.name, variant },
       ];
-      activationNote = ` Efeito ativo: +${bonus} na Defesa (cancele na ficha quando acabar).`;
+      const resistancePart = data.resistanceValue ? ` e resistência ${data.resistanceValue} a ${data.resistanceLabel}` : "";
+      activationNote = ` Efeito ativo: +${data.defense} na Defesa${resistancePart} (cancele na ficha quando acabar).`;
     }
   }
   upsertCharacter(character);
@@ -2768,8 +2804,8 @@ const CUSTOM_WEAPON_TYPES = ["Corte", "Impacto", "Perfuração", "Balístico", "
 function selectField(label, id, value, options, required = false) {
   return `
     <div class="field">
-      <label for="${id}">${label}${required ? " *" : ""}</label>
-      <select id="${id}" name="${id}" ${required ? "required" : ""}>
+      <label for="${escapeAttribute(id)}">${label}${required ? " *" : ""}</label>
+      <select id="${escapeAttribute(id)}" name="${escapeAttribute(id)}" ${required ? "required" : ""}>
         ${options.map((option) => `<option value="${escapeAttribute(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
       </select>
     </div>
@@ -4065,6 +4101,20 @@ function bindSheetInteractions(character) {
     button.addEventListener("click", () => cancelActiveEffect(character, button.dataset.cancelEffect));
   });
 
+  document.querySelectorAll("[data-toggle-ability-effect]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const entry = ABILITY_BY_ID.get(button.dataset.toggleAbilityEffect);
+      if (!entry || !ABILITY_ACTIVE_EFFECTS[entry.name]) return;
+      const active = (character.efeitosAtivos ?? []).some((effect) => effect.name === entry.name);
+      character.efeitosAtivos = active
+        ? (character.efeitosAtivos ?? []).filter((effect) => effect.name !== entry.name)
+        : [...(character.efeitosAtivos ?? []), { id: `${entry.id}-${Date.now().toString(36)}`, name: entry.name, variant: "Ativo" }];
+      upsertCharacter(character);
+      renderSheet(character.id);
+      showToast(active ? `${entry.name} desativado.` : `${entry.name} ativado. Lembre de desativar quando sair de combate.`);
+    });
+  });
+
   document.querySelector("#photo-upload-input")?.addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -4550,8 +4600,8 @@ function editCharacterCore(character) {
 function field(label, id, value, placeholder = "", required = false) {
   return `
     <div class="field">
-      <label for="${id}">${label}${required ? " *" : ""}</label>
-      <input id="${id}" name="${id}" value="${escapeAttribute(value)}" placeholder="${escapeAttribute(placeholder)}" ${required ? "required" : ""} />
+      <label for="${escapeAttribute(id)}">${label}${required ? " *" : ""}</label>
+      <input id="${escapeAttribute(id)}" name="${escapeAttribute(id)}" value="${escapeAttribute(value)}" placeholder="${escapeAttribute(placeholder)}" ${required ? "required" : ""} />
     </div>
   `;
 }
@@ -4571,8 +4621,8 @@ function renderPatentField(selected) {
 function numberField(label, id, value, min, max) {
   return `
     <div class="field">
-      <label for="${id}">${label}</label>
-      <input id="${id}" name="${id}" type="number" inputmode="numeric" min="${min}" max="${max}" value="${numberOr(value, min)}" />
+      <label for="${escapeAttribute(id)}">${label}</label>
+      <input id="${escapeAttribute(id)}" name="${escapeAttribute(id)}" type="number" inputmode="numeric" min="${min}" max="${max}" value="${numberOr(value, min)}" />
     </div>
   `;
 }

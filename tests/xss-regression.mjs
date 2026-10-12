@@ -6,6 +6,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { RITUALS } from "../content.js";
 import { calculateDerived } from "../rules.js";
+import fs from "node:fs";
 
 const PAYLOAD = '"><img src=x onerror=window.__xss=1>';
 const RAW = /"><img src=x onerror/;
@@ -115,4 +116,12 @@ test("a tela inicial e as de diálogo também escapam", async () => {
     sheet.click(id);
     assert.doesNotMatch(sheet.html(), RAW, `carga hostil crua depois de #${id}`);
   }
+});
+
+// Vale também para código novo, venha de onde vier: um id colocado cru em um
+// atributo (data-x="${algo.id}") é o jeito mais comum de reabrir esta falha.
+test("nenhum atributo HTML recebe um id sem escapeAttribute no app.js", () => {
+  const source = fs.readFileSync(new URL("../app.js", import.meta.url), "utf8");
+  const raw = [...source.matchAll(/="\$\{[A-Za-z_.?]*[iI]d\}"/g)].map((match) => source.slice(0, match.index).split("\n").length);
+  assert.deepEqual(raw, [], `ids sem escape nas linhas ${raw.join(", ")}: use escapeAttribute(...) (HTML) ou cssString(...) (seletor)`);
 });
