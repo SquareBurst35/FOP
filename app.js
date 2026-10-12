@@ -426,7 +426,7 @@ function normalizeCharacter(character) {
     .filter((entry) => entry && typeof entry === "object" && entry.id && String(entry.name ?? "").trim())
     .map((entry) => {
       const clean = {
-        id: String(entry.id),
+        id: safeId(entry.id, "item"),
         name: String(entry.name).trim(),
         category: ["0", "I", "II", "III", "IV"].includes(entry.category) ? entry.category : "I",
         spaces: Math.max(0, numberOr(entry.spaces, 1)),
@@ -444,6 +444,10 @@ function normalizeCharacter(character) {
       clean.modificacoes = itemUpgrades(buildCustomWeaponItem(clean), entry.modificacoes).map((u) => u.id);
       return clean;
     });
+  // Efeitos ativos vêm de dados salvos (ou da nuvem): só texto simples e id seguro.
+  character.efeitosAtivos = (Array.isArray(character.efeitosAtivos) ? character.efeitosAtivos : [])
+    .filter((effect) => effect && typeof effect === "object" && effect.id && typeof effect.name === "string")
+    .map((effect) => ({ id: safeId(effect.id, "efeito"), name: effect.name, variant: String(effect.variant ?? "") }));
   character.inventario ??= "";
   character.anotacoes ??= "";
   character.pericias ??= "";
@@ -673,9 +677,9 @@ function renderCharacterGrid(characters) {
                 ${character.trilha ? `<span class="badge">${escapeHtml(character.trilha)}</span>` : ""}
               </div>
               <div class="card-actions">
-                <button class="button compact card-open" type="button" data-open-character="${character.id}" aria-label="Abrir ficha de ${escapeHtml(character.nome || "Agente sem nome")}">Abrir ficha <span aria-hidden="true">→</span></button>
-                <button class="button ghost compact" type="button" data-duplicate-character="${character.id}" aria-label="Duplicar ficha de ${escapeHtml(character.nome || "Agente sem nome")}">Duplicar</button>
-                <button class="button ghost compact card-delete" type="button" data-delete-character="${character.id}" aria-label="Excluir ficha de ${escapeHtml(character.nome || "Agente sem nome")}" title="Excluir ficha"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg></button>
+                <button class="button compact card-open" type="button" data-open-character="${escapeAttribute(character.id)}" aria-label="Abrir ficha de ${escapeHtml(character.nome || "Agente sem nome")}">Abrir ficha <span aria-hidden="true">→</span></button>
+                <button class="button ghost compact" type="button" data-duplicate-character="${escapeAttribute(character.id)}" aria-label="Duplicar ficha de ${escapeHtml(character.nome || "Agente sem nome")}">Duplicar</button>
+                <button class="button ghost compact card-delete" type="button" data-delete-character="${escapeAttribute(character.id)}" aria-label="Excluir ficha de ${escapeHtml(character.nome || "Agente sem nome")}" title="Excluir ficha"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg></button>
               </div>
             </article>
           `,
@@ -785,7 +789,7 @@ function renderThreatResults(list) {
             <h3>${escapeHtml(entry.name)}</h3>
             <p class="muted small">VD ${entry.vd}<br>${escapeHtml(entry.category)} · ${escapeHtml(entry.size)}</p>
           </div>
-          <button class="button primary compact" type="button" data-open-threat="${entry.id}">Ficha</button>
+          <button class="button primary compact" type="button" data-open-threat="${escapeAttribute(entry.id)}">Ficha</button>
         </article>
       `,
         )
@@ -1868,7 +1872,7 @@ function renderActiveEffects(character) {
         return `
           <div class="active-effect-chip">
             <span><strong>${escapeHtml(effect.name)}</strong><small>${escapeHtml(effect.variant)}${typeof bonus === "number" ? ` · +${bonus} Defesa` : ""}</small></span>
-            <button type="button" data-cancel-effect="${effect.id}" aria-label="Cancelar ${escapeAttribute(effect.name)}">Cancelar</button>
+            <button type="button" data-cancel-effect="${escapeAttribute(effect.id)}" aria-label="Cancelar ${escapeAttribute(effect.name)}">Cancelar</button>
           </div>
         `;
       }).join("")}
@@ -1904,13 +1908,13 @@ function abilityUseButton(entry, character) {
       : model.kind === "action"
         ? "Registrar uso"
         : "Usar · escolher custo";
-  return `<button class="entry-use-button" type="button" data-use-ability="${entry.id}">${escapeHtml(label)}</button>`;
+  return `<button class="entry-use-button" type="button" data-use-ability="${escapeAttribute(entry.id)}">${escapeHtml(label)}</button>`;
 }
 
 function ritualUseButton(entry, character) {
   const resource = effortResource(character).label;
   const baseCost = numberOr(String(entry.cost).match(/\d+/)?.[0], 0);
-  return `<button class="entry-use-button ritual" type="button" data-use-ritual="${entry.id}">Conjurar · ${baseCost} ${resource}</button>`;
+  return `<button class="entry-use-button ritual" type="button" data-use-ritual="${escapeAttribute(entry.id)}">Conjurar · ${baseCost} ${resource}</button>`;
 }
 
 function renderAbilitiesTab(character) {
@@ -1944,12 +1948,12 @@ function renderAbilityCard(entry, { automatic = false, removable = false, picker
   const specs = selectedCharacter ? choiceSpecsForAbility(entry, selectedCharacter, [], choiceContext(selectedCharacter)) : [];
   const resolved = selectedCharacter ? abilityChoiceResolved(entry, selectedCharacter) : true;
   const choiceAction = !picker && specs.length
-    ? `<button class="entry-choice-button ${resolved ? "" : "required"}" type="button" data-ability-choice="${entry.id}">${!resolved ? "Definir escolha" : abilityCanRepeatChoice(entry) ? "+ Nova escolha" : "Alterar escolha"}</button>`
+    ? `<button class="entry-choice-button ${resolved ? "" : "required"}" type="button" data-ability-choice="${escapeAttribute(entry.id)}">${!resolved ? "Definir escolha" : abilityCanRepeatChoice(entry) ? "+ Nova escolha" : "Alterar escolha"}</button>`
     : "";
   const action = picker
     ? renderAbilityPickerAction(entry)
     : removable
-      ? `<button class="entry-remove" type="button" data-ability-toggle="${entry.id}">Remover</button>`
+      ? `<button class="entry-remove" type="button" data-ability-toggle="${escapeAttribute(entry.id)}">Remover</button>`
       : "";
   return `
     <div class="entry-card-shell">
@@ -2035,8 +2039,8 @@ function renderAbilityPickerAction(entry) {
   const automatic = new Set(automaticAbilitiesFor(character).map((item) => item.id));
   if (automatic.has(entry.id)) return `<button class="button compact" type="button" disabled>Já automática</button>`;
   const selected = character.habilidadesSelecionadas.includes(entry.id);
-  if (selected && abilityCanRepeatChoice(entry)) return `<button class="button primary compact" type="button" data-ability-choice="${entry.id}" data-choice-return="picker">+ Nova escolha</button>`;
-  return `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ability-toggle="${entry.id}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`;
+  if (selected && abilityCanRepeatChoice(entry)) return `<button class="button primary compact" type="button" data-ability-choice="${escapeAttribute(entry.id)}" data-choice-return="picker">+ Nova escolha</button>`;
+  return `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ability-toggle="${escapeAttribute(entry.id)}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`;
 }
 
 function renderRitualsTab(character) {
@@ -2062,9 +2066,9 @@ function renderRitualCard(entry, { removable = false, picker = false, character 
   const selectedCharacter = character ?? (currentRoute().page === "ficha" ? getCharacter(currentRoute().id) : null);
   const selected = Boolean(selectedCharacter?.rituaisSelecionados?.includes(entry.id));
   const action = picker
-    ? `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ritual-toggle="${entry.id}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`
+    ? `<button class="button ${selected ? "ghost" : "primary"} compact" type="button" data-ritual-toggle="${escapeAttribute(entry.id)}">${selected ? "Remover da ficha" : "+ Adicionar"}</button>`
     : removable
-      ? `<button class="entry-remove" type="button" data-ritual-toggle="${entry.id}">Remover</button>`
+      ? `<button class="entry-remove" type="button" data-ritual-toggle="${escapeAttribute(entry.id)}">Remover</button>`
       : "";
   const glyphDelay = Math.min(index, 10) * 70;
   const knowsSangueRitual = (selectedCharacter?.rituaisSelecionados ?? []).some((id) => RITUAL_BY_ID.get(id)?.element === "Sangue");
@@ -2448,7 +2452,7 @@ function bindSpendDialog(character) {
     const option=spendState.options?.find(o=>o.id===button.dataset.useOption);
     if(!option||option.disabled)return;
     spendState.selectedOption=option.id;spendState.value=option.cost;reopenSpendDialog(character);
-    document.querySelector(`[data-use-option="${option.id}"]`)?.focus();
+    document.querySelector(`[data-use-option="${cssString(option.id)}"]`)?.focus();
   }));
   document.querySelector("#spend-amount")?.addEventListener("input", (event) => {
     if(spendState.options?.length)return;
@@ -2584,12 +2588,12 @@ function renderItemCard(item, { picker = false, quantity = 0, character = null, 
     ? renderItemPickerAction(item)
     : `<div class="inventory-item-actions">
         <div class="quantity-stepper" aria-label="Quantidade de ${escapeAttribute(item.name)}">
-          <button type="button" data-${custom ? "custom-item" : "item"}-quantity="${item.id}" data-item-delta="-1" ${quantity <= 1 ? "disabled" : ""} aria-label="Diminuir quantidade">−</button>
+          <button type="button" data-${custom ? "custom-item" : "item"}-quantity="${escapeAttribute(item.id)}" data-item-delta="-1" ${quantity <= 1 ? "disabled" : ""} aria-label="Diminuir quantidade">−</button>
           <output>${quantity}</output>
-          <button type="button" data-${custom ? "custom-item" : "item"}-quantity="${item.id}" data-item-delta="1" ${quantity >= 99 ? "disabled" : ""} aria-label="Aumentar quantidade">+</button>
+          <button type="button" data-${custom ? "custom-item" : "item"}-quantity="${escapeAttribute(item.id)}" data-item-delta="1" ${quantity >= 99 ? "disabled" : ""} aria-label="Aumentar quantidade">+</button>
         </div>
-        ${custom ? `<button class="button ghost compact" type="button" data-custom-item-edit="${item.id}">Editar</button>` : ""}
-        <button class="entry-remove" type="button" data-${custom ? "custom-item" : "item"}-remove="${item.id}">Remover</button>
+        ${custom ? `<button class="button ghost compact" type="button" data-custom-item-edit="${escapeAttribute(item.id)}">Editar</button>` : ""}
+        <button class="entry-remove" type="button" data-${custom ? "custom-item" : "item"}-remove="${escapeAttribute(item.id)}">Remover</button>
       </div>`;
   return `
     <details class="entry-card item-card">
@@ -2639,14 +2643,14 @@ function renderUpgradeCard(u, ownerKind, ownerId) {
         ${u.summary ? `<p>${escapeHtml(u.summary)}</p>` : ""}
         <small class="muted">${escapeHtml(u.source)} · p. ${u.page}</small>
       </div>
-      <button class="entry-remove" type="button" data-upgrade-action="remove" data-upgrade-owner="${ownerKind}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${u.id}">Remover</button>
+      <button class="entry-remove" type="button" data-upgrade-action="remove" data-upgrade-owner="${escapeAttribute(ownerKind)}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${escapeAttribute(u.id)}">Remover</button>
     </div>
   `;
 }
 
 function renderUpgradeAddOption(u, ownerKind, ownerId) {
   return `
-    <button class="upgrade-add-option" type="button" data-upgrade-action="add" data-upgrade-owner="${ownerKind}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${u.id}">
+    <button class="upgrade-add-option" type="button" data-upgrade-action="add" data-upgrade-owner="${escapeAttribute(ownerKind)}" data-upgrade-owner-id="${escapeAttribute(ownerId)}" data-upgrade-id="${escapeAttribute(u.id)}">
       <div class="upgrade-card-heading"><strong>${escapeHtml(u.name)}</strong><span class="badge ${u.curse ? "red" : ""}">${u.curse ? "Maldição" : "Modificação"}</span></div>
       <small>${escapeHtml(u.source)} · p. ${u.page}</small>
       ${u.summary ? `<small class="muted">${escapeHtml(u.summary)}</small>` : ""}
@@ -2664,7 +2668,7 @@ function renderItemPickerAction(item) {
   const character = route.page === "ficha" ? getCharacter(route.id) : null;
   const quantity = character?.inventarioItens?.find((selected) => selected.itemId === item.id)?.quantity ?? 0;
   const warning = character ? inventoryAddError(character, item) : "";
-  return `<button class="button ${warning ? "ghost" : "primary"} compact" type="button" data-item-add="${item.id}" ${warning ? `title="${escapeAttribute(warning)}"` : ""}>${quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
+  return `<button class="button ${warning ? "ghost" : "primary"} compact" type="button" data-item-add="${escapeAttribute(item.id)}" ${warning ? `title="${escapeAttribute(warning)}"` : ""}>${quantity ? `+1 · já possui ${quantity}` : "+ Adicionar"}</button>`;
 }
 
 function categoryLimitError(character, item) {
@@ -4302,7 +4306,7 @@ function bindItemDialog(character) {
       upsertCharacter(character);
       renderSheet(character.id);
       if (upgradeAction === "add") {
-        document.querySelector(`.upgrade-card:has([data-upgrade-id="${upgradeId}"])`)?.classList.add("just-added");
+        document.querySelector(`.upgrade-card:has([data-upgrade-id="${cssString(upgradeId)}"])`)?.classList.add("just-added");
       }
       showToast(upgradeAction === "add" ? "Melhoria adicionada." : "Melhoria removida.");
     });
@@ -4358,7 +4362,7 @@ function changeCustomItemQuantity(character, itemId, delta) {
   );
   upsertCharacter(character);
   renderSheet(character.id);
-  document.querySelector(`[data-custom-item-quantity="${itemId}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
+  document.querySelector(`[data-custom-item-quantity="${cssString(itemId)}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
   showToast(warning || "Quantidade atualizada.");
 }
 
@@ -4393,7 +4397,7 @@ function changeInventoryQuantity(character, itemId, delta, notify = true) {
   character.inventarioItens = entries;
   upsertCharacter(character);
   renderSheet(character.id);
-  document.querySelector(`[data-item-quantity="${itemId}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
+  document.querySelector(`[data-item-quantity="${cssString(itemId)}"]`)?.closest(".quantity-stepper")?.querySelector("output")?.classList.add("pulse");
   if (notify) showToast(warning || "Quantidade atualizada.");
 }
 
@@ -5341,7 +5345,7 @@ function renderPhotoEditDialog(character) {
       </div>
       <div class="photo-edit-body">
         <div class="photo-edit-frame" id="photo-edit-frame">
-          <img id="photo-edit-image" src="${photoEditState.src}" draggable="false" alt="" style="width:${width}px;height:${height}px;transform:translate(${photoEditState.dx}px, ${photoEditState.dy}px)" />
+          <img id="photo-edit-image" src="${escapeAttribute(photoEditState.src)}" draggable="false" alt="" style="width:${width}px;height:${height}px;transform:translate(${photoEditState.dx}px, ${photoEditState.dy}px)" />
         </div>
         <label class="photo-edit-zoom">
           <span>Distância</span>
@@ -5473,6 +5477,20 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
+}
+
+// Valor entre aspas dentro de um seletor CSS ([data-x="..."]): outro escape,
+// pois ali um `"` ou `\` fecharia o seletor e faria querySelector lançar erro.
+function cssString(value) {
+  return String(value).replace(/["\\]/g, "\\$&");
+}
+
+// Ids que chegam de dados da ficha (itens personalizados, efeitos ativos)
+// entram em atributos e seletores. Só letras, números, _ e - passam; o resto vira
+// "_", então um id vindo de arquivo ou nuvem nunca carrega marcação.
+function safeId(value, fallback) {
+  const clean = String(value ?? "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 120);
+  return clean || fallback;
 }
 
 // Animações em loop (órbita do anel dos atributos, respiração dos selos)

@@ -3,6 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Política de segurança de conteúdo. O GitHub Pages não deixa configurar
+         cabeçalhos, então vai por meta. Scripts só do próprio site e do Google
+         (SDK do Firebase e login); nada inline, o que barra injeção de código
+         mesmo que um campo da ficha escape do HTML. Os endereços do Google vêm do
+         código do SDK 12.19.0: gapi (apis.google.com), iframe de login
+         (<projeto>.firebaseapp.com), identitytoolkit, securetoken e firestore
+         (*.googleapis.com). Se subir o SDK de versão, confira esta lista. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://*.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.googleapis.com; frame-src https://*.firebaseapp.com https://*.google.com https://*.googleapis.com; object-src 'none'; base-uri 'none'; form-action 'self'"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       name="description"
       content="FOP — fichas interativas para mesas de Ordem Paranormal RPG."
@@ -11,7 +23,7 @@
     <title>FOP — Fichas Ordem Paranormal</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=1" />
     <link rel="stylesheet" href="styles.css?v=72" />
-    <link rel="stylesheet" href="account.css?v=26" />
+    <link rel="stylesheet" href="account.css?v=27" />
     <link rel="stylesheet" href="home.css?v=29" />
     <link rel="stylesheet" href="otherside.css?v=3" />
     <link rel="stylesheet" href="effects.css?v=1" />
@@ -50,8 +62,8 @@
     </footer>
 
     <script type="module" src="effects.js?v=1"></script>
-    <script type="module" src="app.js?v=134"></script>
+    <script type="module" src="app.js?v=135"></script>
     <script type="module" src="inventory-ui.js?v=58"></script>
-    <script type="module" src="account-ui.js?v=26"></script>
+    <script type="module" src="account-ui.js?v=27"></script>
   </body>
 </html>

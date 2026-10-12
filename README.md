@@ -18,6 +18,11 @@ resumos próprios em vez de reproduzir os livros.
 
 Sirva esta pasta com qualquer servidor HTTP estático e abra `index.html`.
 
+## Segurança
+
+Como os dados são protegidos e o que o dono do projeto precisa conferir nos
+painéis do Firebase e do GitHub: [docs/security.md](docs/security.md).
+
 ## Aviso
 
 Projeto de fã não oficial. Ordem Paranormal pertence aos seus respectivos

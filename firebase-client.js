@@ -1,5 +1,5 @@
 import { firebaseConfig } from './firebase-config.js?v=25';
-import { decodeDocument, encodeDocument, mutationPlan } from './character-sync.js?v=25';
+import { decodeDocument, encodeDocument, mutationPlan } from './character-sync.js?v=26';
 // Pinned official ESM distribution; no bundler or backend on GitHub Pages.
 export async function createFirebaseClient() {
   const [appSDK, authSDK, dbSDK] = await Promise.all([

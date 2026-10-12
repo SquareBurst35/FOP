@@ -77,6 +77,20 @@ export class CharacterStore {
     this.storage.setItem(CLAIMS_KEY, JSON.stringify(claims));
     return count;
   }
+  // Computador de outra pessoa: remove o que este navegador guarda da conta,
+  // inclusive as cópias locais de antes do login que ela já recebeu. Com algo
+  // ainda por enviar, a cópia do navegador é a única que existe, então nada sai.
+  clearDevice(uid) {
+    if (!uid) return { cleared: false, reason: 'no-account' };
+    if (this.storage.getItem(accountKey(uid)) !== null && Object.keys(this.state(uid).pending).length) return { cleared: false, reason: 'pending' };
+    const claims = readJSON(this.storage, CLAIMS_KEY, {}), copied = new Set(Object.keys(claims).filter(id => claims[id] === uid));
+    const guest = readJSON(this.storage, GUEST_KEY, []);
+    if (copied.size && Array.isArray(guest)) this.storage.setItem(GUEST_KEY, JSON.stringify(guest.filter(c => !copied.has(c?.id))));
+    for (const id of copied) delete claims[id];
+    this.storage.setItem(CLAIMS_KEY, JSON.stringify(claims));
+    this.storage.removeItem(accountKey(uid));
+    return { cleared: true, removedLocalCopies: copied.size };
+  }
   write(characters) {
     if (!characters.every(validCharacter)) throw Error('Ficha inválida para salvar.');
     if (!this.uid) { this.storage.setItem(GUEST_KEY, JSON.stringify(characters)); return; }
