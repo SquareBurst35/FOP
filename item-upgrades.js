@@ -1,4 +1,5 @@
 // Reference improvements belong to equipment, never to a floating body slot.
+import { DRONE_TYPES } from './drone-types.js?v=1';
 const slug=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
 const list=[];
 function add(name,target,page,summary,{source='Livro base',curse=false,spaces=0}={}){list.push({id:slug(`${source}-${target}-${name}`),name,target,page:String(page),source,curse,spaces,summary});}
@@ -90,6 +91,8 @@ for(const [target,entries]of[
    ['Proteção Elemental','Resistência 10 contra um elemento escolhido; o acessório passa a contar como um item desse elemento.'],
  ]],
 ])for(const [name,summary] of entries)add(name,target,'145–147',summary,{curse:true});
+// A primeira escolha é o tipo base incluído no equipamento; as demais são modificações.
+for(const type of DRONE_TYPES)add(type.name,'Drone de Combate Tático',type.page,type.summary,{source:'Arquivos Secretos #9'});
 export const ITEM_UPGRADES=Object.freeze(list);
 export const UPGRADE_BY_ID=new Map(list.map(u=>[u.id,u]));
 export function canApplyUpgrade(item,u){
@@ -160,8 +163,15 @@ const UPGRADE_EFFECTS = {
   "livro-base-protecoes-reforcada": (details) => mapDetail(details, "Defesa", (v) => bumpSigned(v, 2)),
   "livro-base-protecoes-blindada": (details) => mapDetail(details, "Resistência", () => "5"),
 };
-export function upgradedItem(item,ids=[]){
+export function upgradedItem(item,ids=[],character=null){
   const upgrades=itemUpgrades(item,ids),curses=upgrades.filter(u=>u.curse).length,base=['0','I','II','III','IV'].indexOf(item.category),increase=upgrades.filter(u=>!u.curse).length+(curses?curses+1:0),level=base+increase;
   const details=upgrades.reduce((current,u)=>UPGRADE_EFFECTS[u.id]?UPGRADE_EFFECTS[u.id](current):current,item.details);
+  if(item.name==='Drone de Combate Tático'){
+    // As isenções pertencem aos companheiros individuais da trilha (tactical-state).
+    // Um drone requisitado separadamente segue as categorias normais.
+    const free=0;
+    const modifications=Math.max(0,upgrades.length-1);
+    return {...item,upgrades,details,category:modifications>free?'IV':item.category,droneModifications:modifications,freeDroneModifications:free};
+  }
   return {...item,upgrades,details,category:increase?(['0','I','II','III','IV'][level]??'V+'):item.category,spaces:Math.max(0,item.spaces+upgrades.reduce((s,u)=>s+u.spaces,0))};
 }

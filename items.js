@@ -1,5 +1,6 @@
-import { upgradedItem } from "./item-upgrades.js?v=57";
-import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=55";
+import { upgradedItem } from "./item-upgrades.js?v=59";
+import { preparedAmmo, tacticalDrones } from "./tactical-state.js?v=1";
+import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=56";
 const slug = (value) =>
   String(value)
     .normalize("NFD")
@@ -335,11 +336,21 @@ export function inventoryUsage(character) {
   for (const selected of entries) {
     const originalItem = ITEM_BY_ID.get(selected.itemId);
     if (!originalItem) continue;
-    tally(upgradedItem(originalItem, character?.inventarioModificacoes?.[selected.itemId]), selected.quantity);
+    if (originalItem.name === "Drone de Combate Tático" && character.operacoesAS9?.drones) {
+      for (const drone of tacticalDrones(character).filter((d) => d.itemId === originalItem.id)) tally({ ...originalItem, category: drone.category }, 1);
+      continue;
+    }
+    tally(upgradedItem(originalItem, character?.inventarioModificacoes?.[selected.itemId], character), selected.quantity);
+    if (originalItem.group === "Munições") {
+      const unitSpaces = organized && originalItem.spaces === 0.5 ? 0.25 : originalItem.spaces;
+      spaces -= unitSpaces * preparedAmmo(character, selected.itemId, selected.quantity);
+    }
   }
   for (const entry of customEntries) {
     tally(upgradedItem(customWeaponShape(entry), entry.modificacoes), entry.quantity);
   }
+  if (Number(character.operacoesAS9?.looseDarts) > 0) tally({ category: "I", spaces: character.operacoesAS9.looseDartsPrepared ? 0 : 1 }, 1);
+  for (const ammo of character.operacoesAS9?.rounds40mm ?? []) if (ammo.quantity > 0) tally(ammo, ammo.quantity);
   const capacity = inventoryCapacity(character);
   return { spaces, quantity, capacity, overloaded: spaces > capacity, categoryCounts };
 }

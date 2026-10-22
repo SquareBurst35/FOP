@@ -5,11 +5,16 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=56";
-import { ITEMS } from "./items.js?v=58";
-import { ORIGINS, SKILLS } from "./rules.js?v=69";
+} from "./content.js?v=57";
+import { ITEMS } from "./items.js?v=60";
+import { ORIGINS, SKILLS } from "./rules.js?v=72";
+import { DRONE_TYPES } from "./drone-types.js?v=1";
 
 export const CHOICE_TYPE_LABELS = {
+  cqb: "Benefício de CQB",
+  drone: "Tipo de drone",
+  treinamento: "Treinamento",
+  configuracao: "Configuração",
   alvo: "Alvo aprimorado",
   aliado: "Tipo de aliado",
   atributo: "Atributo",
@@ -89,6 +94,29 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
   if (!entry || !character) return [];
   const levelNex = progressNex(character);
   const name = entry.name;
+  if (name === "Resistência do Treinamento" && character.origem !== "Treinado pela Hell Hunters") {
+    return [spec(entry.id, "treinamento", "Escolha o benefício do treinamento", [option("pv", "Resistência física", "+2 PV em NEX 5%, mais 1 PV a cada 10% de NEX."), option("pe", "Resistência de esforço", "+1 PE em NEX 5%, mais 1 PE a cada 10% de NEX.")])];
+  }
+  if (name === "CQB") {
+    const saved = [...(character.habilidadeEscolhas ?? []), ...staged].find((choice) => choice.abilityId === entry.id && choice.type === "cqb")?.valueId;
+    const trained = (skill) => Number(character.grausPericia?.[skill]) >= 5 || (character.periciasTreinadas ?? []).includes(skill);
+    const benefit = saved ?? (!trained("Pontaria") ? "Pontaria" : !trained("Luta") ? "Luta" : "bonus");
+    const values = { Pontaria: option("Pontaria", "Treinamento em Pontaria"), Luta: option("Luta", "Treinamento em Luta"), bonus: option("bonus", "+2 em Luta e Pontaria") };
+    return [spec(entry.id, "cqb", "Confirme o benefício ao adquirir CQB", values[benefit] ? [values[benefit]] : [], { help: "O benefício considera o treinamento que você tinha ao adquirir a habilidade e fica registrado." })];
+  }
+  if (name === "Companheiro Drone") {
+    const specs = [spec(entry.id, "drone", "Escolha o tipo do companheiro", DRONE_TYPES.map((type) => option(type.id, type.name, type.summary)))];
+    const type = selectedValue(staged, entry.id, "drone") || selectedValue(character.habilidadeEscolhas ?? [], entry.id, "drone");
+    if (type === "utilitario") {
+      const savedSkill = selectedValue(character.habilidadeEscolhas ?? [], entry.id, "pericia");
+      const skills = SKILLS.filter((skill) => !["Fortitude", "Luta", "Pontaria", "Reflexos", "Vontade"].includes(skill) && (!savedSkill || skill === savedSkill));
+      specs.push(spec(entry.id, "pericia", "Escolha a perícia permanente do Drone Utilitário", skills.map((skill) => option(skill, skill))));
+    }
+    return specs;
+  }
+  if (name === "Mestre dos Drones") {
+    return [spec(entry.id, "configuracao", "Escolha a evolução dos drones", [option("seis", "Um drone com seis modificações"), option("segundo", "Segundo drone com três modificações")])];
+  }
   const ownedAbilities = [
     ...(context.automaticAbilities ?? []),
     ...(character.habilidadesSelecionadas ?? []).map((id) => context.abilityById?.get(id)).filter(Boolean),

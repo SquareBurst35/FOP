@@ -1,6 +1,7 @@
-import { beforeSoBonus, turnSpendLimit } from "./session.js?v=33";
-import { ITEM_BY_ID } from "./items.js?v=58";
-import { upgradedItem } from "./item-upgrades.js?v=57";
+import { droneDefense, tacticalDefense, tacticalTestBonus, formationMovement } from "./tactical-state.js?v=1";
+import { beforeSoBonus, turnSpendLimit } from "./session.js?v=34";
+import { ITEM_BY_ID } from "./items.js?v=60";
+import { upgradedItem } from "./item-upgrades.js?v=59";
 export const ATTRIBUTE_TARGET = 9;
 export const MUNDANE_ATTRIBUTE_TARGET = 8;
 export const ATTRIBUTE_MAX_AT_CREATION = 3;
@@ -38,6 +39,8 @@ export const SKILLS = [
 ];
 
 export const ORIGINS = [
+  { name: "Treinado pela Hell Hunters", skills: [], skillChoices: 2, skillPairs: [["Luta", "Fortitude"], ["Pontaria", "Reflexos"]], skillChoiceLabel: "Treinamento da Hell Hunters", power: "Resistência do Treinamento", source: "Arquivos Secretos #9", sourcePage: 38 },
+  { name: "Veterano de Conflito Armado", skills: ["Luta", "Pontaria"], power: "Full Metal Jacket", source: "Arquivos Secretos #9", sourcePage: 38 },
   { name: "Revoltado", skills: ["Furtividade", "Vontade"], power: "Antes Só", source: "Marca-páginas — O Segredo na Floresta (César)", sourcePage: null },
   { name: "Acadêmico", skills: ["Ciências", "Investigação"], power: "Saber é Poder", source: "Livro base" },
   { name: "Agente de Saúde", skills: ["Intuição", "Medicina"], power: "Técnica Medicinal", source: "Livro base" },
@@ -134,6 +137,7 @@ export const CLASSES = {
     choiceSkills: (intellect) => Math.max(1, 1 + intellect),
     trails: [
       "Aniquilador",
+      "Incursor",
       "Comandante de Campo",
       "Guerreiro",
       "Operações Especiais",
@@ -153,6 +157,7 @@ export const CLASSES = {
     choiceSkills: (intellect) => Math.max(1, 7 + intellect),
     trails: [
       "Atirador de Elite",
+      "Piloto de Drone",
       "Infiltrador",
       "Médico de Campo",
       "Negociador",
@@ -331,6 +336,7 @@ const AFFINITY_SKILL_BONUSES = [
 ];
 
 export function abilitySkillBonus(character, skill) {
+  const cqbBonus = ownsCqb(character) && ["Luta", "Pontaria"].includes(skill) && cqbChoice(character) === "bonus" ? 2 : 0;
   const fromAbilities = ABILITY_SKILL_BONUSES.reduce(
     (sum, [slug, targetSkill, bonus]) => sum + (targetSkill === skill && hasSelectedPower(character, slug) ? bonus : 0),
     0,
@@ -345,7 +351,27 @@ export function abilitySkillBonus(character, skill) {
     ),
     0,
   );
-  return fromAbilities + fromOrigin + fromAffinity;
+  return fromAbilities + fromOrigin + fromAffinity + cqbBonus + tacticalTestBonus(character);
+}
+
+function ownsCqb(character) {
+  const progress = usesSeparateLevel(character) ? characterLevel(character) * 5 : Number(character?.nex) || 0;
+  return (character?.classe === "Combatente" && character?.trilha === "Incursor" && progress >= 10) || hasSelectedPower(character, "cqb");
+}
+
+function cqbChoice(character) {
+  return (character?.habilidadeEscolhas ?? []).find((choice) => choice.type === "cqb" && String(choice.abilityId).endsWith("-cqb"))?.valueId;
+}
+
+function hellTraining(character) {
+  if (!hasOriginPower(character, "Resistência do Treinamento")) return "";
+  if (character?.origem === "Treinado pela Hell Hunters") {
+    const skills = character.periciasOrigemEscolhidas ?? [];
+    if (skills.length === 2 && ["Luta", "Fortitude"].every((skill) => skills.includes(skill))) return "pv";
+    if (skills.length === 2 && ["Pontaria", "Reflexos"].every((skill) => skills.includes(skill))) return "pe";
+    return "";
+  }
+  return (character?.habilidadeEscolhas ?? []).find((choice) => choice.type === "treinamento" && String(choice.abilityId).endsWith("-resistencia-do-treinamento"))?.valueId ?? "";
 }
 
 export function equippedProtections(character) {
@@ -380,7 +406,8 @@ function equipmentDefenseBonus(character) {
 // vez conjurados, então entram por ativarRitualEffect()/efeitosAtivos em vez
 // de daqui (ver mais abaixo).
 function abilityDefenseBonus(character) {
-  let bonus = 0;
+  const formation = character?.operacoesAS9?.formation;
+  let bonus = droneDefense(character) + tacticalDefense(character) + (formation?.type === "cunha" && formation.untilTurn >= (character.operacoesAS9.turn ?? 1) ? 5 : 0);
   if (hasSelectedPower(character, "reflexos-defensivos")) bonus += 2;
   if (hasSelectedPower(character, "precognicao")) bonus += 2;
   if (hasOriginPower(character, "Patrulha")) bonus += 2;
@@ -469,6 +496,9 @@ const COMBATENTE_MONSTRUOSO_RESISTANCE_TYPES = {
 // Sangue o personagem conhece.
 export function characterResistances(character, { rituals = [], paranormalPowers = [] } = {}) {
   const list = [];
+  if (equippedProtections(character).some((item) => item.name === "Escudo Balístico LED")) {
+    list.push({ label: "Balístico", value: 10, source: "Escudo Balístico LED" });
+  }
   const hurt = isCharacterHurt(character);
 
   for (const effect of character?.efeitosAtivos ?? []) {
@@ -537,6 +567,7 @@ function originVitalityBonus(character, nex) {
   let bonus = 0;
   if (hasOriginPower(character, "Fôlego de Nadador")) bonus += 5;
   if (!isSurvivorCharacter(character) && hasOriginPower(character, "Calejado")) bonus += Math.floor(nex / 5);
+  if (nex >= 5 && hellTraining(character) === "pv") bonus += 2 + Math.floor(nex / 10);
   return bonus;
 }
 
@@ -544,9 +575,10 @@ function originVitalityBonus(character, nex) {
 // ímpar (15%, 25%, 35%...); essa escala não faz sentido pra Sobrevivente,
 // mas o +1 PE base continua valendo pra ele.
 function originEffortBonus(character, level) {
-  if (!hasOriginPower(character, "Dedicação")) return 0;
+  const training = Number(character?.nex) >= 5 && hellTraining(character) === "pe" ? 1 + Math.floor(Number(character.nex) / 10) : 0;
+  if (!hasOriginPower(character, "Dedicação")) return training;
   const oddNexSteps = isSurvivorCharacter(character) ? 0 : Math.floor(Math.max(0, level - 1) / 2);
-  return 1 + oddNexSteps;
+  return 1 + oddNexSteps + training;
 }
 
 function ritualDtItemBonus(character, ritual, knowsSangueRitual) {
@@ -641,7 +673,7 @@ export function calculateDerived(character) {
       peMax: 0,
       sanMax: 0,
       defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
-      deslocamento: 9,
+      deslocamento: 9 + formationMovement(character),
       advances,
       skillChoices: 0,
       fixedSkills: [],
@@ -671,7 +703,7 @@ export function calculateDerived(character) {
       peMax: classData.initial.pe + effortAttribute + advances * classData.gain.pe + personalityEffort + willEffortBonus + originEffort,
       sanMax: classInitialSan + advances * classData.gain.san,
       defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
-      deslocamento: 9,
+      deslocamento: 9 + formationMovement(character),
       advances,
       skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
       fixedSkills: classData.fixedSkills,
@@ -692,7 +724,7 @@ export function calculateDerived(character) {
     peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort + combatenteEsforcadoBonus + potencialAprimoradoBonus,
     sanMax: Math.max(0, classInitialSan + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
-    deslocamento: 9,
+    deslocamento: 9 + formationMovement(character),
     advances,
     skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
     fixedSkills: classData.fixedSkills,
@@ -749,6 +781,8 @@ function powerGrantedSkills(character) {
   if (progressNex >= 10 && character?.trilha === "Caçador") trailSkills.push("Sobrevivência");
   if (progressNex >= 10 && character?.trilha === "Monstruoso") trailSkills.push("Ocultismo");
   if (progressNex >= 10 && character?.trilha === "Exorcista") trailSkills.push("Religião");
+  const cqb = cqbChoice(character);
+  if (ownsCqb(character) && ["Luta", "Pontaria"].includes(cqb)) trailSkills.push(cqb);
   return uniqueSkills([...POWER_SKILL_GRANTS
     .filter(([suffix]) => selected.some((id) => id.endsWith(suffix)))
     .map(([, skill]) => skill), ...trailSkills]);
@@ -768,6 +802,7 @@ export function getSkillConfiguration(character) {
     originAutomatic,
     originChoiceCount: Number(origin?.skillChoices) || 0,
     originChoiceLabel: origin?.skillChoiceLabel || "Perícias da origem",
+    originSkillPairs: origin?.skillPairs ?? [],
     classAutomatic: rawClassAutomatic.filter((skill) => !originAutomatic.includes(skill)),
     classChoiceGroups: derived.skillChoiceGroups ?? [],
     classChoiceCount: derived.skillChoices + repeatedAutomaticSkills,
@@ -781,6 +816,9 @@ export function sanitizeSkillSelections(character) {
   character.periciasOrigemEscolhidas = uniqueSkills(character.periciasOrigemEscolhidas ?? [])
     .filter((skill) => !blockedAtStart.has(skill))
     .slice(0, config.originChoiceCount);
+  if (config.originSkillPairs.length && !config.originSkillPairs.some((pair) => pair.length === character.periciasOrigemEscolhidas.length && pair.every((skill) => character.periciasOrigemEscolhidas.includes(skill)))) {
+    character.periciasOrigemEscolhidas = [];
+  }
 
   const blockedForGroups = new Set([
     ...blockedAtStart,

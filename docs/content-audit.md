@@ -1,5 +1,13 @@
 # Auditoria de Arquivos Secretos 3–7
 
+> Nota de retomada (20/10/2026): este documento reúne checkpoints históricos.
+> As referências abaixo à ausência de interface/catálogo de Ameaças foram
+> superadas; a implementação e a conferência estão em [threats-audit.md](threats-audit.md).
+> Para a organização atual do projeto, veja [estado-atual.md](estado-atual.md).
+>
+> O pacote de setembro/2026, identificado no expediente como #9, foi apurado em
+> [as09-audit.md](as09-audit.md). O #8 não foi fornecido nesta retomada.
+
 Status: **opções de personagem concluídas nos cinco suplementos** (AS #3, #4, #5, #6 e #7), integradas de verdade nos catálogos principais entre setembro de 2026 — não no schema de rascunho de `supplements/`, que está superado e é mantido apenas para não quebrar testes antigos.
 
 O que permanece **fora do escopo** por decisão registrada, não por esquecimento: fichas de ameaças e aliados (o site não tem essa interface), tabelas de mesa/mestre (doenças, venenos, criação de ameaças, animais), subsistemas opcionais que o site não implementa (veículos operacionais, hacking, combate submerso, batalhas de intenções, construção de base), regras opcionais não canônicas (Evolução Modular) e os "novos usos de perícia" (não existe catálogo para eles). Cada tabela abaixo marca item por item o que entrou e o motivo do que ficou fora.

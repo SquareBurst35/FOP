@@ -1,4 +1,4 @@
-import { artForItem } from "./item-art.js?v=55";
+import { artForItem } from "./item-art.js?v=56";
 import { drawItemIcon } from "./item-icons.js?v=1";
 
 const REPAINTING_CONTROLS = [

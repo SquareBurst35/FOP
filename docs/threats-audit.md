@@ -1,5 +1,10 @@
 # Auditoria de Ameaças (fichas de mestre)
 
+Atualização de 20/10/2026: oito fichas dos Hell Hunters, do Arquivos Secretos #9,
+foram integradas após conferência visual (pp.21, 23, 25, 27, 29, 31, 33–35).
+O catálogo atual tem **196 fichas**. Fonte, valores e divergências estão em
+[as09-audit.md](as09-audit.md). As contagens abaixo são checkpoints históricos.
+
 Pedido do usuário: uma aba "Ameaças" no site, separada da criação/ficha de
 personagem, catalogando as ameaças de todos os livros com ficha de combate
 completa (atributos, defesas, perícias, ações) para o mestre consultar na

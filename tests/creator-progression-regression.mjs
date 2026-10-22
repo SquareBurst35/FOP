@@ -1,3 +1,6 @@
+import * as tacticalOperations from "../tactical.js";
+import * as tacticalUI from "../tactical-ui.js";
+import * as tacticalStateModule from "../tactical-state.js";
 import * as upgrades from "../item-upgrades.js";
 import * as useOptions from "../use-options.js";
 import assert from 'node:assert/strict';
@@ -21,7 +24,7 @@ function boot(className,nex,trail='') {
   };
   const document={querySelector:element,querySelectorAll:()=>[],getElementById:element};
   const window={location:{hash:''},scrollY:0,addEventListener(){},scrollTo(){},setTimeout(){},clearTimeout(){}};
-  const context=vm.createContext({...rules,...content,...items,...progression,...choices,...session,...useOptions,...upgrades,...threats,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
+  const context=vm.createContext({...tacticalOperations,...tacticalUI,...tacticalStateModule,...rules,...content,...items,...progression,...choices,...session,...useOptions,...upgrades,...threats,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
   vm.runInContext(source,context);
   const run=code=>vm.runInContext(code,context);
   const data={classe:className,nex,nivel:nex/5,origem:'Acadêmico',trilha:trail,nome:'Agente de teste',atributos:{agilidade:1,forca:1,intelecto:3,presenca:2,vigor:2}};
@@ -132,3 +135,79 @@ for(const ritual of content.RITUALS.filter(r=>r.family==='Amaldiçoar Arma')) {
 const aliases=boot('Ocultista',5);
 aliases.run("ritualSearch='distorcao temporal';activeRitualCircle=4;activeRitualElement='Morte'");
 assert.match(aliases.run('renderRitualPickerResults()'),/Distorção Temporal/);
+
+// AS9: paired origin training must survive the real creator and a saved sheet.
+for (const pair of [['Luta', 'Fortitude'], ['Pontaria', 'Reflexos']]) {
+  const ui = boot('Combatente', 5);
+  ui.run(`creatorState.origem='Treinado pela Hell Hunters';creatorState.periciasOrigemEscolhidas=${JSON.stringify(pair)};creatorProgress=null;levelUpState=null;currentStep=3;`);
+  assert.match(ui.run('renderSkillStep()'), /data-origin-skill-pair/);
+  ui.run(`{
+    const config=getSkillConfiguration(creatorState),blocked=new Set(creatorState.periciasOrigemEscolhidas);
+    creatorState.periciasClasseObrigatorias=config.classChoiceGroups.map(group=>group.find(s=>!blocked.has(s))||'');
+    const taken=new Set([...blocked,...creatorState.periciasClasseObrigatorias]);
+    creatorState.periciasEscolhidas=SKILLS.filter(s=>!taken.has(s)).slice(0,config.classChoiceCount);
+    var as9SkillComplete=skillSelectionStatus(creatorState).complete;
+    currentStep=4;ensureCreatorProgress();
+  }`);
+  assert.equal(ui.run('as9SkillComplete'), true);
+  fillLevel(ui);
+  assert.equal(ui.run('creatorProgress.complete'), true);
+  ui.run('currentStep=7;advanceCreator()');
+  const savedHell = JSON.parse(ui.store.get('fop_personagens_v1'))[0];
+  assert.deepEqual(savedHell.periciasOrigemEscolhidas, pair);
+  const baseline = rules.calculateDerived({ ...savedHell, origem: '' });
+  assert.equal(savedHell.recursos[pair[0] === 'Luta' ? 'pvMax' : 'peMax'] - baseline[pair[0] === 'Luta' ? 'pvMax' : 'peMax'], pair[0] === 'Luta' ? 2 : 1);
+}
+for (const [cls, name] of [['Combatente', 'Incursor'], ['Especialista', 'Piloto de Drone']]) {
+  const ui = boot(cls, 10, name);
+  while (!ui.run('creatorProgress.complete')) fillLevel(ui);
+  const selected = JSON.parse(ui.run('JSON.stringify(creatorOutput().habilidadeEscolhas)'));
+  assert.ok(selected.some(c=>c.type===(cls==='Combatente'?'cqb':'drone')));
+}
+
+const hellPairEvent = boot('Combatente', 5);
+hellPairEvent.run(`
+  creatorState.origem='Treinado pela Hell Hunters';creatorState.periciasOrigemEscolhidas=[];currentStep=3;
+  var as9PairCallback=null;
+  var as9PairInput={value:'1',addEventListener:(event,handler)=>{if(event==='change')as9PairCallback=handler;}};
+  document.querySelectorAll=(selector)=>selector==='[data-origin-skill-pair]'?[as9PairInput]:[];
+  bindCreatorStep();
+`);
+assert.equal(hellPairEvent.run('typeof as9PairCallback'), 'function', 'The pair choice must be wired after rendering');
+hellPairEvent.run('as9PairCallback()');
+assert.deepEqual(JSON.parse(hellPairEvent.run('JSON.stringify(creatorState.periciasOrigemEscolhidas)')), ['Pontaria', 'Reflexos']);
+
+// As transações também devem continuar reversíveis depois da normalização e do salvamento reais.
+const operationApp = boot('Especialista', 10, 'Piloto de Drone');
+operationApp.run(`
+  var opCharacter={...createBlankCharacter(),nome:'Teste de operação',classe:'Especialista',trilha:'Piloto de Drone',nex:40,nivel:8};
+  opCharacter.habilidadeEscolhas=[{abilityId:TRAIL_ABILITIES.find(a=>a.name==='Companheiro Drone').id,type:'drone',valueId:'medico',value:'Drone Médico'}];
+  applyDerived(opCharacter,true); upsertCharacter(opCharacter);
+  var opResult=performTacticalAction(opCharacter,'droneConfig',{droneId:'companheiro-1',types:['medico','inteligente','protetor'],available:true,operated:true});
+  if(!opResult.ok)throw new Error(opResult.message);
+  upsertCharacter(opCharacter);
+  var opLoaded=getCharacter(opCharacter.id);
+`);
+assert.equal(operationApp.run('opLoaded.operacoesAS9.drones[0].category'), 'IV');
+assert.equal(operationApp.run('undoLastUse(opLoaded).ok'), true, 'Salvar não pode invalidar o snapshot da operação');
+assert.equal(operationApp.run('opLoaded.operacoesAS9'), undefined);
+operationApp.run(`
+  var oldDrone=ITEMS.find(i=>i.name==='Drone de Combate Tático');
+  opCharacter.inventarioItens=[{itemId:oldDrone.id,quantity:1}];
+  opCharacter.habilidadeEscolhas.push({abilityId:oldDrone.id,type:'pericia',valueId:'Tecnologia',value:'Tecnologia'});
+  normalizeCharacter(opCharacter);
+`);
+assert.equal(operationApp.run('opCharacter.habilidadeEscolhas.some(c=>c.abilityId===oldDrone.id&&c.valueId==="Tecnologia")'),true,'Perícia permanente legada do item sobrevive à normalização');
+
+operationApp.run(`
+  var opAxe={...createBlankCharacter(),nome:'Bloqueio',classe:'Combatente',nex:99,nivel:20};
+  var axeItem=ITEMS.find(i=>i.name==='Machado Tático');
+  var axeUpgrade=ITEM_UPGRADES.find(i=>i.name==='Certeira');
+  opAxe.inventarioItens=[{itemId:axeItem.id,quantity:1}]; opAxe.inventarioModificacoes={[axeItem.id]:[axeUpgrade.id]};
+  applyDerived(opAxe,true); upsertCharacter(opAxe);
+  var axeResult=performTacticalAction(opAxe,'axe',{damage:30,reduction:5});
+  if(!axeResult.ok)throw new Error(axeResult.message);
+  upsertCharacter(opAxe);var axeReloaded=getCharacter(opAxe.id);
+`);
+assert.equal(operationApp.run('undoLastUse(axeReloaded).ok'),true);
+assert.equal(operationApp.run('axeReloaded.inventarioModificacoes[axeItem.id][0]'),operationApp.run('axeUpgrade.id'),'Desfazer a destruição também devolve as melhorias do machado');

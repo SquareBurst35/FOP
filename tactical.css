@@ -1,0 +1,30 @@
+.operation-panel { min-width: 0; border-top: 1px solid var(--border); }
+.operation-panel > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; cursor: pointer; }
+.operation-panel > summary small { display: block; margin-top: 4px; color: var(--muted); }
+.operation-panel .entry-body { padding: 4px 0 10px; }
+.operation-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.operation-actions .button { white-space: normal; text-align: left; }
+.operation-result { padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,.035); overflow-wrap: anywhere; }
+.operation-result p { margin: 6px 0 0; line-height: 1.6; }
+.operation-effects { padding-left: 20px; color: var(--muted); font-size: .83rem; line-height: 1.7; }
+.operation-dialog[open] { display: block; width: min(760px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); height: auto; padding: 0; overflow: auto; }
+.operation-dialog form { padding: 22px; }
+.operation-dialog .dialog-heading { margin-bottom: 12px; }
+.operation-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.operation-fields > p, .operation-fields > .skill-option, .operation-fields > fieldset, .operation-fields > [data-drone-config-fields] { grid-column: 1 / -1; }
+.operation-fields .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.operation-fields select, .operation-fields input:not([type=checkbox]) { width: 100%; min-width: 0; }
+.operation-group { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 16px; border: 1px solid var(--border); border-radius: 8px; }
+.operation-group legend { padding: 0 7px; font-weight: 600; }
+.operation-dialog .skill-option { align-items: center; font-size: .83rem; line-height: 1.5; }
+.operation-dialog [data-drone-config-fields] { display: grid; gap: 14px; }
+.operation-dialog [data-drone-action-body], .operation-dialog [data-drone-action-fields] { display: grid; gap: 14px; min-width: 0; }
+.operation-fields > [data-drone-action-body] { grid-column: 1 / -1; }
+.operation-dialog .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; }
+.operation-error { color: #ff8790; }
+@media (max-width: 540px) {
+  .operation-fields { grid-template-columns: minmax(0, 1fr); }
+  .operation-dialog form { padding: 16px; }
+  .operation-panel > summary { align-items: flex-start; }
+  .operation-panel > summary .badge { white-space: normal; text-align: right; }
+}

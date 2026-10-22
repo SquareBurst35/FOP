@@ -72,6 +72,11 @@ export const CORE_CLASS_ABILITIES = [
 ];
 
 export const CLASS_POWERS = [
+  // Arquivos Secretos #9, p.39 — Hell Hunters.
+  ability({ name: "Municiador Ambulante", category: "Combatente", group: "Poderes de Combatente", summary: "No interlúdio, a ação municiar prepara pacotes de munição que você já possui: role 1d6 por ponto de Intelecto. Os pacotes preparados não ocupam espaços enquanto carregados.", cost: "Interlúdio", requirement: "INT 2", unlockNex: 15, source: "Arquivos Secretos #9", page: "39" }),
+  ability({ name: "Ripostar Ousado", category: "Combatente", group: "Poderes de Combatente", summary: "Antes de saber o resultado de um ataque corpo a corpo contra você, use sua reação especial de defesa e 2 PE: +5 na Defesa contra esse ataque e faça um contra-ataque. Se o inimigo errar, seu contra-ataque recebe +5 no teste.", cost: "2 PE", requirement: "AGI 2 e treinado em Luta", unlockNex: 15, source: "Arquivos Secretos #9", page: "39" }),
+  ability({ name: "Tática de Abordagem", category: "Combatente", group: "Poderes de Combatente", summary: "Uma vez por cena de interlúdio, planeje uma ameaça futura com o grupo e teste Tática DT 10: sucesso concede 1d6 de tática, mais um dado por 5 pontos excedentes. Como reação, distribua quantos dados quiser em testes, dano ou cura seus ou dos participantes do plano, sem limite de distância. Os dados restantes expiram no próximo interlúdio.", cost: "Interlúdio", requirement: "INT 1 e veterano em Tática", unlockNex: 15, source: "Arquivos Secretos #9", page: "39" }),
+  ability({ name: "Tiro Intuitivo", category: "Combatente", group: "Poderes de Combatente", summary: "Ao atacar à distância sem usar a ação mirar, gaste 2 PE para ampliar em +2 a margem de ameaça desse ataque.", cost: "2 PE", requirement: "Veterano em Pontaria", unlockNex: 15, source: "Arquivos Secretos #9", page: "39" }),
   // Combatente — livro base
   ability({ name: "Acuidade com Arma", category: "Combatente", group: "Poderes de Combatente", summary: "Permite usar Agilidade no ataque e no dano com armas leves corpo a corpo ou de arremesso.", requirement: "AGI 2", unlockNex: 15 }),
   ability({ name: "Armamento Pesado", category: "Combatente", group: "Poderes de Combatente", summary: "Concede proficiência com armas pesadas.", requirement: "FOR 2", unlockNex: 15 }),
@@ -308,6 +313,14 @@ const trail = (category, group, source, entries) =>
   );
 
 export const TRAIL_ABILITIES = [
+  ability({ name: "CQB", category: "Combatente", group: "Incursor", summary: "Recebe treinamento em Pontaria; se já treinado, recebe Luta; se já treinado nas duas, recebe +2 em ambas. Registre o benefício ao adquirir. Ao disparar contra um alvo engajado em corpo a corpo, 1 PE anula a penalidade de −5 em Pontaria.", cost: "1 PE", unlockNex: 10, source: "Arquivos Secretos #9", page: "40" }),
+  ability({ name: "Entrada Explosiva", category: "Combatente", group: "Incursor", summary: "+5 nos testes para implantar ou utilizar explosivos. Por 1 PE, instala mina antipessoal ou carga de arrombamento com ação de movimento, em vez de ação completa.", cost: "1 PE", unlockNex: 40, source: "Arquivos Secretos #9", page: "40" }),
+  ability({ name: "Proteger Reféns", category: "Combatente", group: "Incursor", summary: "Como reação e por 2 PE, assume um efeito negativo dirigido a um refém que protege a até 3 m. Se for dano, mais 2 PE reduzem esse dano à metade. Pode repetir na rodada, protegendo até três reféns distintos.", cost: "2 a 4 PE", unlockNex: 65, source: "Arquivos Secretos #9", page: "40" }),
+  ability({ name: "Alvo-prioritário", category: "Combatente", group: "Incursor", summary: "O mestre informa o VD dos inimigos à vista. Por 5 PE, marque um deles: com VD até 200, qualquer dano seu o reduz a 0 PV; com VD a partir de 201, sua margem de ameaça contra ele aumenta em +5. A marca dura até derrotá-lo ou escolher outro alvo.", cost: "5 PE", unlockNex: 99, source: "Arquivos Secretos #9", page: "40" }),
+  ability({ name: "Companheiro Drone", category: "Especialista", group: "Piloto de Drone", summary: "Recebe um Drone de Combate Tático como companheiro e escolhe seu tipo de aliado. Para consertá-lo, use 1 ação de interlúdio com as peças quebradas; para substituí-lo, use 2 ações. Veja os efeitos do tipo escolhido e as regras do equipamento.", cost: "Interlúdio", unlockNex: 10, source: "Arquivos Secretos #9", page: "41" }),
+  ability({ name: "Protetor dos Drones", category: "Especialista", group: "Piloto de Drone", summary: "Aplica uma modificação ao companheiro sem aumentar sua categoria. Quando ele sofrer um efeito negativo, gaste 3 PE para evitá-lo; Mestre dos Drones reduz esse custo a 1 PE.", cost: "3 PE", unlockNex: 40, source: "Arquivos Secretos #9", page: "41" }),
+  ability({ name: "Ás dos Drones", category: "Especialista", group: "Piloto de Drone", summary: "Acrescenta duas modificações ao companheiro, totalizando três, sem aumentar a categoria. Após falhar num teste feito por meio do drone, 3 PE permitem uma única nova tentativa.", cost: "3 PE", unlockNex: 65, source: "Arquivos Secretos #9", page: "41" }),
+  ability({ name: "Mestre dos Drones", category: "Especialista", group: "Piloto de Drone", summary: "Escolha entre acrescentar três modificações ao companheiro (seis no total, sem aumentar a categoria) ou receber um segundo drone com três modificações. O custo para evitar efeitos negativos no drone cai a 1 PE.", cost: "Passivo", unlockNex: 99, source: "Arquivos Secretos #9", page: "41" }),
   ...trail("Sobrevivente", "Durão", "Sobrevivendo ao Horror", [
     ["Durão", 2, "Recebe +4 PV no estágio 2 e mais +2 PV ao chegar ao estágio 3."],
     ["Pancada Forte", 4, "Ao fazer um ataque, gaste 1 PE para receber +1d20 no teste de ataque.", "1 PE"],
@@ -572,6 +585,8 @@ export const PARANORMAL_POWERS = [
 ];
 
 export const ORIGIN_POWER_DETAILS = {
+  "Resistência do Treinamento": ["Escolha o treinamento da Hell Hunters: Luta e Fortitude concedem +2 PV em NEX 5% e +1 PV a cada 10% de NEX; Pontaria e Reflexos concedem +1 PE em NEX 5% e +1 PE a cada 10% de NEX. O benefício segue o par escolhido na criação.", "Passivo"],
+  "Full Metal Jacket": ["Ao testar Luta ou Pontaria sob uma penalidade, gaste 2 PE para ignorá-la apenas nesse teste.", "2 PE"],
   "Antes Só": ["Sem aliados em alcance curto, ganhe +1 na Defesa, nos testes de perícia e no limite de PE por turno. Em Determinação, o acréscimo se aplica ao limite de PD. Marque a situação no painel de turno/cena.", "Passivo"],
   "Saber é Poder": ["Ao testar usando Intelecto, pode gastar 2 PE para receber +5 no teste.", "2 PE"],
   "Técnica Medicinal": ["Sempre que cura um personagem, soma seu Intelecto ao total de PV curados.", "Passivo"],
@@ -631,6 +646,8 @@ export const ORIGIN_POWER_DETAILS = {
 };
 
 export const ORIGIN_BACKGROUNDS = {
+  "Treinado pela Hell Hunters": "Um treinamento rigoroso com os Hell Hunters preparou você para manter a resistência durante confrontos com o paranormal.",
+  "Veterano de Conflito Armado": "Sua experiência com conflitos armados ensinou você a continuar lutando apesar da dor e das perdas.",
   "Revoltado": "Você aprendeu a agir por conta própria e questionar o mundo ao seu redor. Agora usa essa independência em suas missões.",
   "Acadêmico": "Você passou boa parte da vida entre estudos, pesquisas e ambientes de ensino, aprendendo a encontrar respostas onde outros veem apenas informação solta.",
   "Agente de Saúde": "Sua experiência cuidando de pessoas ensinou a reconhecer sintomas, manter a calma e agir quando alguém precisa de atendimento.",
@@ -853,6 +870,7 @@ export function allSelectableAbilities(origins = []) {
       cost,
       requirement: `Origem ${origin.name}`,
       source: origin.source,
+      page: origin.sourcePage ?? "",
     });
   });
   return [...CLASS_POWERS, ...TRAIL_ABILITIES, ...GENERAL_POWERS, ...PARANORMAL_POWERS, ...originAbilities];

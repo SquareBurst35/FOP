@@ -9280,4 +9280,136 @@ export const THREATS = [
   }),
 ];
 
+// Arquivos Secretos #9 — valores conferidos nas páginas renderizadas.
+// Treinamento Tático já está incluído nos números impressos: não somar +5 outra vez.
+const tacticalTraining = (attacks = 2) => ({ nome: "Treinamento Tático", descricao: `Os bônus de +5 em ataque, resistências, dano e Defesa já estão incluídos nesta ficha. Uma ação padrão permite ${attacks} ações agredir.` });
+const tacticalManeuver = { tipo: "Livre", nome: "Luta Tática", descricao: "Uma vez por rodada, realiza uma manobra de combate como ação livre." };
+const hunterAttack = (nome, execucao, dice, bonus, formula, tipo = "balístico", critico = "") => ({ tipo: "Padrão", nome: "Agredir", ataques: [{ nome, execucao, teste: test(dice, bonus), dano: { formula, tipo }, ...(critico ? { critico } : {}) }] });
+const hunterSkills = (rows) => rows.map(([nome, dice, bonus]) => ({ nome, teste: test(dice, bonus) }));
+const hunter = (data) => threat({ source: "Arquivos Secretos #9", element: "Realidade", category: "Pessoa", size: "Médio", deslocamentoMetros: 9, deslocamentoQuadrados: 6, ...data });
+const fragmentation = { tipo: "Padrão", nome: "Fragmentação", descricao: "Uma vez por cena, lança granada em alcance curto: raio de 6 m, dano de perfuração 8d6. Reflexos DT 23 reduz à metade." };
+
+THREATS.push(
+  hunter({
+    name: "Jason Bloom", page: "21", vd: 140, defesa: 30, pontosDeVida: 200, machucadoEm: 100,
+    percepcao: test(2, 0), iniciativa: test(2, 5), fortitude: test(3, 15), reflexos: test(2, 10), vontade: test(2, 5),
+    atributos: { agi: 2, for: 3, int: 1, pre: 2, vig: 3 },
+    pericias: hunterSkills([["Atletismo", 3, 10], ["Intimidação", 2, 5], ["Pilotagem", 2, 10], ["Tática", 1, 5]]),
+    resistencias: [{ tipos: ["Geral"], valor: 10 }],
+    habilidadesPassivas: [
+      { nome: "Blindado", descricao: "RD 10; seu equipamento pesado não reduz o deslocamento." }, tacticalTraining(),
+      { nome: "Como aliado", descricao: "+1d20 em Fortitude. Proteção de Jason: ao sofrer dano, reação e 2 PE reduzem esse dano em 10." },
+    ],
+    acoes: [hunterAttack("Escudada", "Corpo a corpo", 3, 20, "2d8+15", "impacto"), hunterAttack("Pistola modificada", "À distância · Curto", 2, 20, "2d10+17", "balístico", "16"),
+      { tipo: "Reação", nome: "Proteger", descricao: "Uma vez por rodada, assume dano ou outro efeito negativo dirigido a um aliado adjacente." }, tacticalManeuver,
+      { tipo: "Padrão", nome: "Atrás de Mim!", descricao: "Até o início de seu próximo turno, aliados adjacentes recebem RD 10 e podem usá-lo como cobertura (+5 na Defesa)." },
+      { tipo: "Completa", nome: "Empurrar e Atirar", descricao: "Avança com o escudo e empurra um alvo adjacente por metros iguais ao seu deslocamento, causando 4d12+24 balístico. Fortitude ou Reflexos DT 22 reduz o dano à metade e impede o empurrão." },
+    ], descricao: "Protetor de linha de frente dos Hell Hunters, especializado em escudo e resgate de companheiros.",
+  }),
+  hunter({
+    name: "Karen Brown", page: "23", vd: 160, defesa: 33, pontosDeVida: 240, machucadoEm: 120,
+    percepcao: test(3, 15), iniciativa: test(4, 10), fortitude: test(2, 10), reflexos: test(4, 15), vontade: test(3, 15),
+    atributos: { agi: 4, for: 2, int: 2, pre: 3, vig: 2 },
+    pericias: hunterSkills([["Acrobacia", 4, 10], ["Atletismo", 2, 10], ["Furtividade", 4, 10], ["Intimidação", 3, 15], ["Pilotagem", 4, 10], ["Tática", 2, 10]]),
+    habilidadesPassivas: [
+      { nome: "Olhos de Águia", descricao: "+5 em Percepção e +2 na margem de ameaça de ataques à distância já incluídos nos valores apresentados." }, tacticalTraining(),
+      { nome: "Como aliado", descricao: "+1d20 em Pontaria. Disparo de Karen: ao causar dano, pode gastar 2 PE para causar +3d6 de dano." },
+    ],
+    acoes: [hunterAttack("Pistola modificada", "À distância · Curto", 4, 20, "2d12+17", "balístico", "14"), hunterAttack("Fuzil de precisão modificado", "À distância · Longo", 4, 20, "3d12+17", "balístico", "15/x3"), tacticalManeuver,
+      { tipo: "Movimento", nome: "Buscar Cobertura", descricao: "Se enxergar uma cobertura, desloca-se até o dobro de seu deslocamento na direção dela." },
+      { tipo: "Completa", nome: "Fogo de Supressão", descricao: "Uma vez por rodada, prepara um cone com alcance da arma até o próximo turno. Reage quando um alvo age, até 4 tiros e no máximo um por alvo. Mesmo se errar, o alvo testa Vontade DT 25; se acertar, DT 30. Falhar deixa o alvo intimidado e impede a ação pretendida." },
+    ], descricao: "Atiradora dos Hell Hunters, encarregada de preparar os esquadrões para enfrentar ameaças.",
+  }),
+  hunter({
+    name: "Troy Walker", page: "25", vd: 140, defesa: 29, pontosDeVida: 180, machucadoEm: 90,
+    percepcao: test(2, 0), iniciativa: test(2, 5), fortitude: test(3, 15), reflexos: test(2, 10), vontade: test(2, 5),
+    atributos: { agi: 2, for: 3, int: 1, pre: 2, vig: 3 },
+    pericias: hunterSkills([["Atletismo", 3, 10], ["Intimidação", 2, 10], ["Pilotagem", 2, 10], ["Tática", 1, 5]]),
+    habilidadesPassivas: [
+      { nome: "Adrenalina de Pancadaria", descricao: "As faixas impressas de PV concedem RD e dano extra: 135–90, 5/+5; 90–45, 10/+10; 45–0, 15/+15. Os limites 90 e 45 aparecem em duas faixas; a fonte não resolve a sobreposição." },
+      { nome: "Pé na Porta", descricao: "Causa +4d8 de dano contra itens." }, tacticalTraining(),
+      { nome: "Como aliado", descricao: "+1d20 em Luta. Investida do Troy: ao atacar, pode gastar uma reação e 5 PE para fazer um ataque adicional." },
+    ],
+    acoes: [hunterAttack("Coronhada", "Corpo a corpo", 3, 20, "3d6+15", "impacto"), hunterAttack("Espingarda modificada", "À distância · Curto", 2, 20, "4d6+17", "balístico", "18/x3"),
+      { tipo: "Reação", nome: "Revidar", descricao: "Uma vez por rodada, opõe seu ataque corpo a corpo a um ataque corpo a corpo recebido. Vencer evita o golpe e causa seu dano corpo a corpo; perder permite o acerto normal." }, tacticalManeuver,
+      { tipo: "Padrão", nome: "Pra Cima Deles!", descricao: "Faz um ataque válido contra os alvos permitidos por ele. Acerto causa dano máximo; erro impõe −10 na Defesa de Troy por 1 rodada." },
+    ], descricao: "Combatente dos Hell Hunters que se especializa em confrontos próximos e assume riscos para proteger a equipe.",
+  }),
+  hunter({
+    name: "Roy Stevens", page: "27", vd: 160, defesa: 32, pontosDeVida: 250, machucadoEm: 125,
+    percepcao: test(4, 10), iniciativa: test(2, 10), fortitude: test(3, 15), reflexos: test(2, 10), vontade: test(4, 15),
+    atributos: { agi: 2, for: 3, int: 3, pre: 4, vig: 3 },
+    pericias: hunterSkills([["Atletismo", 2, 10], ["Diplomacia", 4, 10], ["Intimidação", 4, 10], ["Medicina", 3, 15], ["Pilotagem", 2, 10], ["Tática", 3, 10]]),
+    habilidadesPassivas: [
+      { nome: "Técnicas de Resgate", descricao: "Com as mãos livres, transporta até dois corpos humanos sem reduzir seu deslocamento." }, tacticalTraining(),
+      { nome: "Como aliado", descricao: "Concede treinamento em Medicina ou +1d20 se já treinado. Medicina do Roy recupera 3d10 PV ou remove uma condição negativa, exceto morrendo, de você ou aliado adjacente. O quadro não informa custo/ação para essa habilidade de aliado." },
+    ],
+    acoes: [hunterAttack("Pistola modificada", "À distância · Curto", 2, 20, "2d8+17", "balístico", "14"), hunterAttack("Submetralhadora modificada", "À distância · Curto", 2, 20, "3d6+17", "balístico", "17/x3"), tacticalManeuver,
+      { tipo: "Movimento", nome: "Ao Resgate", descricao: "Se enxergar um aliado ferido, desloca-se até o dobro de seu deslocamento na direção dele." },
+      { tipo: "Padrão", nome: "Prestar Socorro", descricao: "Recupera 3d10 PV ou remove uma condição negativa, exceto morrendo, de si ou de aliado adjacente." },
+    ], descricao: "Médico de campo dos Hell Hunters; combina resgate e primeiros socorros com treinamento de combate.",
+  }),
+  hunter({
+    name: "Stella Green", page: "29", vd: 140, defesa: 29, pontosDeVida: 190, machucadoEm: 95,
+    percepcao: test(2, 5), iniciativa: test(3, 10), fortitude: test(2, 5), reflexos: test(3, 15), vontade: test(2, 10),
+    atributos: { agi: 3, for: 2, int: 3, pre: 2, vig: 2 },
+    pericias: hunterSkills([["Atletismo", 2, 10], ["Intimidação", 2, 10], ["Pilotagem", 3, 15], ["Profissão (engenheira mecânica)", 3, 15], ["Tática", 3, 5]]),
+    habilidadesPassivas: [
+      { nome: "Por Água, Céu e Terra", descricao: "Pilota veículos terrestres, aéreos e aquáticos, exceto modelos muito exóticos, como foguetes espaciais." }, tacticalTraining(),
+      { nome: "Como aliada", descricao: "+1d20 em Pilotagem. Direção da Stella: ao falhar em Pilotagem, 2 PE permitem uma única nova tentativa." },
+    ],
+    acoes: [hunterAttack("Pistola modificada", "À distância · Curto", 3, 20, "2d10+17", "balístico", "16"), hunterAttack("Fuzil de assalto modificado", "À distância · Médio", 3, 20, "2d12+17", "balístico", "17/x3"),
+      { tipo: "Reação", nome: "Direção Defensiva", descricao: "Uma vez por rodada, recebe +1d20+5 num teste para preservar o veículo que pilota ou seus ocupantes." },
+      { tipo: "Livre", nome: "Direção Ofensiva", descricao: "Uma vez por rodada, recebe +1d20+5 num teste para atacar algo com o veículo que pilota." }, tacticalManeuver,
+      { tipo: "Padrão", nome: "Conserto de Campo", descricao: "Um objeto danificado adjacente funciona normalmente até o fim da cena; não pode repetir no mesmo objeto." },
+    ], descricao: "Piloto e mecânica dos Hell Hunters, responsável pelo preparo dos veículos de operação.",
+  }),
+  hunter({
+    name: "Arnold Strolley", page: "31", vd: 140, defesa: 30, pontosDeVida: 200, machucadoEm: 100,
+    percepcao: test(2, 5), iniciativa: test(2, 0), fortitude: test(3, 15), reflexos: test(2, 5), vontade: test(2, 10),
+    atributos: { agi: 2, for: 2, int: 4, pre: 2, vig: 3 },
+    pericias: hunterSkills([["Atletismo", 2, 10], ["Intimidação", 2, 10], ["Pilotagem", 2, 10], ["Profissão (engenheira química)", 4, 15], ["Tática", 4, 10]]),
+    resistencias: [{ tipos: ["Eletricidade", "Fogo", "Frio", "Químico"], valor: 5 }],
+    habilidadesPassivas: [
+      { nome: "Quimicamente Alterado", descricao: "RD 5 contra eletricidade, fogo, frio e químico." }, tacticalTraining(),
+      { nome: "Como aliado", descricao: "+1d20 em testes envolvendo explosivos. Explosão do Arnold: uma vez por cena, 2 PE fornecem um explosivo à sua escolha." },
+    ],
+    acoes: [hunterAttack("Pistola modificada", "À distância · Curto", 2, 20, "2d10+17", "balístico", "16"), hunterAttack("Metralhadora modificada", "À distância · Médio", 2, 20, "3d12+17", "balístico", "17/x3"), tacticalManeuver,
+      { tipo: "Padrão", nome: "Atordoamento", descricao: "Uma vez por cena, lança flashbang em alcance curto: seres em raio de 6 m ficam atordoados por 1 rodada. Fortitude DT 23 troca por ofuscado e surdo por 1 rodada." }, fragmentation,
+      { tipo: "Padrão", nome: "Gás Lacrimogêneo", descricao: "Uma vez por cena, lança granada em alcance curto: raio de 6 m, 4d6 químico, enjoado e asfixiado. Fora da área, asfixia dura 1d4 rodadas e enjoado dura até o fim da cena. Fortitude DT 23 reduz o dano à metade e evita enjoado." },
+      { tipo: "Padrão", nome: "Incendiária", descricao: "Uma vez por cena, lança granada em alcance curto: raio de 6 m, dano de fogo 6d6 e em chamas. Reflexos DT 23 reduz à metade e evita em chamas." },
+    ], descricao: "Especialista em explosivos e logística dos Hell Hunters, com experiência em engenharia química.",
+  }),
+  hunter({
+    name: "Chloe Grey", page: "33", vd: 140, defesa: 29, pontosDeVida: 170, machucadoEm: 85,
+    percepcao: test(3, 5), iniciativa: test(3, 10), fortitude: test(2, 5), reflexos: test(3, 15), vontade: test(3, 10),
+    atributos: { agi: 3, for: 2, int: 3, pre: 3, vig: 2 },
+    pericias: hunterSkills([["Atletismo", 2, 10], ["Diplomacia", 3, 10], ["Enganação", 3, 10], ["Furtividade", 3, 10], ["Intuição", 3, 10], ["Investigação", 3, 15], ["Pilotagem", 3, 10], ["Tática", 3, 10]]),
+    habilidadesPassivas: [
+      { nome: "Braço Amputado", descricao: "Sofre −1d20 em testes em que a falta do braço dificulta a ação." },
+      { nome: "Esforço e Superação", descricao: "Ignora a penalidade do braço amputado em ataques e resistências." },
+      { nome: "Tocada pela Morte", descricao: "Conjura Nuvem de Cinzas sem pagar PE, até 6 PE por conjuração, usando a ação apropriada. DT 21." }, tacticalTraining(),
+      { nome: "Como aliada", descricao: "+1d20 em Investigação. Permite conjurar Nuvem de Cinzas como conhecido; se já conhecido, reduz seu custo em 1 PE." },
+    ],
+    acoes: [hunterAttack("Combate desarmado", "Corpo a corpo", 3, 20, "2d6+15", "impacto"), hunterAttack("Pistola modificada", "À distância · Curto", 3, 20, "2d10+17", "balístico", "16"),
+      { tipo: "Reação", nome: "Olhos para Documentos", descricao: "Uma vez por rodada, ao procurar pistas em documentos, realiza duas tentativas e usa a melhor." }, tacticalManeuver,
+      { tipo: "Padrão", nome: "Nuvem de Cinzas · Morte 1", descricao: "Em alcance curto, cria nuvem de fuligem com 6 m de raio e altura, pela cena: camuflagem leve até 1,5 m e total a partir de 3 m. Vento forte dispersa em 4 rodadas; vendaval, em 1. Não funciona debaixo d'água." },
+    ], descricao: "Investigadora dos Hell Hunters que administra recursos e documentação; seu contato com a Morte deixou efeitos persistentes.",
+  }),
+  hunter({
+    name: "Ryder Staten", page: "34–35", vd: 200, defesa: 34, pontosDeVida: 320, machucadoEm: 160,
+    percepcao: test(2, 10), iniciativa: test(4, 10), fortitude: test(3, 15), reflexos: test(4, 15), vontade: test(2, 10),
+    atributos: { agi: 4, for: 3, int: 2, pre: 2, vig: 3 },
+    pericias: hunterSkills([["Atletismo", 3, 15], ["Furtividade", 4, 10], ["Intimidação", 2, 15], ["Intuição", 2, 10], ["Pilotagem", 4, 10], ["Tática", 2, 15]]),
+    habilidadesPassivas: [tacticalTraining(3),
+      { nome: "Como aliado", descricao: "+1d20 em duas perícias escolhidas até o fim da missão. Comando de Ryder: movimento e 2 PE permitem usar Formação! como habilidade própria." },
+    ],
+    acoes: [hunterAttack("Pistola modificada", "À distância · Curto", 4, 25, "2d10+22", "balístico", "14"), hunterAttack("Fuzil de assalto modificado", "À distância · Médio", 4, 25, "3d10+22", "balístico", "17/x3"),
+      { tipo: "Reação", nome: "Cuidado!", descricao: "Uma vez por rodada, quando um aliado em alcance médio falha num teste, tenta o mesmo teste. Se passar, transforma a falha do aliado em sucesso." }, tacticalManeuver,
+      { tipo: "Movimento", nome: "Formação!", descricao: "Até seu próximo turno, afeta Ryder e aliados em alcance médio capazes de ouvi-lo. Cunha: +5 em ataque e Defesa. Coluna: +3 m de deslocamento e +5 em Furtividade. Linha: +5 em ataque e dano." }, fragmentation,
+      { tipo: "Padrão", nome: "Vai, Vai, Vai!", descricao: "Ryder e aliados em alcance médio que desejarem deslocam-se 9 m na direção indicada por ele." },
+    ], descricao: "Fundador e comandante dos Hell Hunters, veterano que coordena formações e a movimentação da equipe.",
+  }),
+);
+
 export const THREAT_BY_ID = new Map(THREATS.map((entry) => [entry.id, entry]));

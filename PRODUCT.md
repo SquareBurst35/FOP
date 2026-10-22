@@ -25,10 +25,11 @@ Uso típico é à mesa, durante ou entre sessões de RPG, em computador ou celul
 ## Capabilities and Constraints
 
 - Site estático, sem framework e sem build step (JS puro servido diretamente); publicado via GitHub Pages.
+- Arquivos Secretos #9 (setembro/2026) foi integrado aos catálogos de personagem, equipamentos e ameaças; cobertura e limitações em [docs/as09-audit.md](docs/as09-audit.md). O pacote #8 não foi fornecido nesta apuração.
 - Sem cadastro obrigatório: persistência primária é `localStorage`; login com Google/Firestore é uma sincronização opcional adicional (ver [docs/firebase-setup.md](docs/firebase-setup.md)), nunca uma exigência para usar o site.
 - Todo item novo do catálogo precisa reaproveitar arte pixel art já existente (campo `icon` em `additional-items.js` aponta para o sprite de um item existente) — não há orçamento para desenhar sprite novo por item.
 - Todo número mecânico exibido (dano, dados, DT, alcance, cura, custo em PE) precisa vir dos livros de referência; nunca é inventado quando o livro é vago, e nunca é copiado literalmente do texto do livro — é um resumo mecânico em redação própria.
-- Catálogo de conteúdo de personagem (origens, trilhas, poderes de classe/gerais/paranormais, rituais, itens) está integrado por completo a partir do livro base, Sobrevivendo ao Horror e Arquivos Secretos #1–#7. Ficam fora de escopo deliberadamente (documentado em [docs/content-audit.md](docs/content-audit.md)): blocos de ameaças/aliados, tabelas de mestre, subsistemas que o site não modela (veículos, hackeamento, combate subaquático, batalhas de intenção, construção de base) e regras opcionais não canônicas.
+- Catálogo de conteúdo de personagem (origens, trilhas, poderes de classe/gerais/paranormais, rituais, itens) está integrado a partir do livro base, Sobrevivendo ao Horror e Arquivos Secretos #1–#7. A interface de Ameaças também está disponível para consulta pelo mestre (ver [docs/threats-audit.md](docs/threats-audit.md)). Continuam fora de escopo as tabelas de mestre, a interface de aliados, os subsistemas que o site não modela (veículos, hackeamento, combate subaquático, batalhas de intenção, construção de base) e regras opcionais não canônicas. Efeitos narrativos e condicionais podem depender do jogador.
 - Interface precisa funcionar bem tanto em computador quanto em celular (responsivo) — não há versão "só desktop".
 
 ## Brand Commitments

@@ -219,6 +219,15 @@ export function useAbility(character, use) {
 
 export function undoLastUse(character) {
   const session = normalizeSession(character);
+  const pending = session.historico.at(-1);
+  // Uma edição manual posterior não pode ser sobrescrita silenciosamente pelo desfazer.
+  for (const change of Array.isArray(pending?.as9Changes) ? pending.as9Changes : []) {
+    if (!["operacoesAS9", "inventarioItens", "inventarioModificacoes", "recursos.pvAtual"].includes(change?.path)) return { ok: false, message: "O histórico desta ação contém dados inválidos para desfazer." };
+    const current = change.path.split(".").reduce((v, key) => v?.[key], character);
+    if (JSON.stringify(current ?? null) !== JSON.stringify(change.after)) {
+      return { ok: false, message: "Os dados desta ação foram editados depois. Restaure a edição posterior antes de desfazer este uso." };
+    }
+  }
   const record = session.historico.pop();
   if (!record) return { ok: false, message: "Ainda não há uso para desfazer." };
   if (record.currentKey) {
@@ -240,6 +249,15 @@ export function undoLastUse(character) {
     const remaining = Math.max(0, numberOr(session.usosSessao[record.sessionKey], 0) - 1);
     if (remaining) session.usosSessao[record.sessionKey] = remaining;
     else delete session.usosSessao[record.sessionKey];
+  }
+  for (const change of Array.isArray(record.as9Changes) ? record.as9Changes : []) {
+    const keys = change.path.split(".");
+    // Só caminhos internos permitidos, mesmo ao importar uma ficha de terceiros.
+    if (!["operacoesAS9", "inventarioItens", "inventarioModificacoes", "recursos.pvAtual"].includes(change.path)) continue;
+    const key = keys.pop();
+    const target = keys.reduce((v, part) => v[part] ??= {}, character);
+    if (change.before === null) delete target[key];
+    else target[key] = JSON.parse(JSON.stringify(change.before));
   }
   return { ok: true, record };
 }

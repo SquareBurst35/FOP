@@ -24,16 +24,15 @@ jobs:
       - name: Baixar o projeto
         uses: actions/checkout@v4
 
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Validar regras, level up e sessão
         run: |
-          node --check app.js
-          node --check choices.js
-          node --check content.js
-          node --check items.js
-          node --check progression.js
-          node --check rules.js
-          node --check session.js
-          node --test tests/*.mjs
+          npm run check
+          npm test
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5

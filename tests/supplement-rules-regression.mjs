@@ -151,9 +151,11 @@ test('optional tables retain source thresholds and do not change defaults', () =
   assert.equal(dartsScore([10,25,30]),80);
   assert.deepEqual([1,2,3,20].map(modularPowerKind),[null,'utilidade','combate','utilidade']);
   assert.equal(modularPowerAllowed(CLASS_POWERS.find(p=>p.name==='Transcender'),'utilidade'),false);
-  // AS3–7 are all real CLASS_POWERS entries now; the staged modular.js classifier only knows the
-  // as03-06 schema shape, so it is checked only against the older books it was written for.
-  assert.ok(CLASS_POWERS.filter(p=>!/^Arquivos Secretos #[3-7]$/.test(p.source)).every(p=>modularClassification(p)!=='unclassified'));
+  // O classificador legado cobre estes livros. Suplementos posteriores não
+  // ganham uma classificação editorial presumida só por entrarem no catálogo.
+  const modularReferenceSources = ['Livro base', 'Sobrevivendo ao Horror', 'Arquivos Secretos #1', 'Arquivos Secretos #2'];
+  assert.ok(CLASS_POWERS.filter(p=>modularReferenceSources.includes(p.source)).every(p=>modularClassification(p)!=='unclassified'));
+  assert.ok(CLASS_POWERS.filter(p=>p.source==='Arquivos Secretos #9').every(p=>modularClassification(p)==='unclassified'));
   assert.deepEqual(underwaterModifiers({}),{modifiers:[],canCast:true,rangedAllowed:true,damageMultiplier:1});
   const submerged=underwaterModifiers({submerged:true,ranged:true,weaponKind:'bow',damageType:'Corte',noRitualSpeech:true});
   assert.equal(submerged.rangedAllowed,false); assert.equal(submerged.canCast,false); assert.equal(submerged.damageMultiplier,0.5);

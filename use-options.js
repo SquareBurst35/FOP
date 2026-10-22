@@ -1,12 +1,14 @@
-import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=56';
-import { ORIGINS } from './rules.js?v=69';
-import { parseUseCost, progressLevel } from './session.js?v=33';
+import { allSelectableAbilities, CORE_CLASS_ABILITIES } from './content.js?v=57';
+import { ORIGINS } from './rules.js?v=72';
+import { parseUseCost, progressLevel } from './session.js?v=34';
 const names=new Map([...CORE_CLASS_ABILITIES,...allSelectableAbilities(ORIGINS)].map(a=>[a.id,a.name]));
 export function ritualCircleAccess(c){const n=progressLevel(c)*5;return c.classe==='Ocultista'?(n>=85?4:n>=55?3:n>=25?2:1):(n>=75?3:n>=45?2:1);}
-export function ritualCostReduction(c,r){const choices=c.habilidadeEscolhas??[],out=[];if(choices.some(x=>names.get(x.abilityId)==='Ritual Predileto'&&x.type==='ritual'&&x.valueId===r.id))out.push('Ritual Predileto −1');if(choices.some(x=>names.get(x.abilityId)==='Mestre em Elemento'&&x.type==='elemento'&&r.elements.includes(x.valueId)))out.push('Mestre em Elemento −1');return out;}
+export function ritualCostReduction(c,r){const choices=c.habilidadeEscolhas??[],out=[];if(c.operacoesAS9?.ally==='chloe'&&r.name==='Nuvem de Cinzas'&&(c.rituaisSelecionados??[]).includes(r.id))out.push('Chloe −1');if(choices.some(x=>names.get(x.abilityId)==='Ritual Predileto'&&x.type==='ritual'&&x.valueId===r.id))out.push('Ritual Predileto −1');if(choices.some(x=>names.get(x.abilityId)==='Mestre em Elemento'&&x.type==='elemento'&&r.elements.includes(x.valueId)))out.push('Mestre em Elemento −1');return out;}
 export function ritualUseOptions(c,r){const base=Number(r.cost.match(/\d+/)?.[0])||0,discount=ritualCostReduction(c,r).length;return ['Normal','Discente','Verdadeiro'].map((label,i)=>{const v=i?r.useVariants?.variants.find(v=>v.name===label):{extra:0,minCircle:0},reasons=[];if(!v)reasons.push('Esta forma não existe na referência consultada.');if(v?.minCircle>ritualCircleAccess(c))reasons.push(`Requer ${v.minCircle}º círculo.`);if(v?.affinity&&!r.elements.includes(c.afinidadeElemental))reasons.push(`Requer afinidade com ${r.elements.join(' ou ')}.`);return{id:label.toLowerCase(),label,cost:v?Math.max(1,base+v.extra-discount):null,disabled:reasons.length>0,reason:reasons.join(' '),description:i?(v?`Aprimoramento ${label.toLowerCase()}: +${v.extra} PE ao custo-base.`:''):r.summary,requirements:v?[v.minCircle?`${v.minCircle}º círculo`:'',v.affinity?'Afinidade elemental':''].filter(Boolean).join(' · '):''};});}
 function attack(c,step,min){const n=progressLevel(c)*5,tier=n>=85?4:n>=55?3:n>=25?2:1,out=[];if(n<min)return out;for(let t=1;t<=tier;t++)for(let a=t;a>=0;a--)out.push({id:`attack-${t}-${a}`,label:`+${a*step} ataque · +${(t-a)*step} dano`,cost:t+1});return out;}
 export function abilityUseOptions(c,e){const n=progressLevel(c)*5;
+ if(e.name==='Proteger Reféns')return[{id:'assumir',label:'Assumir o efeito',cost:2},{id:'assumir-reduzir',label:'Assumir e reduzir o dano à metade',cost:4}];
+ if(e.name==='Protetor dos Drones'){const master=c.classe==='Especialista'&&c.trilha==='Piloto de Drone'&&n>=99;return[{id:'proteger-drone',label:'Evitar o efeito negativo no drone',cost:master?1:3}];}
  if(e.name==='Ataque Especial')return attack(c,5,5);
  if(e.name==='Especialista em Matar')return attack(c,4,15);
  if(e.name==='Perito'){const t=n>=85?4:n>=55?3:n>=25?2:1;return Array.from({length:t},(_,i)=>({id:`perito-${i}`,label:`+1d${6+i*2}`,cost:i+2,description:`Perícias: ${(c.peritoPericias??[]).join(', ')||'configure as escolhas da habilidade'}.`}));}

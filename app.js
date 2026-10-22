@@ -1,6 +1,8 @@
+import { renderTacticalPanel, bindTacticalPanel } from "./tactical-ui.js?v=2";
+import { preparedAmmo, pruneTacticalInventory } from "./tactical-state.js?v=1";
 import { captureSheetUi, restoreSheetUi } from "./sheet-ui-state.js?v=1";
-import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=57";
-import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=70";
+import { ITEM_UPGRADES, canApplyUpgrade, itemUpgrades, upgradedItem } from "./item-upgrades.js?v=59";
+import { ritualUseOptions, ritualCostReduction, abilityUseOptions, resolveUseOption } from "./use-options.js?v=73";
 import {
   ATTRIBUTE_MAX_AT_CREATION,
   SURVIVOR_STAGE_CAP,
@@ -27,7 +29,7 @@ import {
   skillSelectionStatus,
   survivorStage,
   usesSeparateLevel,
-} from "./rules.js?v=69";
+} from "./rules.js?v=72";
 import {
   ABILITY_CATEGORIES,
   CLASS_POWERS,
@@ -43,22 +45,22 @@ import {
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
   allSelectableAbilities,
-} from "./content.js?v=56";
+} from "./content.js?v=57";
 import {
   INVENTORY_GROUPS,
   ITEMS,
   ITEM_BY_ID,
   PATENT_ITEM_LIMITS,
   inventoryUsage,
-} from "./items.js?v=58";
-import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=25";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=69";
+} from "./items.js?v=60";
+import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=26";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=72";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,
   choiceSpecsForAbility,
   choicesComplete,
-} from "./choices.js?v=71";
+} from "./choices.js?v=74";
 import {
   effortResource,
   beforeSoBonus,
@@ -68,7 +70,7 @@ import {
   rollUseCost,
   undoLastUse,
   useAbility,
-} from "./session.js?v=33";
+} from "./session.js?v=34";
 
 const STORAGE_KEY = "fop_personagens_v1";
 
@@ -405,7 +407,7 @@ function normalizeCharacter(character) {
     : "";
   character.habilidadeEscolhas = Array.isArray(character.habilidadeEscolhas)
     ? character.habilidadeEscolhas
-        .filter((entry) => entry && ABILITY_BY_ID.has(entry.abilityId) && Object.hasOwn(CHOICE_TYPE_LABELS, entry.type))
+        .filter((entry) => entry && (ABILITY_BY_ID.has(entry.abilityId) || (entry.type === "pericia" && ITEM_BY_ID.get(entry.abilityId)?.name === "Drone de Combate Tático")) && Object.hasOwn(CHOICE_TYPE_LABELS, entry.type))
         .map((entry) => ({
           abilityId: entry.abilityId,
           type: entry.type,
@@ -487,6 +489,7 @@ function writeCharacters(characters) {
 }
 
 function upsertCharacter(character) {
+  pruneTacticalInventory(character);
   const characters = readCharacters();
   const index = characters.findIndex((item) => item.id === character.id);
   const updated = {
@@ -1236,6 +1239,15 @@ function bindCreatorStep() {
   }
 
   if (currentStep === 3) {
+    document.querySelectorAll("[data-origin-skill-pair]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const pair = findOrigin(creatorState.origem)?.skillPairs?.[Number(input.value)];
+        if (!pair) return;
+        creatorState.periciasOrigemEscolhidas = [...pair];
+        skillSelectionStatus(creatorState);
+        renderCreator();
+      });
+    });
     document.querySelectorAll("[data-origin-skill]").forEach((input) => {
       input.addEventListener("change", () => {
         updateSkillArray("periciasOrigemEscolhidas", input.value, input.checked);
@@ -1860,6 +1872,7 @@ function renderSessionControl(character) {
       </dl>
       ${hasBeforeSo(character) ? `<label class="skill-option ${beforeSoBonus(character) ? "selected" : ""}"><input type="checkbox" data-before-so ${beforeSoBonus(character) ? "checked" : ""} /><span>Sem aliados em alcance curto<small>Antes Só: +1 Defesa, perícias e limite de ${resource.label} por turno.</small></span></label>` : ""}
       ${renderActiveEffects(character)}
+      ${renderTacticalPanel(character)}
       ${last ? `<details class="session-history"><summary>Último uso</summary><div class="session-last-use"><strong>${escapeHtml(last.name)}</strong><small>${last.cost ? `−${last.cost} ${escapeHtml(last.resource)}` : "Sem custo de recurso"}</small><button type="button" data-session-action="undo">Desfazer</button></div></details>` : ""}
     </section>
   `;
@@ -1895,6 +1908,8 @@ function abilityUseModel(entry) {
 }
 
 function abilityUseButton(entry, character) {
+  const operation = { "Full Metal Jacket": "test", "Municiador Ambulante": "prepare", "Tática de Abordagem": "plan", "Ripostar Ousado": "riposte", "Tiro Intuitivo": "attack", "CQB": "attack", "Entrada Explosiva": "deploy", "Proteger Reféns": "hostage", "Alvo-prioritário": "mark", "Companheiro Drone": "droneConfig", "Protetor dos Drones": "drone", "Ás dos Drones": "drone", "Mestre dos Drones": "droneConfig" }[entry.name];
+  if (operation) return `<button class="entry-use-button" type="button" data-operation="${operation}">Usar na Mesa de operações</button>`;
   const activeEffect = ABILITY_ACTIVE_EFFECTS[entry.name];
   if (activeEffect) {
     const active = (character.efeitosAtivos ?? []).some((effect) => effect.name === entry.name);
@@ -1979,6 +1994,7 @@ function renderAbilityCard(entry, { automatic = false, removable = false, picker
         <div class="entry-body">
           <p>${escapeHtml(entry.summary)}</p>
           ${renderSavedAbilityChoices(entry, selectedCharacter)}
+          ${!picker && selectedCharacter && entry.name === "Companheiro Drone" ? renderDroneAvailability(selectedCharacter) : ""}
           ${entry.details?.length ? `<ul class="entry-details">${entry.details.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}</ul>` : ""}
           <dl class="entry-meta">
             <div><dt>Custo</dt><dd>${escapeHtml(entry.cost)}</dd></div>
@@ -2564,7 +2580,7 @@ function reopenSpendDialog(character) {
 
 function inventorySelections(character) {
   return (character.inventarioItens ?? [])
-    .map((selected) => ({ ...selected, item: ITEM_BY_ID.has(selected.itemId) ? upgradedItem(ITEM_BY_ID.get(selected.itemId), character.inventarioModificacoes?.[selected.itemId]) : null }))
+    .map((selected) => ({ ...selected, item: ITEM_BY_ID.has(selected.itemId) ? upgradedItem(ITEM_BY_ID.get(selected.itemId), character.inventarioModificacoes?.[selected.itemId], character) : null }))
     .filter((selected) => selected.item)
     .sort((a, b) =>
       a.item.group.localeCompare(b.item.group) || a.item.name.localeCompare(b.item.name),
@@ -2645,11 +2661,28 @@ function renderItemCard(item, { picker = false, quantity = 0, character = null, 
           <div><dt>Espaços</dt><dd>${formatInventoryNumber(item.spaces)}${quantity > 1 ? ` cada · ${formatInventoryNumber(totalSpaces)} no total` : ""}</dd></div>
           <div><dt>Fonte</dt><dd>${escapeHtml(item.source)}${item.page ? ` · p. ${escapeHtml(item.page)}` : ""}</dd></div>
         </dl>
-        ${character ? renderItemUpgradeSection(item, custom ? "custom" : "catalog", item.id) : ""}
+        ${character && item.name !== "Drone de Combate Tático" ? renderItemUpgradeSection(item, custom ? "custom" : "catalog", item.id) : ""}
+        ${character && item.name === "Drone de Combate Tático" ? `<p class="muted small">Configure cada drone na Mesa de operações; tipos, modificações e perícia são individuais.</p>` : ""}
+        ${character && item.group === "Munições" ? `<p class="muted small">${preparedAmmo(character, item.id, quantity)} de ${quantity} pacote(s) preparado(s) sem ocupar espaço.</p>` : ""}
+
+        ${character && item.name === "Drone de Combate Tático" ? renderDroneAvailability(character) : ""}
         ${action}
       </div>
     </details>
   `;
+}
+
+function renderDroneAvailability(character) {
+  if (character.operacoesAS9?.drones) return `<p class="muted small">Disponibilidade e tipos por drone: use Configurar drone na Mesa de operações.</p>`;
+  return `<label class="skill-option"><input type="checkbox" data-drone-available ${character.droneDisponivel !== false ? "checked" : ""}/><span>Drone disponível — desmarque se estiver quebrado ou sem sinal.</span></label>`;
+}
+
+function renderDroneUtilityChoice(item, character) {
+  if (item.name !== "Drone de Combate Tático" || !item.upgrades?.some((upgrade) => upgrade.name === "Drone Utilitário")) return "";
+  const skills = SKILLS.filter((skill) => !["Fortitude", "Luta", "Pontaria", "Reflexos", "Vontade"].includes(skill));
+  const saved = (character.habilidadeEscolhas ?? []).find((choice) => choice.abilityId === item.id && choice.type === "pericia" && skills.includes(choice.valueId));
+  if (saved) return `<p class="muted small">Drone Utilitário — perícia permanente: <strong>${escapeHtml(saved.valueId)}</strong></p>`;
+  return `<div class="item-upgrades-section"><label for="drone-utility-skill">Perícia permanente do Drone Utilitário</label><select id="drone-utility-skill"><option value="">Selecione uma perícia</option>${skills.map((skill) => `<option value="${escapeAttribute(skill)}">${escapeHtml(skill)}</option>`).join("")}</select><p class="muted small">Depois de confirmar, esta escolha não pode ser trocada.</p><button class="button compact primary" type="button" data-confirm-drone-utility>Confirmar perícia</button></div>`;
 }
 
 function renderItemUpgradeSection(item, ownerKind, ownerId) {
@@ -2657,25 +2690,27 @@ function renderItemUpgradeSection(item, ownerKind, ownerId) {
   if (!compatible.length) return "";
   const chosen = item.upgrades ?? [];
   const available = compatible.filter((u) => !chosen.some((c) => c.id === u.id));
+  const drone = item.name === "Drone de Combate Tático";
   return `
     <div class="item-upgrades-section">
       <div class="item-upgrades-header">
-        <span>Melhorias${chosen.length ? ` (${chosen.length})` : ""}</span>
+        <span>${drone ? "Tipo base e modificações" : "Melhorias"}${chosen.length ? ` (${chosen.length})` : ""}</span>
         ${available.length ? `<button class="button compact primary" type="button" data-upgrade-toggle>Adicionar</button>` : ""}
       </div>
+      ${drone ? `<p class="muted small">A primeira escolha define o tipo incluído no drone. Cada escolha seguinte acrescenta outro tipo; efeitos semelhantes não se acumulam. A categoria máxima é IV.${item.freeDroneModifications ? ` Sua trilha isenta até ${item.freeDroneModifications} modificações.` : ""}</p>` : ""}
       ${chosen.length
-        ? `<div class="upgrade-card-list">${chosen.map((u) => renderUpgradeCard(u, ownerKind, ownerId)).join("")}</div>`
+        ? `<div class="upgrade-card-list">${chosen.map((u, index) => renderUpgradeCard(u, ownerKind, ownerId, drone && index === 0)).join("")}</div>`
         : `<p class="muted small">Nenhuma melhoria aplicada.</p>`}
       ${available.length ? `<div class="upgrade-add-list" hidden>${available.map((u) => renderUpgradeAddOption(u, ownerKind, ownerId)).join("")}</div>` : ""}
     </div>
   `;
 }
 
-function renderUpgradeCard(u, ownerKind, ownerId) {
+function renderUpgradeCard(u, ownerKind, ownerId, base = false) {
   return `
     <div class="upgrade-card">
       <div class="upgrade-card-body">
-        <div class="upgrade-card-heading"><strong>${escapeHtml(u.name)}</strong><span class="badge ${u.curse ? "red" : ""}">${u.curse ? "Maldição" : "Modificação"}</span></div>
+        <div class="upgrade-card-heading"><strong>${escapeHtml(u.name)}</strong><span class="badge ${u.curse ? "red" : ""}">${base ? "Tipo base" : u.curse ? "Maldição" : "Modificação"}</span></div>
         ${u.summary ? `<p>${escapeHtml(u.summary)}</p>` : ""}
         <small class="muted">${escapeHtml(u.source)} · p. ${u.page}</small>
       </div>
@@ -2696,7 +2731,7 @@ function renderUpgradeAddOption(u, ownerKind, ownerId) {
 
 function renderUpgradeCatalog() {
  const entries=ITEM_UPGRADES.filter(u=>(activeItemSource==='Todos'||u.source===activeItemSource)&&normalizeSearch(`${u.name} ${u.target} ${u.curse?'Maldição':''}`).includes(normalizeSearch(itemSearch)));
- return entries.map(u=>`<article class="entry-card upgrade-reference"><strong>${escapeHtml(u.name)}</strong><p>${escapeHtml(u.target)} · ${u.curse?'Maldição':'Modificação'} · ${u.curse?'primeira +II; demais +I':'+I'} na categoria</p>${u.summary?`<p class="muted small">${escapeHtml(u.summary)}</p>`:""}<small>${escapeHtml(u.source)} · p. ${u.page}</small></article>`).join("");
+ return entries.map(u=>`<article class="entry-card upgrade-reference"><strong>${escapeHtml(u.name)}</strong><p>${escapeHtml(u.target)} · ${u.curse?'Maldição':'Modificação'} · ${u.target==='Drone de Combate Tático'?'tipo base incluído; modificações +I, máximo IV':u.curse?'primeira +II; demais +I na categoria':'+I na categoria'}</p>${u.summary?`<p class="muted small">${escapeHtml(u.summary)}</p>`:""}<small>${escapeHtml(u.source)} · p. ${u.page}</small></article>`).join("");
 }
 
 function renderItemPickerAction(item) {
@@ -2722,7 +2757,7 @@ function categoryLimitError(character, item) {
 }
 
 function inventoryAddError(character, item) {
-  if (item) item = upgradedItem(item, character.inventarioModificacoes?.[item.id]);
+  if (item) item = upgradedItem(item, character.inventarioModificacoes?.[item.id], character);
   return categoryLimitError(character, item);
 }
 
@@ -4026,6 +4061,12 @@ function reopenLevelUp(character, { scrollTop = 0, focusSelector = "" } = {}) {
 }
 
 function bindSheetInteractions(character) {
+  bindTacticalPanel(character, (result) => {
+    upsertCharacter(character);
+    renderSheet(character.id);
+    document.querySelector(".operation-panel")?.setAttribute("open", "");
+    showToast(result.message);
+  });
   document.querySelector("#back-home")?.addEventListener("click", () => navigate("home"));
   document.querySelector("#edit-core")?.addEventListener("click", () => editCharacterCore(character));
   document.querySelector("#start-level-up")?.addEventListener("click", () => startLevelUp(character));
@@ -4325,11 +4366,29 @@ function bindItemDialog(character) {
   });
   bindItemAddButtons(character, false);
 
+  document.querySelectorAll("[data-drone-available]").forEach((input) => {
+    input.addEventListener("change", () => {
+      character.droneDisponivel = input.checked;
+      upsertCharacter(character);
+      renderSheet(character.id);
+    });
+  });
+
   document.querySelectorAll("[data-upgrade-toggle]").forEach((button) => {
     button.addEventListener("click", () => {
       const panel = button.closest(".item-upgrades-section")?.querySelector(".upgrade-add-list");
       if (panel) panel.hidden = !panel.hidden;
     });
+  });
+  document.querySelector("[data-confirm-drone-utility]")?.addEventListener("click", () => {
+    const skill = document.querySelector("#drone-utility-skill")?.value;
+    if (!SKILLS.includes(skill) || ["Fortitude", "Luta", "Pontaria", "Reflexos", "Vontade"].includes(skill)) return showToast("Escolha uma perícia válida para o drone.");
+    const drone = ITEMS.find((item) => item.name === "Drone de Combate Tático");
+    if (!drone || character.habilidadeEscolhas.some((choice) => choice.abilityId === drone.id && choice.type === "pericia")) return;
+    character.habilidadeEscolhas.push({ abilityId: drone.id, type: "pericia", valueId: skill, value: skill });
+    upsertCharacter(character);
+    renderSheet(character.id);
+    showToast("Perícia do Drone Utilitário confirmada.");
   });
   document.querySelectorAll("[data-upgrade-action]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -4343,7 +4402,7 @@ function bindItemDialog(character) {
       const selected = new Set(currentIds);
       if (upgradeAction === "add") selected.add(upgradeId);
       else selected.delete(upgradeId);
-      const candidate = upgradedItem(originalItem, [...selected]);
+      const candidate = upgradedItem(originalItem, [...selected], character);
       if (candidate.category === "V+") return showToast("Este conjunto ultrapassa a categoria IV.");
       if (upgradeAction === "add" && !candidate.upgrades.some((u) => u.id === upgradeId)) return showToast("Esta melhoria é incompatível com uma escolha atual.");
       if (upgradeOwner === "custom") {
@@ -4755,7 +4814,9 @@ function renderSkillStep() {
     </section>
 
     ${
-      config.originChoiceCount
+      config.originSkillPairs.length
+        ? `<fieldset class="skill-choice-block"><legend>${escapeHtml(config.originChoiceLabel)}</legend><p class="muted small">Escolha um par completo. O primeiro concede PV; o segundo, PE.</p><div class="skill-grid short">${config.originSkillPairs.map((pair, index) => `<label class="skill-option ${pair.every((skill) => creatorState.periciasOrigemEscolhidas.includes(skill)) ? "selected" : ""}"><input type="radio" name="origin-skill-pair" value="${index}" data-origin-skill-pair ${pair.every((skill) => creatorState.periciasOrigemEscolhidas.includes(skill)) ? "checked" : ""}/><span>${escapeHtml(pair.join(" e "))}</span></label>`).join("")}</div></fieldset>`
+        : config.originChoiceCount
         ? renderSkillChecklist({
             title: config.originChoiceLabel,
             source: "origin",
@@ -4766,7 +4827,7 @@ function renderSkillStep() {
         : ""
     }
 
-    ${config.classChoiceGroups.map((group, index) => renderSkillGroup(group, index, groupSelections[index], originBlocked)).join("")}
+    ${config.classChoiceGroups.map((group, index) => renderSkillGroup(group, index, groupSelections[index], new Set([...originBlocked, ...(creatorState.periciasOrigemEscolhidas ?? [])]))).join("")}
 
     ${renderSkillChecklist({
       title: `Perícias livres de ${creatorState.classe}`,
@@ -4925,6 +4986,7 @@ function renderOriginDetail(originName, expanded = false) {
 }
 
 function originSkillSummary(origin) {
+  if (origin.skillPairs?.length) return origin.skillPairs.map((pair) => pair.join(" e ")).join(" ou ");
   const skills = [...(origin.skills ?? [])];
   if (origin.skillChoices) {
     skills.push(`${origin.skillChoices} ${origin.skillChoices === 1 ? "perícia" : "perícias"} à escolha`);
