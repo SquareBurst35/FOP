@@ -416,6 +416,16 @@ function normalizeCharacter(character) {
           level: clamp(numberOr(entry.level, characterLevel(character)), 0, LEVEL_CAP),
         }))
     : [];
+  // Older evolutions saved the paranormal power but omitted its Transcender choice.
+  for (const advancement of character.levelUpHistory) {
+    if (!Array.isArray(advancement?.abilities)) continue;
+    const level = Number(advancement.toLevel);
+    if (!Number.isInteger(level) || level < 1 || level > LEVEL_CAP) continue;
+    const abilities = advancement.abilities.map((id) => ABILITY_BY_ID.get(id)).filter(Boolean);
+    const transcender = abilities.find((entry) => entry.name === "Transcender");
+    const power = abilities.find((entry) => PARANORMAL_POWERS.some((candidate) => candidate.id === entry.id));
+    if (transcender && power) appendAbilityChoice(character, transcender.id, "poder", power.id, power.name, level);
+  }
   normalizeSession(character);
   const inventoryQuantities = new Map();
   for (const selected of Array.isArray(character.inventarioItens) ? character.inventarioItens : []) {
@@ -3399,7 +3409,10 @@ function renderAbilityRadioBlock(title, description, entries, selectedId, dataAt
 }
 
 function renderClassPowerChoice(character, plan) {
-  return renderAbilityRadioBlock("Escolha um poder", "O NEX mínimo já foi filtrado; confira os outros requisitos.", availableClassPowers(character, plan), levelUpState.classPowerId, "data-level-up-class-power");
+  const description = plan.className === "Ocultista" && (levelUpState.targetTrail || character.trilha) === "Possuído"
+    ? "Poder Não Desejado: substitua o poder de ocultista deste nível por Transcender. Essa obrigação só ocorre ao receber um poder de ocultista."
+    : "O NEX mínimo já foi filtrado; confira os outros requisitos.";
+  return renderAbilityRadioBlock("Escolha um poder", description, availableClassPowers(character, plan), levelUpState.classPowerId, "data-level-up-class-power");
 }
 
 function selectedClassPower() {
@@ -3411,6 +3424,7 @@ function selectedVersatilityAbility() {
 }
 
 function selectedParanormalPower() {
+  if (!selectedPowerNamed("Transcender")) return undefined;
   return PARANORMAL_POWERS.find((entry) => entry.id === levelUpState?.paranormalPowerId);
 }
 
@@ -3419,7 +3433,13 @@ function selectedExpandedClassPower() {
 }
 
 function selectedGrantedPowers() {
-  return [selectedClassPower(), selectedVersatilityAbility(), selectedExpandedClassPower()].filter(Boolean);
+  const character = levelUpState?.mode === "creation" ? creatorProgress?.draft : getCharacter(levelUpState?.characterId);
+  const plan = character ? currentLevelUpPlan(character) : null;
+  const granted = [plan?.needsClassPower && selectedClassPower(), plan?.needsVersatility && selectedVersatilityAbility()].filter(Boolean);
+  if (granted.some((entry) => entry.name === "Transcender") && PARANORMAL_POWERS.find((entry) => entry.id === levelUpState?.paranormalPowerId)?.name === "Expansão de Conhecimento") {
+    granted.push(selectedExpandedClassPower());
+  }
+  return granted.filter(Boolean);
 }
 
 function selectedPowerNamed(name) {
@@ -3572,7 +3592,6 @@ function structuredLevelUpChoiceAbilities(character, plan) {
   const newAutomatic = automaticAbilitiesFor(preview).filter((entry) => (levelUpState.mode === "creation" && plan.firstAgentLevel) || !previousAutomatic.has(entry.id));
   const candidates = uniqueById([
     ...selectedGrantedPowers(),
-    selectedExpandedClassPower(),
     ...newAutomatic,
   ].filter(Boolean));
   const handledElsewhere = new Set(["Transcender", "Treinamento em Perícia", "Aprender Ritual", "Resistir a Elemento", "Expansão de Conhecimento"]);
@@ -3756,7 +3775,7 @@ function buildLevelUpPreview(character, { includePowerTraining = true } = {}) {
     preview.grausPericia[levelUpState.intellectSkill] = Math.max(5, numberOr(preview.grausPericia[levelUpState.intellectSkill], 0));
   }
   for (const skill of levelUpState.gradeUpgrades) preview.grausPericia[skill] = plan.trainingRank;
-  if (includePowerTraining) {
+  if (includePowerTraining && selectedPowerNamed("Treinamento em Perícia")) {
     const maxRank = plan.targetProgressNex >= 70 ? 15 : plan.targetProgressNex >= 35 ? 10 : 5;
     for (const skill of levelUpState.powerTrainingSkills) {
       preview.grausPericia[skill] = Math.min(maxRank, numberOr(preview.grausPericia[skill], 0) + 5);
@@ -3764,16 +3783,22 @@ function buildLevelUpPreview(character, { includePowerTraining = true } = {}) {
     }
   }
   preview.peritoPericias = [...levelUpState.peritoSkills];
-  preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), levelUpState.classPowerId, levelUpState.paranormalPowerId, levelUpState.expandedClassPowerId, levelUpState.versatilityId].filter(Boolean))];
-  preview.rituaisSelecionados = [...new Set([...(preview.rituaisSelecionados ?? []), ...levelUpState.ritualIds, levelUpState.paranormalRitualId].filter(Boolean))];
+  const grantedPowers = selectedGrantedPowers();
+  const transcender = grantedPowers.find((entry) => entry.name === "Transcender");
+  const paranormalPower = selectedParanormalPower();
+  preview.habilidadesSelecionadas = [...new Set([...(preview.habilidadesSelecionadas ?? []), ...grantedPowers.map((entry) => entry.id), paranormalPower?.id].filter(Boolean))];
+  preview.rituaisSelecionados = [...new Set([...(preview.rituaisSelecionados ?? []), ...levelUpState.ritualIds, paranormalPower?.name === "Aprender Ritual" && levelUpState.paranormalRitualId].filter(Boolean))];
   preview.habilidadeEscolhas = [...(preview.habilidadeEscolhas ?? [])];
-  if (levelUpState.paranormalRitualId && levelUpState.paranormalPowerId) {
+  if (transcender && paranormalPower) {
+    appendAbilityChoice(preview, transcender.id, "poder", paranormalPower.id, paranormalPower.name, plan.toLevel);
+  }
+  if (paranormalPower?.name === "Aprender Ritual" && levelUpState.paranormalRitualId) {
     appendAbilityChoice(preview, levelUpState.paranormalPowerId, "ritual", levelUpState.paranormalRitualId, RITUAL_BY_ID.get(levelUpState.paranormalRitualId)?.name ?? "Ritual", plan.toLevel);
   }
-  if (levelUpState.paranormalElement && levelUpState.paranormalPowerId) {
+  if (paranormalPower?.name === "Resistir a Elemento" && levelUpState.paranormalElement) {
     appendAbilityChoice(preview, levelUpState.paranormalPowerId, "elemento", levelUpState.paranormalElement, levelUpState.paranormalElement, plan.toLevel);
   }
-  if (levelUpState.expandedClassPowerId && levelUpState.paranormalPowerId) {
+  if (paranormalPower?.name === "Expansão de Conhecimento" && levelUpState.expandedClassPowerId) {
     appendAbilityChoice(preview, levelUpState.paranormalPowerId, "poder", levelUpState.expandedClassPowerId, ABILITY_BY_ID.get(levelUpState.expandedClassPowerId)?.name ?? "Poder", plan.toLevel);
   }
   for (const choice of levelUpState.structuredChoices ?? []) {
@@ -3811,7 +3836,7 @@ function buildLevelUpPreview(character, { includePowerTraining = true } = {}) {
   if (selectedPowerNamed("Transcender")) {
     preview.transcenderNiveis = [...new Set([...(preview.transcenderNiveis ?? []), plan.toLevel])].sort((a, b) => a - b);
   }
-  if (levelUpState.affinityElement) preview.afinidadeElemental = levelUpState.affinityElement;
+  if (transcender && levelUpState.affinityElement) preview.afinidadeElemental = levelUpState.affinityElement;
   sanitizeSkillSelections(preview);
   setInitialTrainingGrades(preview);
   return applyDerived(preview);
@@ -4023,8 +4048,8 @@ function applyLevelUp(character) {
     trail: levelUpState.targetTrail || preview.trilha || "",
     attribute: levelUpState.attribute || "",
     skills: [...levelUpState.gradeUpgrades, levelUpState.intellectSkill].filter(Boolean),
-    abilities: [levelUpState.classPowerId, levelUpState.paranormalPowerId, levelUpState.expandedClassPowerId, levelUpState.versatilityId].filter(Boolean),
-    rituals: [...levelUpState.ritualIds, levelUpState.paranormalRitualId].filter(Boolean),
+    abilities: [...selectedGrantedPowers().map((entry) => entry.id), selectedParanormalPower()?.id].filter(Boolean),
+    rituals: [...levelUpState.ritualIds, selectedParanormalPower()?.name === "Aprender Ritual" && levelUpState.paranormalRitualId].filter(Boolean),
     affinityElement: levelUpState.affinityElement || "",
     paranormalElement: levelUpState.paranormalElement || "",
     structuredChoices: [...(levelUpState.structuredChoices ?? [])],

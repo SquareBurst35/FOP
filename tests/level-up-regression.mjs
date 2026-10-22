@@ -462,6 +462,43 @@ for (const determination of [false, true]) {
 }
 console.log('Ritual dialog, female persistence, inventory capacity and attached upgrades passed.');
 
+// Possuído: require Transcender at a class-power level, then allow ordinary advances.
+{
+  const character = characterAtLevel({ id: "possuido-evolucao", level: 2, className: "Ocultista" });
+  character.trilha = "Possuído";
+  const ui = await boot(character);
+  enterChoices(ui);
+  assert.deepEqual(ui.options("[data-level-up-class-power]"), [powerId("Transcender", "Ocultista")]);
+  ui.choose("[data-level-up-class-power]", powerId("Transcender", "Ocultista"));
+  ui.click("next-level-up");
+  assert.equal(ui.saved().nivel, 2, "The paranormal power must be chosen before confirming");
+  ui.choose("[data-level-up-paranormal-power]", paranormalId("Afortunado"));
+  ui.choose("[data-level-up-ritual]", ritualId());
+  finish(ui);
+  const evolved = ui.saved();
+  assert.deepEqual(evolved.transcenderNiveis, [3]);
+  assert.equal(evolved.recursos.ppMax, 5);
+  assert.equal(evolved.recursos.sanMax, character.recursos.sanMax);
+  assert.ok(evolved.habilidadeEscolhas.some(c => c.abilityId === powerId("Transcender", "Ocultista") && c.type === "poder" && c.valueId === paranormalId("Afortunado")));
+  for (const legacy of [false, true]) {
+    const saved = structuredClone(evolved);
+    if (legacy) saved.habilidadeEscolhas = [];
+    const next = await boot(saved);
+    enterChoices(next);
+    assert.deepEqual(next.options("[data-level-up-class-power]"), []);
+    assert.deepEqual(next.options("[data-level-up-paranormal-power]"), []);
+    next.choose("[data-level-up-attribute]", "agilidade");
+    next.choose("[data-level-up-ritual]", next.options("[data-level-up-ritual]")[0]);
+    finish(next);
+    const advanced = next.saved();
+    assert.equal(advanced.nivel, 4);
+    assert.deepEqual(advanced.transcenderNiveis, [3]);
+    assert.equal(advanced.recursos.ppMax, 5);
+    assert.equal(advanced.recursos.sanMax - evolved.recursos.sanMax, 5, "Ordinary levels keep their SAN gain");
+    assert.ok(advanced.habilidadeEscolhas.some(c => c.abilityId === powerId("Transcender", "Ocultista") && c.valueId === paranormalId("Afortunado")), "Saved evolution history repairs an old missing link");
+  }
+}
+
 // Combatente com INT 2: as quatro escolhas devem ser exigidas e salvas no NEX 35%.
 {
   const character = characterAtLevel({ id: "grau-combatente-int2", level: 6 });

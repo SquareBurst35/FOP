@@ -66,14 +66,20 @@ function fillLevel(ui) {
     if(plan.needsClassPower||plan.needsVersatility) {
       const options=plan.needsVersatility?availableVersatilityAbilities(draft,plan):availableClassPowers(draft,plan);
       const plain=options.find(a=>!['Transcender','Treinamento em Perícia'].includes(a.name)&&!choiceSpecsForAbility(a,draft,[],choiceContext(draft)).length);
-      if(plan.needsClassPower)levelUpState.classPowerId=plain?.id||'';
+      if(plan.needsClassPower)levelUpState.classPowerId=plain?.id||options.find(a=>a.name==='Transcender')?.id||'';
       if(plan.needsVersatility)levelUpState.versatilityId=plain?.id||'';
+    }
+    if(selectedPowerNamed('Transcender')) {
+      levelUpState.paranormalPowerId=PARANORMAL_POWERS.find(p=>p.name===(draft.habilidadesSelecionadas.includes(PARANORMAL_POWERS.find(p=>p.name==='Afortunado').id)?'Aprender Ritual':'Afortunado')).id;
+      if(selectedParanormalPower().name==='Aprender Ritual')levelUpState.paranormalRitualId=availableTranscenderRituals(draft,plan)[0].id;
+      if(needsAffinityChoice(draft,plan))levelUpState.affinityElement=affinityOptions(draft)[0];
     }
     levelUpState.ritualIds=availableLevelUpRituals(draft,plan).slice(0,plan.ritualPicks).map(r=>r.id);
     // Fill dependent choices of automatically received trail benefits.
     for(let loop=0;loop<3;loop++)for(const {specification:s} of structuredLevelUpSpecs(draft,plan)){
       if(levelUpState.structuredChoices.some(c=>c.abilityId===s.ownerAbilityId&&c.type===s.type))continue;
-      for(const o of s.options.slice(0,s.count))levelUpState.structuredChoices.push({abilityId:s.ownerAbilityId,type:s.type,valueId:o.id,value:o.label});
+      const options=ABILITY_BY_ID.get(s.ownerAbilityId)?.name==='Ele Me Ensina'?s.options.filter(o=>ABILITY_BY_ID.get(o.id)?.name!=='Transcender'):s.options;
+      for(const o of options.slice(0,s.count))levelUpState.structuredChoices.push({abilityId:s.ownerAbilityId,type:s.type,valueId:o.id,value:o.label});
     }
   }`);
   assert.equal(ui.run('validateLevelUpStep(creatorProgress.draft,2)'),'',ui.run('JSON.stringify(currentLevelUpPlan(creatorProgress.draft))'));
@@ -120,6 +126,28 @@ assert.notEqual(nested.run('validateLevelUpStep(creatorProgress.draft,2)'),'');
 nested.run('levelUpState.paranormalRitualId=availableTranscenderRituals(creatorProgress.draft,currentLevelUpPlan(creatorProgress.draft))[0].id;confirmCreatorChoices()');
 assert.equal(nested.run('creatorOutput().rituaisSelecionados.length'),1);
 assert.equal(nested.run('creatorOutput().transcenderNiveis[0]'),3);
+assert.equal(nested.run("abilityChoiceResolved(CLASS_POWERS.find(p=>p.category==='Combatente'&&p.name==='Transcender'),creatorOutput())"),true,'Transcender must retain its resolved choice after creation');
+// Possuído only substitutes an actual class power, across the entire creation sequence.
+const possessed=boot('Ocultista',100,'Possuído');
+for(let level=1;level<=20;level++) {
+  const needsPower=progression.CLASS_POWER_LEVELS.includes(level);
+  assert.equal(possessed.run('currentLevelUpPlan(creatorProgress.draft).needsClassPower'),needsPower);
+  assert.equal(possessed.run('selectedPowerNamed("Transcender")'),false,'A previous level must not keep Transcender selected');
+  if(needsPower)assert.equal(possessed.run('availableClassPowers(creatorProgress.draft,currentLevelUpPlan(creatorProgress.draft)).every(p=>p.name==="Transcender")'),true);
+  fillLevel(possessed);
+  assert.deepEqual(JSON.parse(possessed.run('JSON.stringify(creatorProgress.draft.transcenderNiveis)')),progression.CLASS_POWER_LEVELS.filter(n=>n<=level));
+  if(level>=3)assert.equal(possessed.run('abilityChoiceResolved(CLASS_POWERS.find(p=>p.category==="Ocultista"&&p.name==="Transcender"),creatorProgress.draft)'),true);
+}
+assert.equal(possessed.run('creatorOutput().recursos.ppMax'),15,'Only six class-power acquisitions increase possession');
+// A stale selection cannot make an ordinary advance grant/require Transcender again.
+const stalePossessed=boot('Ocultista',20,'Possuído');
+for(let level=1;level<=3;level++)fillLevel(stalePossessed);
+stalePossessed.run(`levelUpState.classPowerId=CLASS_POWERS.find(p=>p.category==='Ocultista'&&p.name==='Transcender').id;levelUpState.paranormalPowerId=PARANORMAL_POWERS.find(p=>p.name==='Resistir a Elemento').id;`);
+assert.equal(stalePossessed.run('selectedPowerNamed("Transcender")'),false);
+assert.doesNotMatch(stalePossessed.run('renderCreatorChoices()'),/id="level-up-paranormal-power-choice"/);
+fillLevel(stalePossessed);
+assert.deepEqual(JSON.parse(stalePossessed.run('JSON.stringify(creatorOutput().transcenderNiveis)')),[3]);
+assert.equal(stalePossessed.run('creatorOutput().habilidadesSelecionadas.includes(PARANORMAL_POWERS.find(p=>p.name==="Resistir a Elemento").id)'),false);
 const training=boot('Combatente',15,'Guerreiro');fillLevel(training);fillLevel(training);
 training.run("levelUpState.classPowerId=CLASS_POWERS.find(p=>p.category==='Combatente'&&p.name==='Treinamento em Perícia').id");
 assert.match(training.run('renderCreatorChoices()'),/data-level-up-power-training/,'Training options exist inside the creator, without a saved sheet');
