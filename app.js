@@ -54,7 +54,7 @@ import {
   inventoryUsage,
 } from "./items.js?v=60";
 import { THREATS, THREAT_BY_ID, THREAT_ELEMENT_ORDER } from "./threats.js?v=26";
-import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=72";
+import { LEVEL_CAP, createLevelUpPlan, levelLabel } from "./progression.js?v=73";
 import {
   CHOICE_TYPE_LABELS,
   abilityCanRepeatChoice,

@@ -461,3 +461,23 @@ for (const determination of [false, true]) {
  ui.click('open-item-picker');ui.clickData('[data-item-group]','itemGroup','Modificações');assert.match(ui.html(),/Lente de Revelação/);
 }
 console.log('Ritual dialog, female persistence, inventory capacity and attached upgrades passed.');
+
+// Combatente com INT 2: as quatro escolhas devem ser exigidas e salvas no NEX 35%.
+{
+  const character = characterAtLevel({ id: "grau-combatente-int2", level: 6 });
+  character.periciasAdicionais = SKILLS.slice(0, 6);
+  character.grausPericia = Object.fromEntries(character.periciasAdicionais.map((skill) => [skill, 5]));
+  const ui = await boot(character);
+  enterChoices(ui);
+  assert.match(ui.html(), /Eleve 4 perícia\(s\) de \+5 para \+10/);
+  for (const skill of SKILLS.slice(0, 3)) ui.choose("[data-level-up-grade]", skill);
+  ui.click("next-level-up");
+  assert.match(ui.html(), /Escolhas do nível/);
+  assert.equal(ui.saved().nivel, 6, "Três escolhas não completam a evolução");
+  ui.choose("[data-level-up-grade]", SKILLS[3]);
+  finish(ui);
+  const saved = ui.saved();
+  assert.equal(saved.nivel, 7);
+  for (const skill of SKILLS.slice(0, 4)) assert.equal(saved.grausPericia[skill], 10);
+  for (const skill of SKILLS.slice(4, 6)) assert.equal(saved.grausPericia[skill], 5);
+}

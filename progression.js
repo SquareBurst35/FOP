@@ -8,7 +8,7 @@ export const TRAIL_LEVEL = 2;
 export const VERSATILITY_LEVEL = 10;
 
 export const TRAINING_UPGRADE_COUNTS = {
-  Combatente: 1,
+  Combatente: 2,
   Especialista: 5,
   Ocultista: 3,
 };
@@ -27,6 +27,8 @@ export function createLevelUpPlan(character, selectedClass = character?.classe) 
   const className = selectedClass && selectedClass !== "Mundano" ? selectedClass : "";
   const firstAgentLevel = fromLevel === 0;
   const trainingRank = toLevel === 7 ? 10 : toLevel === 14 ? 15 : 0;
+  const trainingBase = TRAINING_UPGRADE_COUNTS[className];
+  const intellect = Math.max(0, Math.trunc(Number(character?.atributos?.intelecto) || 0));
   return {
     fromLevel,
     toLevel,
@@ -41,7 +43,7 @@ export function createLevelUpPlan(character, selectedClass = character?.classe) 
     needsClassPower: Boolean(className && CLASS_POWER_LEVELS.includes(toLevel)),
     needsVersatility: Boolean(className && toLevel === VERSATILITY_LEVEL),
     trainingRank,
-    trainingCount: trainingRank ? TRAINING_UPGRADE_COUNTS[className] ?? 0 : 0,
+    trainingCount: trainingRank && trainingBase != null ? trainingBase + intellect : 0,
     ritualPicks: className === "Ocultista" ? (firstAgentLevel ? 3 : 1) : 0,
     ritualCircle: ritualCircleForLevel(toLevel),
   };

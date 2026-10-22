@@ -193,3 +193,23 @@ Antes de o ambiente ficar indisponível, foram criados rascunhos em `supplements
 7. Completar testes mecânicos e regressões, conferir a aplicação e somente então publicar a auditoria completa.
 
 Nenhuma alteração de login, estrutura do Firebase, sincronização ou visual foi feita para Revoltado. Os testes de persistência reutilizam o armazenamento e o codec existentes.
+
+
+## Correção de Grau de Treinamento — 21/10/2026
+
+A evolução usava quantidades fixas e, no Combatente, repetia a quantidade-base
+errada de 1. Grau de Treinamento usa 2 + INT para Combatente, 5 + INT para
+Especialista e 3 + INT para Ocultista. O plano de evolução agora soma Intelecto
+nos patamares dos níveis 7 e 14 (NEX 35% e 70% na progressão conjunta).
+
+Combatente com INT 2 deve escolher quatro perícias treinadas para veteranas
+ao entrar no nível 7. A passagem do 7 para o 8 não concede outro aumento.
+Fichas já salvas preservam suas escolhas; se uma evolução antiga concedeu
+menos escolhas, complete as perícias na tabela editável, sem reescrever
+automaticamente escolhas do jogador.
+
+A errata oficial v1.2 confirma que Intelecto altera a quantidade afetada e
+os patamares de NEX: https://jamboeditora.com.br/wp-content/uploads/2023/05/iniciativa-t20-ordem-paranormal-rpg-errata-v1.2.pdf
+
+Regressões cobrem as três classes, INT 0/1/2/5, ambos os patamares, nível/NEX
+separados e o fluxo de seleção/salvamento de quatro perícias do Combatente.
