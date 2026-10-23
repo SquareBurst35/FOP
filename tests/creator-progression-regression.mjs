@@ -1,4 +1,5 @@
 import * as tacticalOperations from "../tactical.js";
+import * as abilityRules from "../ability-rules.js";
 import * as tacticalUI from "../tactical-ui.js";
 import * as tacticalStateModule from "../tactical-state.js";
 import * as upgrades from "../item-upgrades.js";
@@ -24,7 +25,7 @@ function boot(className,nex,trail='') {
   };
   const document={querySelector:element,querySelectorAll:()=>[],getElementById:element};
   const window={location:{hash:''},scrollY:0,addEventListener(){},scrollTo(){},setTimeout(){},clearTimeout(){}};
-  const context=vm.createContext({...tacticalOperations,...tacticalUI,...tacticalStateModule,...rules,...content,...items,...progression,...choices,...session,...useOptions,...upgrades,...threats,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
+  const context=vm.createContext({...abilityRules,...tacticalOperations,...tacticalUI,...tacticalStateModule,...rules,...content,...items,...progression,...choices,...session,...useOptions,...upgrades,...threats,document,window,structuredClone,crypto:webcrypto,console,URL,Date,Map,Set,setTimeout:()=>0,clearTimeout(){},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}});
   vm.runInContext(source,context);
   const run=code=>vm.runInContext(code,context);
   const data={classe:className,nex,nivel:nex/5,origem:'Acadêmico',trilha:trail,nome:'Agente de teste',atributos:{agilidade:1,forca:1,intelecto:3,presenca:2,vigor:2}};
@@ -35,6 +36,8 @@ function boot(className,nex,trail='') {
     creatorState.periciasClasseObrigatorias=config.classChoiceGroups.map(group=>group.find(s=>![...config.originAutomatic,...config.classAutomatic].includes(s))||group[0]);
     const taken=new Set([...config.originAutomatic,...config.classAutomatic,...creatorState.periciasClasseObrigatorias]);
     creatorState.periciasEscolhidas=SKILLS.filter(s=>!taken.has(s)).slice(0,config.classChoiceCount);
+    const required=creatorState.trilha==='Médico de Campo'?'Medicina':creatorState.trilha==='Parapsicólogo'?'Profissão':'';
+    if(required&&!taken.has(required)&&!creatorState.periciasEscolhidas.includes(required))creatorState.periciasEscolhidas[creatorState.periciasEscolhidas.length-1]=required;
     skillSelectionStatus(creatorState);setInitialTrainingGrades(creatorState);currentStep=4;ensureCreatorProgress();
   }`);
   return {run,store,els,element};
@@ -75,17 +78,19 @@ function fillLevel(ui) {
       if(needsAffinityChoice(draft,plan))levelUpState.affinityElement=affinityOptions(draft)[0];
     }
     levelUpState.ritualIds=availableLevelUpRituals(draft,plan).slice(0,plan.ritualPicks).map(r=>r.id);
+    if(effectiveAttributes(buildLevelUpPreview(draft)).intelecto>effectiveAttributes(draft).intelecto)levelUpState.intellectSkill=intellectSkillOptions(buildLevelUpPreview(draft))[0]||'';
     // Fill dependent choices of automatically received trail benefits.
     for(let loop=0;loop<3;loop++)for(const {specification:s} of structuredLevelUpSpecs(draft,plan)){
       if(levelUpState.structuredChoices.some(c=>c.abilityId===s.ownerAbilityId&&c.type===s.type))continue;
-      const options=ABILITY_BY_ID.get(s.ownerAbilityId)?.name==='Ele Me Ensina'?s.options.filter(o=>ABILITY_BY_ID.get(o.id)?.name!=='Transcender'):s.options;
+      let options=ABILITY_BY_ID.get(s.ownerAbilityId)?.name==='Ele Me Ensina'?s.options.filter(o=>ABILITY_BY_ID.get(o.id)?.name!=='Transcender'):s.options;
+      if(s.type==='ritual')options=options.filter(o=>!levelUpState.structuredChoices.some(c=>c.type==='ritual'&&c.abilityId!==s.ownerAbilityId&&c.valueId===o.id));
       for(const o of options.slice(0,s.count))levelUpState.structuredChoices.push({abilityId:s.ownerAbilityId,type:s.type,valueId:o.id,value:o.label});
     }
   }`);
   assert.equal(ui.run('validateLevelUpStep(creatorProgress.draft,2)'),'',ui.run('JSON.stringify(currentLevelUpPlan(creatorProgress.draft))'));
   ui.run('confirmCreatorChoices()');
 }
-for(const [cls,nex,trail,expected] of [['Ocultista',10,'Conduíte',4],['Ocultista',25,'Conduíte',7],['Ocultista',55,'Conduíte',13],['Ocultista',85,'Conduíte',19],['Ocultista',100,'Conduíte',22],['Especialista',5,'',0],['Combatente',15,'Guerreiro',0]]) {
+for(const [cls,nex,trail,expected] of [['Ocultista',10,'Conduíte',4],['Ocultista',25,'Conduíte',7],['Ocultista',55,'Conduíte',13],['Ocultista',85,'Conduíte',19],['Ocultista',100,'Conduíte',23],['Especialista',5,'',0],['Combatente',15,'Guerreiro',0]]) {
  const ui=boot(cls,nex,trail);
  for(let n=0;n<nex/5;n++){
   assert.equal(ui.run('currentLevelUpPlan(creatorProgress.draft).toLevel'),n+1);
@@ -93,7 +98,7 @@ for(const [cls,nex,trail,expected] of [['Ocultista',10,'Conduíte',4],['Ocultist
   const known=ui.run('creatorProgress.draft.rituaisSelecionados.length');
   assert.ok(ui.run('availableLevelUpRituals(creatorProgress.draft,currentLevelUpPlan(creatorProgress.draft)).every(r=>!creatorProgress.draft.rituaisSelecionados.includes(r.id))'));
   fillLevel(ui);
-  if(cls==='Ocultista')assert.equal(ui.run('creatorProgress.draft.rituaisSelecionados.length'),known+(n===0?3:1));
+  if(cls==='Ocultista')assert.equal(ui.run('creatorProgress.draft.rituaisSelecionados.length'),known+(n===0?3:n===19?2:1));
  }
  assert.equal(ui.run('creatorProgress.complete'),true);
  assert.equal(ui.run('creatorOutput().rituaisSelecionados.length'),expected);
@@ -239,3 +244,53 @@ operationApp.run(`
 `);
 assert.equal(operationApp.run('undoLastUse(axeReloaded).ok'),true);
 assert.equal(operationApp.run('axeReloaded.inventarioModificacoes[axeItem.id][0]'),operationApp.run('axeUpgrade.id'),'Desfazer a destruição também devolve as melhorias do machado');
+
+// Every agent trail must complete the real creation wizard, including late benefits.
+let auditedTrails=0;
+for(const [className,data] of Object.entries(rules.CLASSES).filter(([name])=>['Combatente','Especialista','Ocultista'].includes(name))) {
+  for(const trail of data.trails) {
+    const ui=boot(className,100,trail);
+    for(let level=1;level<=20;level++) {
+      try { fillLevel(ui); }
+      catch(error) { error.message=`${className}/${trail} level ${level}: ${error.message}`; throw error; }
+      assert.equal(ui.run('creatorProgress.draft.nivel'),level);
+      const snapshot=JSON.parse(ui.run('JSON.stringify(creatorProgress.draft)'));
+      const recalculated=rules.applyDerived(structuredClone(snapshot));
+      assert.deepEqual(recalculated.recursos,snapshot.recursos,`${className}/${trail} level ${level}: reloading must not change resources`);
+    }
+    assert.equal(ui.run('creatorProgress.complete'),true);
+    assert.equal(ui.run('Object.values(creatorOutput().outrosBonusPericia).every(value=>value===0)'),true,`${trail}: automatic bonuses must not change manual fields`);
+    auditedTrails++;
+  }
+}
+console.log(`Trail audit: ${auditedTrails} agent trails completed all 20 creation levels and reloads.`);
+
+const initialMonstrous=boot('Combatente',10,'Monstruoso');
+assert.equal(initialMonstrous.run('creatorProgress.draft.grausPericia.Ocultismo'),0,'Future trail training must not exist at level 0');
+fillLevel(initialMonstrous);fillLevel(initialMonstrous);
+assert.equal(initialMonstrous.run('creatorOutput().grausPericia.Ocultismo'),5);
+assert.equal(initialMonstrous.run('abilitySkillBonus(creatorOutput(),"Ocultismo")'),0,'The trail cannot count its own training as pre-existing training');
+
+// A nested paranormal choice from an origin must also finish before saving the build.
+const cultist=boot('Combatente',5);
+cultist.run("creatorState.origem='Cultista Arrependido';creatorProgress=null;ensureCreatorProgress();levelUpState.structuredChoices=[{abilityId:ALL_ABILITIES.find(a=>a.name==='Traços do Outro Lado').id,type:'poder',valueId:PARANORMAL_POWERS.find(p=>p.name==='Aprender Ritual').id,value:'Aprender Ritual'}];");
+assert.equal(cultist.run('selectedParanormalPower()?.name'),'Aprender Ritual');
+assert.notEqual(cultist.run('validateLevelUpStep(creatorProgress.draft,2)'),'');
+cultist.run('levelUpState.paranormalRitualId=availableTranscenderRituals(creatorProgress.draft,currentLevelUpPlan(creatorProgress.draft))[0].id;');
+fillLevel(cultist);
+assert.equal(cultist.run('creatorOutput().rituaisSelecionados.length'),1);
+assert.equal(cultist.run('creatorOutput().transcenderNiveis.length'),0,'An origin paranormal power does not spend a Transcender advancement');
+
+const legacyChoice=boot('Combatente',10,'Agente Secreto');
+legacyChoice.run(`
+  // This case checks the saved choice effects; sheet rendering has its own event tests.
+  renderSheet=()=>{};
+  var legacyAgent={...createBlankCharacter(),classe:'Combatente',trilha:'Agente Secreto',nex:10,nivel:2};
+  var carta=TRAIL_ABILITIES.find(a=>a.name==='Carteirada');
+  legacyAgent.grausPericia.Diplomacia=5;legacyAgent.outrosBonusPericia.Diplomacia=2;
+  legacyAgent.habilidadeEscolhas=[{abilityId:carta.id,type:'pericia',valueId:'Diplomacia',value:'Diplomacia'}];
+  abilityChoiceState={abilityId:carta.id,replace:true,staged:[...legacyAgent.habilidadeEscolhas],pendingAdd:false};
+  applyAbilityChoice(legacyAgent);
+`);
+assert.equal(legacyChoice.run('legacyAgent.outrosBonusPericia.Diplomacia'),2);
+assert.equal(legacyChoice.run('abilitySkillBonus(legacyAgent,"Diplomacia")'),0,'Editing a legacy choice must not duplicate its old manual bonus');

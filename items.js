@@ -1,6 +1,7 @@
-import { upgradedItem } from "./item-upgrades.js?v=59";
+import { upgradedItem } from "./item-upgrades.js?v=60";
 import { preparedAmmo, tacticalDrones } from "./tactical-state.js?v=1";
 import { ADDITIONAL_ITEMS, ITEM_NAME_ALIASES } from "./additional-items.js?v=56";
+import { ownsAbility, effectiveAttributes } from "./ability-rules.js?v=1";
 const slug = (value) =>
   String(value)
     .normalize("NFD")
@@ -296,17 +297,15 @@ export const ITEMS = [...ORIGINAL_ITEMS.map(item => ({...item, aliases: ITEM_NAM
 export const ITEM_BY_ID = new Map(ITEMS.map((entry) => [entry.id, entry]));
 
 export function inventoryCapacity(character) {
-  const strength = Math.max(0, Number(character?.atributos?.forca) || 0);
+  const attributes = effectiveAttributes(character);
+  const strength = attributes.forca + (ownsAbility(character, "inventario-otimizado") ? attributes.intelecto : 0);
   const base = strength === 0 ? 2 : strength * 5;
   const organized = (character?.habilidadesSelecionadas ?? []).some((id) =>
     String(id).endsWith("-inventario-organizado"),
   );
   const selected = (character?.habilidadesSelecionadas ?? []).map(String);
   const mochileiro = selected.some((id) => id.endsWith("-mochileiro"));
-  const progressNex = character?.optionalRules?.separateLevelNex
-    ? Math.max(0, Number(character?.nivel) || 0) * 5
-    : Math.max(0, Number(character?.nex) || 0);
-  const mascate = character?.trilha === "Muambeiro" && progressNex >= 10;
+  const mascate = ownsAbility(character, "mascate");
   const militaryPack = (character?.inventarioItens ?? []).some(e => ITEM_BY_ID.get(e.itemId)?.name === "Mochila militar" && Number(e.quantity ?? 1) > 0);
   return base + (militaryPack ? 2 : 0) + (organized ? Math.max(0, Number(character?.atributos?.intelecto) || 0) : 0) + (mochileiro ? 5 : 0) + (mascate ? 5 : 0);
 }
@@ -351,6 +350,8 @@ export function inventoryUsage(character) {
   }
   if (Number(character.operacoesAS9?.looseDarts) > 0) tally({ category: "I", spaces: character.operacoesAS9.looseDartsPrepared ? 0 : 1 }, 1);
   for (const ammo of character.operacoesAS9?.rounds40mm ?? []) if (ammo.quantity > 0) tally(ammo, ammo.quantity);
+  const grimoire = ownsAbility(character, "grimorio-ritualistico") && !customEntries.some((entry) => /grim[oó]rio/i.test(entry.name ?? ""));
+  if (grimoire) { spaces += 1; quantity += 1; }
   const capacity = inventoryCapacity(character);
-  return { spaces, quantity, capacity, overloaded: spaces > capacity, categoryCounts };
+  return { spaces, quantity, capacity, overloaded: spaces > capacity, categoryCounts, grimoire };
 }

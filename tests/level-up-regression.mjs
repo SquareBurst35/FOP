@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { CLASS_POWERS, GENERAL_POWERS, PARANORMAL_POWERS, RITUALS } from "../content.js";
+import { CLASS_POWERS, GENERAL_POWERS, PARANORMAL_POWERS, RITUALS, TRAIL_ABILITIES } from "../content.js";
 import { calculateDerived, SKILLS } from "../rules.js";
 
 let scenarioNumber = 0;
@@ -110,7 +110,11 @@ async function boot(character) {
   const collections = new Map();
   Object.defineProperty(app, "innerHTML", {
     get: () => app._html,
-    set: (value) => { app._html = String(value); generation += 1; },
+    set: (value) => {
+      app._html = String(value); generation += 1;
+      // Replaced DOM nodes must be released just as they are in a real browser.
+      transient.clear(); collections.clear();
+    },
   });
   const markup = () => `${app.innerHTML}${header.innerHTML}`;
   const present = (selector) => {
@@ -138,8 +142,9 @@ async function boot(character) {
         collections.set(key, []);
         return [];
       }
-      const matches = [...markup().matchAll(new RegExp(`<(input|button)[^>]*${attribute}(?:=[^ >]+)?[^>]*>`, "g"))];
-      const elements = matches.map(([tag, tagName]) => {
+      const matches = [...markup().matchAll(new RegExp(`<(input|button|select)[^>]*${attribute}(?:=[^ >]+)?[^>]*>`, "g"))];
+      const elements = matches.map((match) => {
+        const [tag, tagName] = match;
         const datasets = {};
         for (const match of tag.matchAll(/(data-[a-z0-9-]+)(?:="([^"]*)")?/g)) {
           datasets[dataKey(match[1])] = match[2] ?? "";
@@ -149,6 +154,11 @@ async function boot(character) {
         element.value = tag.match(/value="([^"]*)"/)?.[1] ?? "";
         element.checked = /\schecked(?:\s|\/|>)/.test(tag);
         element.disabled = /\sdisabled(?:\s|\/|>)/.test(tag);
+        if (tagName === 'select') {
+          const body=markup().slice(match.index,markup().indexOf('</select>',match.index));
+          element.options=[...body.matchAll(/<option[^>]*value="([^"]+)"[^>]*>([^<]*)/g)].map((option)=>({value:option[1],textContent:option[2],dataset:{choiceLabel:option[2]}}));
+          Object.defineProperty(element,'selectedOptions',{get:()=>element.options.filter(option=>option.value===element.value)});
+        }
         return element;
       });
       collections.set(key, elements);
@@ -183,14 +193,15 @@ async function boot(character) {
       element.dispatch("click");
     },
     choose(selector, value) {
-      const element = documentMock.querySelectorAll(selector).find((candidate) => candidate.value === value);
+      const element = documentMock.querySelectorAll(selector).find((candidate) => candidate.value === value || candidate.options?.some(option=>option.value===value));
       assert.ok(element, `Opção ${value} não encontrada em ${selector}`);
       assert.equal(element.disabled, false, `Opção ${value} está desabilitada`);
       element.checked = true;
+      if(element.tagName==='SELECT')element.value=value;
       element.dispatch("change");
     },
     options(selector) {
-      return documentMock.querySelectorAll(selector).map((element) => element.value);
+      return documentMock.querySelectorAll(selector).flatMap((element) => element.options?.map(option=>option.value)??element.value);
     },
     clickData(selector, key, value) {
       const element = documentMock.querySelectorAll(selector).find((candidate) => candidate.dataset[key] === value);
@@ -518,3 +529,111 @@ console.log('Ritual dialog, female persistence, inventory capacity and attached 
   for (const skill of SKILLS.slice(0, 4)) assert.equal(saved.grausPericia[skill], 10);
   for (const skill of SKILLS.slice(4, 6)) assert.equal(saved.grausPericia[skill], 5);
 }
+
+// Ele Me Ensina must complete the nested Transcender choice at NEX 65%.
+{
+  const character=characterAtLevel({id:'ele-me-ensina-transcender',className:'Ocultista',level:12,abilities:[powerId('Transcender','Ocultista'),paranormalId('Afortunado')]});
+  character.trilha='Possuído';character.transcenderNiveis=[3,6,9,12];
+  const ui=await boot(character);enterChoices(ui);
+  ui.choose('[data-level-up-structured-choice]',powerId('Transcender','Ocultista'));
+  assert.ok(ui.options('[data-level-up-paranormal-power]').length);
+  ui.choose('[data-level-up-paranormal-power]',paranormalId('Aprender Ritual'));
+  ui.choose('[data-level-up-transcender-ritual]',ui.options('[data-level-up-transcender-ritual]')[0]);
+  ui.choose('[data-level-up-affinity-element]','Energia');
+  ui.choose('[data-level-up-ritual]',ui.options('[data-level-up-ritual]')[0]);
+  finish(ui);
+  assert.deepEqual(ui.saved().transcenderNiveis,[3,6,9,12,13]);
+  assert.equal(ui.saved().recursos.ppMax,13);
+  assert.equal(ui.saved().rituaisSelecionados.length,2);
+  assert.ok(ui.saved().habilidadeEscolhas.some(c=>c.abilityId===powerId('Transcender','Ocultista')&&c.type==='poder'&&c.valueId===paranormalId('Aprender Ritual')));
+}
+// Graduado's bonus ritual belongs to the newly unlocked circle and is additional.
+{
+  const known=RITUALS.filter(r=>r.circle===1).slice(0,4).map(r=>r.id);
+  const saber=TRAIL_ABILITIES.find(a=>a.name==='Saber Ampliado');
+  const character=characterAtLevel({id:'graduado-novo-circulo',className:'Ocultista',level:4,rituals:known,abilityChoices:[{abilityId:saber.id,type:'ritual',valueId:known[0]}]});
+  character.trilha='Graduado';
+  const ui=await boot(character);enterChoices(ui);
+  const extra=ui.options('[data-level-up-structured-choice]');
+  assert.ok(extra.length>0);
+  assert.ok(extra.every(id=>RITUALS.find(r=>r.id===id)?.circle===2));
+  ui.choose('[data-level-up-structured-choice]',extra[0]);
+  assert.equal(ui.options('[data-level-up-ritual]').includes(extra[0]),false);
+  ui.choose('[data-level-up-ritual]',ui.options('[data-level-up-ritual]')[0]);
+  finish(ui);
+  assert.equal(ui.saved().rituaisSelecionados.length,known.length+2);
+}
+// All survivor trails complete all four staged advances without class-power choices.
+for(const trail of ['Durão','Esperto','Esotérico']) {
+  let character=characterAtLevel({id:`sobrevivente-${trail}`,className:'Sobrevivente',level:0});
+  character.trilha='';character.sobreviventeEstagio=1;
+  for(let stage=2;stage<=5;stage++) {
+    const ui=await boot(character);
+    ui.click('start-level-up');ui.click('next-level-up');ui.click('next-level-up');
+    assert.match(ui.html(),/Escolhas do estágio/);
+    assert.equal(ui.options('[data-level-up-class-power]').length,0);
+    if(stage===2){ui.choose('[data-survivor-trail]',trail);if(trail==='Esperto')ui.choose('[data-survivor-skill]',ui.options('[data-survivor-skill]')[0]);}
+    if(stage===3)ui.choose('[data-survivor-attribute]','agilidade');
+    if(stage===4&&trail==='Esperto')for(const skill of ui.options('[data-survivor-trail-skill]').slice(0,2))ui.choose('[data-survivor-trail-skill]',skill);
+    if(stage===4&&trail==='Esotérico')ui.choose('[data-survivor-ritual]',ui.options('[data-survivor-ritual]')[0]);
+    if(stage===5)ui.choose('[data-survivor-danger]','Sangue');
+    ui.click('next-level-up');assert.ok(ui.html().includes('Confira antes de aplicar o estágio.'),`${trail}: stage ${stage} must reach confirmation`);ui.click('next-level-up');
+    character=ui.saved();assert.equal(character.sobreviventeEstagio,stage);assert.equal(character.nex,0);
+  }
+  if(trail==='Esotérico')assert.equal(character.rituaisSelecionados.length,1);
+  if(trail==='Esotérico')assert.ok(character.habilidadeEscolhas.some(c=>c.type==='ritual'&&c.abilityId===TRAIL_ABILITIES.find(a=>a.name==='Iniciado').id));
+  if(trail==='Esperto')assert.ok(character.habilidadeEscolhas.some(c=>c.type==='pericia'&&c.abilityId===TRAIL_ABILITIES.find(a=>a.name==='Esperto').id));
+}
+
+// The grimoire quota must stay fixed while individual checkboxes rerender the UI.
+{
+  const character=characterAtLevel({id:'grimorio-cota',className:'Ocultista',level:7});character.trilha='Graduado';
+  const ui=await boot(character);enterChoices(ui);
+  const first=ui.options('[data-level-up-structured-choice]')[0];
+  ui.choose('[data-level-up-structured-choice]',first);
+  ui.choose('[data-level-up-ritual]',ui.options('[data-level-up-ritual]')[0]);
+  ui.click('next-level-up');assert.equal(ui.saved().nivel,7,'One ritual cannot fill an INT 2 grimoire');
+  const second=ui.options('[data-level-up-structured-choice]').find(id=>id!==first);
+  ui.choose('[data-level-up-structured-choice]',second);finish(ui);
+  assert.equal(ui.saved().rituaisSelecionados.length,3);
+}
+// Borrowed training must save the secondary choice and the two skill upgrades.
+{
+  const character=characterAtLevel({id:'diletante-treinamento',className:'Especialista',level:5});
+  const ui=await boot(character);enterChoices(ui);
+  ui.choose('[data-level-up-class-power]',powerId('Especialista Diletante','Especialista'));
+  const training=powerId('Treinamento em Perícia','Combatente');
+  ui.choose('[data-level-up-structured-choice]',training);
+  const skills=ui.options('[data-level-up-power-training]').slice(0,2);
+  assert.equal(skills.length,2);
+  for(const skill of skills)ui.choose('[data-level-up-power-training]',skill);
+  finish(ui);
+  for(const skill of skills) {
+    assert.equal(ui.saved().grausPericia[skill],5);
+    assert.ok(ui.saved().habilidadeEscolhas.some(c=>c.abilityId===training&&c.type==='pericia'&&c.valueId===skill));
+  }
+}
+// Possuído cannot silently lose a power slot when level and exposure are separated.
+{
+  const character=characterAtLevel({id:'possuido-nivel-separado',className:'Ocultista',level:2,optionalRules:{separateLevelNex:true,determination:false}});character.trilha='Possuído';
+  const ui=await boot(character);enterChoices(ui);
+  assert.deepEqual(ui.options('[data-level-up-class-power]'),[powerId('Transcender','Ocultista')]);
+  ui.choose('[data-level-up-class-power]',powerId('Transcender','Ocultista'));
+  ui.choose('[data-level-up-paranormal-power]',paranormalId('Aprender Ritual'));
+  assert.ok(ui.options('[data-level-up-transcender-ritual]').every(id=>RITUALS.find(r=>r.id===id).circle===1));
+  ui.choose('[data-level-up-transcender-ritual]',ui.options('[data-level-up-transcender-ritual]')[0]);
+  ui.choose('[data-level-up-ritual]',ui.options('[data-level-up-ritual]')[0]);
+  finish(ui);
+  assert.equal(ui.saved().nex,10);assert.equal(ui.saved().nivel,3);
+  assert.equal(ui.saved().recursos.sanMax,calculateDerived({...ui.saved(),transcenderNiveis:[]}).sanMax);
+}
+// Registering Monstruoso's daily step changes resources without changing base attributes.
+{
+  const first=TRAIL_ABILITIES.find(a=>a.name==='Ser Amaldiçoado');
+  const character=characterAtLevel({id:'monstruoso-etapa',level:8,attributes:{agilidade:1,forca:4,intelecto:3,presenca:1,vigor:2},abilityChoices:[{abilityId:first.id,type:'elemento',valueId:'Sangue'}]});character.trilha='Monstruoso';
+  const ui=await boot(character);ui.click('toggle-monstrous-ritual');
+  const active=ui.saved();assert.ok(active.recursos.peMax>calculateDerived({...active,efeitosAtivos:[]}).peMax);
+  assert.deepEqual(active.atributos,character.atributos);
+  ui.click('toggle-monstrous-ritual');assert.equal(ui.saved().efeitosAtivos.length,0);
+}
+console.log(`${scenarioNumber} fichas verificadas nos fluxos de evolução, escolhas, sessão e inventário.`);

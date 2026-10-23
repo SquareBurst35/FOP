@@ -377,9 +377,9 @@ export const TRAIL_ABILITIES = [
   ]),
   ...trail("Especialista", "Médico de Campo", "Livro base", [
     ["Paramédico", 10, "Ação padrão e 2 PE curam 2d10 PV de si mesmo ou de um aliado adjacente; +1d10 por +1 PE em NEX 40/65/99%.", "2 PE e ação padrão"],
-    ["Equipe de Trauma", 40, "Ação padrão e 2 PE removem uma condição negativa (exceto morrendo) de um aliado adjacente."],
-    ["Resgate", 65, "Uma vez por rodada, aproxima-se como ação livre de um aliado machucado/morrendo em alcance curto; curar ou remover condição dele concede +5 na Defesa a ambos até seu próximo turno; carregar um personagem custa metade dos espaços.", "2 PE"],
-    ["Reanimação", 99, "Uma vez por cena, ação completa e 10 PE trazem de volta à vida um personagem morto na mesma cena (exceto por dano massivo).", "5 PE e ação completa"],
+    ["Equipe de Trauma", 40, "Ação padrão e 2 PE removem uma condição negativa (exceto morrendo) de um aliado adjacente.", "2 PE e ação padrão"],
+    ["Resgate", 65, "Uma vez por rodada, aproxima-se como ação livre de um aliado machucado/morrendo em alcance curto; curar ou remover condição dele concede +5 na Defesa a ambos até seu próximo turno; carregar um personagem custa metade dos espaços.", "Passivo"],
+    ["Reanimação", 99, "Uma vez por cena, ação completa e 10 PE trazem de volta à vida um personagem morto na mesma cena (exceto por dano massivo).", "10 PE e ação completa · 1/cena"],
   ]),
   ...trail("Especialista", "Negociador", "Livro base", [
     ["Eloquência", 10, "Ação completa e 1 PE por alvo em alcance curto: teste de Diplomacia, Enganação ou Intimidação contra a Vontade dos alvos; vencendo, ficam fascinados enquanto você se concentrar (hostis recebem +5 e novo teste a cada rodada).", "1 PE"],
@@ -389,7 +389,7 @@ export const TRAIL_ABILITIES = [
   ]),
   ...trail("Especialista", "Técnico", "Livro base", [
     ["Inventário Otimizado", 10, "Soma seu Intelecto à Força para calcular a capacidade de carga (ex.: Força 1 e Intelecto 3 resultam em 20 espaços)."],
-    ["Remendão", 40, "Ação completa e 1 PE removem a condição quebrado de um equipamento adjacente até o fim da cena; equipamentos gerais têm categoria reduzida em I para você.", "Conforme o uso"],
+    ["Remendão", 40, "Ação completa e 1 PE removem a condição quebrado de um equipamento adjacente até o fim da cena; equipamentos gerais têm categoria reduzida em I para você.", "1 PE e ação completa"],
     ["Improvisar", 65, "Ação completa, 2 PE + 2 PE por categoria do item criam uma versão funcional de um equipamento geral, que fica inútil ao fim da cena.", "2 PE e ação completa"],
     ["Preparado para Tudo", 99, "Ação de movimento e 3 PE por categoria fazem você \"lembrar\" de ter um item qualquer (exceto armas) na bolsa."],
   ]),

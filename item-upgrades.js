@@ -1,5 +1,6 @@
 // Reference improvements belong to equipment, never to a floating body slot.
 import { DRONE_TYPES } from './drone-types.js?v=1';
+import { ownedAbilities, ownsAbility } from './ability-rules.js?v=1';
 const slug=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
 const list=[];
 function add(name,target,page,summary,{source='Livro base',curse=false,spaces=0}={}){list.push({id:slug(`${source}-${target}-${name}`),name,target,page:String(page),source,curse,spaces,summary});}
@@ -165,7 +166,18 @@ const UPGRADE_EFFECTS = {
 };
 export function upgradedItem(item,ids=[],character=null){
   const upgrades=itemUpgrades(item,ids),curses=upgrades.filter(u=>u.curse).length,base=['0','I','II','III','IV'].indexOf(item.category),increase=upgrades.filter(u=>!u.curse).length+(curses?curses+1:0),level=base+increase;
-  const details=upgrades.reduce((current,u)=>UPGRADE_EFFECTS[u.id]?UPGRADE_EFFECTS[u.id](current):current,item.details);
+  let details=upgrades.reduce((current,u)=>UPGRADE_EFFECTS[u.id]?UPGRADE_EFFECTS[u.id](current):current,item.details);
+  const owned=new Map(ownedAbilities(character).map(entry=>[entry.id,entry]));
+  const chosen=name=>(character?.habilidadeEscolhas??[]).some(choice=>owned.get(choice.abilityId)?.name===name&&choice.type==='item'&&choice.valueId===item.id);
+  const favorite=chosen('A Favorita');
+  const pouch=chosen('Mochila de Utilidades');
+  let reduction=favorite?(ownsAbility(character,'maquina-de-matar')?3:ownsAbility(character,'tecnica-secreta')?2:1):0;
+  if(pouch)reduction++;
+  if(ownsAbility(character,'remendao')&&!['Armas','Munições','Proteções','Paranormais'].includes(item.group))reduction++;
+  if(favorite&&ownsAbility(character,'maquina-de-matar')){
+    details=mapDetail(details,'Crítico',value=>tightenThreat(value,2));
+    details=mapDetail(details,'Dano',value=>bumpDiceCount(value,1));
+  }
   if(item.name==='Drone de Combate Tático'){
     // As isenções pertencem aos companheiros individuais da trilha (tactical-state).
     // Um drone requisitado separadamente segue as categorias normais.
@@ -173,5 +185,5 @@ export function upgradedItem(item,ids=[],character=null){
     const modifications=Math.max(0,upgrades.length-1);
     return {...item,upgrades,details,category:modifications>free?'IV':item.category,droneModifications:modifications,freeDroneModifications:free};
   }
-  return {...item,upgrades,details,category:increase?(['0','I','II','III','IV'][level]??'V+'):item.category,spaces:Math.max(0,item.spaces+upgrades.reduce((s,u)=>s+u.spaces,0))};
+  return {...item,upgrades,details,category:increase||reduction?(['0','I','II','III','IV'][Math.max(0,level-reduction)]??'V+'):item.category,spaces:Math.max(0,item.spaces+upgrades.reduce((s,u)=>s+u.spaces,0)-(pouch?1:0))};
 }

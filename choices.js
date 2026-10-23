@@ -5,10 +5,11 @@ import {
   RITUALS,
   SKILL_ATTRIBUTES,
   TRAIL_ABILITIES,
-} from "./content.js?v=57";
-import { ITEMS } from "./items.js?v=60";
-import { ORIGINS, SKILLS } from "./rules.js?v=72";
+} from "./content.js?v=58";
+import { ITEMS } from "./items.js?v=61";
+import { ORIGINS, SKILLS } from "./rules.js?v=73";
 import { DRONE_TYPES } from "./drone-types.js?v=1";
+import { effectiveAttributes, canReceiveTrailAbility } from "./ability-rules.js?v=1";
 
 export const CHOICE_TYPE_LABELS = {
   cqb: "Benefício de CQB",
@@ -77,6 +78,20 @@ function spec(abilityId, type, label, options, { count = 1, help = "", ownerAbil
   return { abilityId, ownerAbilityId, type, label, options, count, help };
 }
 
+function withGrantedChoices(entry, specs, character, staged, context) {
+  const candidates = [...CLASS_POWERS, ...GENERAL_POWERS, ...PARANORMAL_POWERS, ...TRAIL_ABILITIES];
+  const selected = [...staged, ...(character.habilidadeEscolhas ?? [])].find((choice) => choice.abilityId === entry.id && ["habilidade", "poder"].includes(choice.type));
+  const granted = candidates.find((candidate) => candidate.id === selected?.valueId);
+  if (context.levelUp && ["Transcender", "Treinamento em Perícia", "Aprender Ritual", "Resistir a Elemento", "Expansão de Conhecimento"].includes(granted?.name)) return specs;
+  return granted ? [...specs, ...choiceSpecsForAbility(granted, character, staged, context)] : specs;
+}
+
+function extraRitualOptions(entry, character, staged, predicate) {
+  const own = new Set(staged.filter((choice) => choice.abilityId === entry.id && choice.type === "ritual").map((choice) => choice.valueId));
+  const known = new Set(character.rituaisSelecionados ?? []);
+  return ritualOptions(RITUALS.filter((ritual) => predicate(ritual) && (!known.has(ritual.id) || own.has(ritual.id))));
+}
+
 export function abilityCanRepeatChoice(entry) {
   return [
     "<Habilidade> Aprimorada",
@@ -92,6 +107,8 @@ export function abilityCanRepeatChoice(entry) {
 
 export function choiceSpecsForAbility(entry, character, staged = [], context = {}) {
   if (!entry || !character) return [];
+  if ((context.choicePath ?? []).includes(entry.id)) return [];
+  context = { ...context, choicePath: [...(context.choicePath ?? []), entry.id] };
   const levelNex = progressNex(character);
   const name = entry.name;
   if (name === "Resistência do Treinamento" && character.origem !== "Treinado pela Hell Hunters") {
@@ -150,7 +167,7 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
       help: "Se já for treinado na perícia escolhida, a ficha aplicará +2 em Outros bônus.",
     })];
   }
-  if (name === "A Força do Saber" || name === "Conhecimento Prático") {
+  if (name === "A Força do Saber") {
     return [spec(entry.id, "pericia", "Escolha a perícia que passará a usar Intelecto", SKILLS.map((skill) => option(skill, skill)))];
   }
   if (name === "Esperto") {
@@ -163,9 +180,9 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
   }
   if (name === "Especialista Diletante") {
     const powers = CLASS_POWERS.filter((power) => power.category !== character.classe && power.name !== "Transcender" && power.unlockNex <= levelNex);
-    return [spec(entry.id, "poder", "Escolha um poder de outra classe", abilityOptions(powers), {
+    return withGrantedChoices(entry, [spec(entry.id, "poder", "Escolha um poder de outra classe", abilityOptions(powers), {
       help: "Poderes de trilha e poderes paranormais não entram nesta lista.",
-    })];
+    })], character, staged, context);
   }
   if (name === "Flashback") {
     return [spec(entry.id, "origem", "Escolha a segunda origem", ORIGINS.filter((origin) => origin.name !== character.origem).map((origin) => option(origin.name, origin.name, `${origin.power} · ${origin.source}`)))];
@@ -176,9 +193,26 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
     })];
   }
   if (name === "Ele Me Ensina") {
-    const firstTrailAbilities = TRAIL_ABILITIES.filter((ability) => ability.category === "Ocultista" && ability.unlockNex === 10 && ability.group !== character.trilha);
+    const current = selectedValue(staged, entry.id, "habilidade");
+    const known = new Set(ownedAbilities.map((ability) => ability.id));
+    const firstTrailAbilities = TRAIL_ABILITIES.filter((ability) => ability.category === "Ocultista" && ability.unlockNex === 10 && ability.group !== character.trilha && canReceiveTrailAbility(character, ability) && (!known.has(ability.id) || ability.id === current));
     const transcender = CLASS_POWERS.filter((ability) => ability.category === "Ocultista" && ability.name === "Transcender");
-    return [spec(entry.id, "habilidade", "Escolha Transcender ou uma habilidade inicial de outra trilha", abilityOptions([...transcender, ...firstTrailAbilities]))];
+    return withGrantedChoices(entry, [spec(entry.id, "habilidade", "Escolha Transcender ou uma habilidade inicial de outra trilha", abilityOptions([...transcender, ...firstTrailAbilities]))], character, staged, context);
+  }
+  if (name === "Saber Ampliado") {
+    const circle = context.bonusRitualCircle || 1;
+    return [spec(entry.id, "ritual", `Saber Ampliado — ritual adicional de ${circle}º círculo`, extraRitualOptions(entry, character, staged, (ritual) => ritual.circle === circle))];
+  }
+  if (name === "Grimório Ritualístico") {
+    const recorded = ((context.previousCharacter ?? character).habilidadeEscolhas ?? []).filter((choice) => choice.abilityId === entry.id && choice.type === "ritual").length;
+    const count = context.bonusRitualCircle ? 1 : recorded || Math.max(0, effectiveAttributes(character).intelecto);
+    const options = extraRitualOptions(entry, character, staged, (ritual) => context.bonusRitualCircle ? ritual.circle === context.bonusRitualCircle : ritual.circle <= 2);
+    return [spec(entry.id, "ritual", "Escolha os rituais do grimório", options, { count: Math.min(count, options.length), help: "Para conjurar, empunhe o grimório e gaste uma ação completa relembrando o ritual. O grimório ocupa 1 espaço." })];
+  }
+  if (name === "Lâmina Maldita") {
+    const curses = RITUALS.filter((ritual) => ritual.family === "Amaldiçoar Arma");
+    if (curses.some((ritual) => (character.rituaisSelecionados ?? []).includes(ritual.id)) && !staged.some((choice) => choice.abilityId === entry.id && choice.type === "ritual")) return [];
+    return [spec(entry.id, "ritual", "Escolha o elemento de Amaldiçoar Arma", ritualOptions(curses))];
   }
   if (name === "Cicatrizado") {
     return [spec(entry.id, "elemento", "Escolha o elemento do perigo paranormal", PARANORMAL_DANGERS.map((element) => option(element, element)))];
@@ -214,7 +248,9 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
     name === "Ser Escarificado" ||
     name === "Barreira do Oculto"
   ) {
-    return [spec(entry.id, "elemento", "Escolha o elemento", elementOptions())];
+    const monstrous = ["Ser Amaldiçoado", "Ser Experimentado", "Ser Escarificado"].includes(name);
+    const options = monstrous && character.afinidadeElemental ? elementOptions().filter((option) => option.id === character.afinidadeElemental) : elementOptions();
+    return [spec(entry.id, "elemento", "Escolha o elemento", options)];
   }
   if (name === "Mestre em Elemento" || name === "Grão-Mestre em Elemento") {
     const prerequisiteName = name === "Mestre em Elemento" ? "Especialista em Elemento" : "Mestre em Elemento";
@@ -289,10 +325,15 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
     return specs;
   }
   if (name === "Dominar Habilidade Ritualística") {
-    const abilities = TRAIL_ABILITIES.filter((ability) => ability.category === "Ocultista" && ability.unlockNex <= levelNex);
-    return [spec(entry.id, "habilidade", "Escolha a habilidade de trilha de Ocultista", abilityOptions(abilities), {
+    const owned = new Set(ownedAbilities.map((ability) => ability.id));
+    const abilities = TRAIL_ABILITIES.filter((ability) => {
+      if (ability.category !== "Ocultista" || ability.unlockNex > levelNex || !canReceiveTrailAbility(character, ability)) return false;
+      const previous = TRAIL_ABILITIES.filter((candidate) => candidate.category === ability.category && candidate.group === ability.group && candidate.unlockNex < ability.unlockNex).sort((a, b) => b.unlockNex - a.unlockNex)[0];
+      return !previous || owned.has(previous.id);
+    });
+    return withGrantedChoices(entry, [spec(entry.id, "habilidade", "Escolha a habilidade de trilha de Ocultista", abilityOptions(abilities), {
       help: "Habilidades encadeadas ainda exigem as anteriores.",
-    })];
+    })], character, staged, context);
   }
   if (name === "Aprender Ritual") {
     const maximumCircle = levelNex >= 75 ? 3 : levelNex >= 45 ? 2 : 1;
@@ -311,15 +352,15 @@ export function choiceSpecsForAbility(entry, character, staged = [], context = {
     })];
   }
   if (name === "Traços do Outro Lado") {
-    const chosen = (character.habilidadeEscolhas ?? []).some((choice) => choice.abilityId === entry.id && choice.type === "poder");
+    const chosen = ((context.previousCharacter ?? character).habilidadeEscolhas ?? []).some((choice) => choice.abilityId === entry.id && choice.type === "poder");
     if (chosen) return [];
-    return [spec(entry.id, "poder", "Escolha o poder paranormal", abilityOptions(PARANORMAL_POWERS), {
+    return withGrantedChoices(entry, [spec(entry.id, "poder", "Escolha o poder paranormal", abilityOptions(PARANORMAL_POWERS), {
       help: "Depois de confirmada, essa escolha não pode ser trocada. Você começa o jogo com metade da Sanidade normal da classe.",
-    })];
+    })], character, staged, context);
   }
   if (name === "Expansão de Conhecimento") {
     const powers = CLASS_POWERS.filter((power) => power.category !== character.classe && power.name !== "Transcender" && power.unlockNex <= levelNex);
-    return [spec(entry.id, "poder", "Escolha o poder de outra classe", abilityOptions(powers))];
+    return withGrantedChoices(entry, [spec(entry.id, "poder", "Escolha o poder de outra classe", abilityOptions(powers))], character, staged, context);
   }
   if (name === "Foco Gravitacional") {
     return [spec(entry.id, "item", "Escolha o equipamento de peso zero", itemOptions(ITEMS), {

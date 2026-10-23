@@ -1,8 +1,8 @@
-import { tacticalActions, tacticalState, performTacticalAction, ownedItems, utilitySkills } from "./tactical.js?v=2";
+import { tacticalActions, tacticalState, performTacticalAction, ownedItems, utilitySkills } from "./tactical.js?v=3";
 import { trailPower } from "./tactical-state.js?v=1";
 import { DRONE_TYPES } from "./drone-types.js?v=1";
-import { SKILLS } from "./rules.js?v=72";
-import { ITEMS } from "./items.js?v=60";
+import { SKILLS } from "./rules.js?v=73";
+import { ITEMS } from "./items.js?v=61";
 
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
 const options = (values, value) => values.map((v) => { const [id, name] = Array.isArray(v) ? v : [v, v]; return `<option value="${esc(id)}" ${id === value ? "selected" : ""}>${esc(name)}</option>`; }).join("");

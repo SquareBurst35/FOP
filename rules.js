@@ -1,7 +1,8 @@
 import { droneDefense, tacticalDefense, tacticalTestBonus, formationMovement } from "./tactical-state.js?v=1";
 import { beforeSoBonus, turnSpendLimit } from "./session.js?v=34";
-import { ITEM_BY_ID } from "./items.js?v=60";
-import { upgradedItem } from "./item-upgrades.js?v=59";
+import { ITEM_BY_ID } from "./items.js?v=61";
+import { upgradedItem } from "./item-upgrades.js?v=60";
+import { ownsAbility, effectiveAttributes, chosenMonstrousElement, monstrousRitualActive, ownedAbilities, automaticTrailRituals } from "./ability-rules.js?v=1";
 export const ATTRIBUTE_TARGET = 9;
 export const MUNDANE_ATTRIBUTE_TARGET = 8;
 export const ATTRIBUTE_MAX_AT_CREATION = 3;
@@ -253,9 +254,7 @@ export function attributeBudget(attributes, nex = 5, separateLevelNex = false) {
 }
 
 function hasSelectedPower(character, powerSlug) {
-  return (character?.habilidadesSelecionadas ?? []).some((id) =>
-    String(id).endsWith(`-${powerSlug}`),
-  );
+  return ownsAbility(character, powerSlug);
 }
 
 // Trilha Monstruoso (Sobrevivendo ao Horror p.17 para Combatente;
@@ -265,11 +264,6 @@ function hasSelectedPower(character, powerSlug) {
 // rituais) libera em NEX diferentes por classe — Especialista e Ocultista
 // já na primeira habilidade da trilha (NEX 10%), Combatente só na
 // segunda (Ser Macabro, NEX 40%).
-const MONSTROUS_TRAIT_ABILITY = {
-  Combatente: "ser-amaldicoado",
-  Especialista: "ser-experimentado",
-  Ocultista: "ser-escarificado",
-};
 const MONSTROUS_SWAP_ABILITY = {
   Combatente: "ser-macabro",
   Especialista: "ser-experimentado",
@@ -283,17 +277,12 @@ const MONSTROUS_ELEMENT_ATTRIBUTE = {
 };
 
 function monstrousElement(character) {
-  const traitAbility = MONSTROUS_TRAIT_ABILITY[character?.classe];
-  if (!traitAbility || character?.trilha !== "Monstruoso") return null;
-  const choice = (character.habilidadeEscolhas ?? []).find(
-    (entry) => entry.type === "elemento" && String(entry.abilityId).endsWith(`-${traitAbility}`),
-  );
-  return choice?.valueId ?? null;
+  return chosenMonstrousElement(character) || null;
 }
 
 function monstrousEffortAttribute(character) {
-  const swapAbility = MONSTROUS_SWAP_ABILITY[character?.classe];
-  if (!swapAbility || !hasSelectedPower(character, swapAbility)) return null;
+  const swapAbility = Object.values(MONSTROUS_SWAP_ABILITY).find((name) => hasSelectedPower(character, name));
+  if (!swapAbility || !monstrousRitualActive(character)) return null;
   const element = monstrousElement(character);
   return MONSTROUS_ELEMENT_ATTRIBUTE[element] ?? null;
 }
@@ -322,6 +311,11 @@ const ABILITY_SKILL_BONUSES = [
   // Ocultista já é treinado em Ocultismo por classe, então o livro dá um
   // +2 direto em vez do "torna-se treinado ou +2" das outras duas classes.
   ["ser-escarificado", "Ocultismo", 2],
+  ["gatuno", "Atletismo", 5],
+  ["gatuno", "Crime", 5],
+  ["o-sorriso", "Diplomacia", 2],
+  ["o-sorriso", "Enganação", 2],
+  ["iniciativa-aprimorada", "Iniciativa", 5],
 ];
 
 // Mesma ideia, mas concedidos por uma origem em vez de uma habilidade.
@@ -336,6 +330,13 @@ const AFFINITY_SKILL_BONUSES = [
 ];
 
 export function abilitySkillBonus(character, skill) {
+  const trainingBonuses = { "Rastrear o Paranormal": ["Sobrevivência", 2], "Revelação do Mal": ["Religião", 2], "Ser Amaldiçoado": ["Ocultismo", 2], "Ser Experimentado": ["Ocultismo", 2], "Meus Bebês": ["Profissão", 5], "Laboratório de Campo": ["Profissão", 5] };
+  const owned = new Map(ownedAbilities(character).map((entry) => [entry.id, entry]));
+  const fromTraining = (character.habilidadeEscolhas ?? []).filter((choice) => choice.type === "treinamento" && choice.valueId === "bonus").reduce((sum, choice) => {
+    const name = owned.get(choice.abilityId)?.name;
+    const benefit = name === "Carteirada" ? [(character.habilidadeEscolhas ?? []).find((item) => item.abilityId === choice.abilityId && item.type === "pericia")?.valueId, 2] : trainingBonuses[name];
+    return sum + (benefit?.[0] === skill ? benefit[1] : 0);
+  }, 0);
   const cqbBonus = ownsCqb(character) && ["Luta", "Pontaria"].includes(skill) && cqbChoice(character) === "bonus" ? 2 : 0;
   const fromAbilities = ABILITY_SKILL_BONUSES.reduce(
     (sum, [slug, targetSkill, bonus]) => sum + (targetSkill === skill && hasSelectedPower(character, slug) ? bonus : 0),
@@ -351,7 +352,22 @@ export function abilitySkillBonus(character, skill) {
     ),
     0,
   );
-  return fromAbilities + fromOrigin + fromAffinity + cqbBonus + tacticalTestBonus(character);
+  const socialPenalty = ["Diplomacia", "Enganação", "Intuição"].includes(skill) && (hasSelectedPower(character, "ser-experimentado") || hasSelectedPower(character, "ser-escarificado"))
+    ? ["ser-expurgado", "ser-rasgado"].some((name) => hasSelectedPower(character, name)) ? 0 : ["ser-testado", "ser-perfurado"].some((name) => hasSelectedPower(character, name)) ? -5 : -2
+    : 0;
+  return fromAbilities + fromOrigin + fromAffinity + fromTraining + cqbBonus + tacticalTestBonus(character) + socialPenalty;
+}
+
+export function abilitySkillDiceModifier(character, skill) {
+  let modifier = 0;
+  if (["Diplomacia", "Enganação", "Intuição"].includes(skill)) {
+    if (["ser-apavorante", "ser-mutilado"].some((name) => hasSelectedPower(character, name))) modifier -= 2;
+    else if (["ser-expurgado", "ser-rasgado"].some((name) => hasSelectedPower(character, name))) modifier -= 1;
+  }
+  const penalties = { Sangue: ["Ciências", "Intuição"], Morte: ["Diplomacia", "Enganação"], Conhecimento: ["Atletismo", "Acrobacia"], Energia: ["Investigação", "Percepção"] };
+  if (hasSelectedPower(character, "ser-amaldicoado") && penalties[monstrousElement(character)]?.includes(skill)) modifier -= hasSelectedPower(character, "ser-macabro") ? 2 : 1;
+  if (skill === "Religião" && hasSelectedPower(character, "poder-da-fe") && (character.habilidadeEscolhas ?? []).some((choice) => String(choice.abilityId).endsWith("-poder-da-fe") && choice.type === "treinamento" && choice.valueId === "bonus")) modifier++;
+  return modifier;
 }
 
 function ownsCqb(character) {
@@ -410,6 +426,7 @@ function abilityDefenseBonus(character) {
   let bonus = droneDefense(character) + tacticalDefense(character) + (formation?.type === "cunha" && formation.untilTurn >= (character.operacoesAS9.turn ?? 1) ? 5 : 0);
   if (hasSelectedPower(character, "reflexos-defensivos")) bonus += 2;
   if (hasSelectedPower(character, "precognicao")) bonus += 2;
+  if (monstrousElement(character) === "Conhecimento" && hasSelectedPower(character, "ser-amaldicoado") && monstrousRitualActive(character)) bonus += effectiveAttributes(character).intelecto;
   if (hasOriginPower(character, "Patrulha")) bonus += 2;
   if (hasSelectedPower(character, "inquebravel") && isCharacterHurt(character)) bonus += 5;
   const proficiencies = equippedProtections(character).map(
@@ -516,14 +533,20 @@ export function characterResistances(character, { rituals = [], paranormalPowers
     list.push({ label: choice.valueId, value, source: "Resistir a Elemento" });
   }
 
-  if (character?.classe === "Combatente" && character?.trilha === "Monstruoso") {
+  if (hasSelectedPower(character, "ser-amaldicoado") && monstrousRitualActive(character)) {
     const element = monstrousElement(character);
     const value = hasSelectedPower(character, "ser-aterrorizante") ? 20
       : hasSelectedPower(character, "ser-assustador") ? 15
         : hasSelectedPower(character, "ser-macabro") ? 10
           : hasSelectedPower(character, "ser-amaldicoado") ? 5
             : 0;
-    if (element && value) list.push({ label: COMBATENTE_MONSTRUOSO_RESISTANCE_TYPES[element], value, source: "Trilha Monstruoso" });
+    let label = COMBATENTE_MONSTRUOSO_RESISTANCE_TYPES[element];
+    if (element === "Energia" && hasSelectedPower(character, "ser-assustador")) label += ", químico";
+    if (element === "Morte" && hasSelectedPower(character, "ser-aterrorizante")) {
+      label = "Perfuração";
+      list.push({ label: "Morte", value: "Imune", source: "Ser Aterrorizante" });
+    }
+    if (element && value) list.push({ label, value, source: "Trilha Monstruoso" });
   }
 
   if (hasSelectedPower(character, "sangue-prazeroso") && hurt) {
@@ -536,7 +559,7 @@ export function characterResistances(character, { rituals = [], paranormalPowers
     list.push({ label: "Mental e paranormal", value: 10, source: "Inabalável" });
   }
   if (hasOriginPower(character, "Eu Já Sabia")) {
-    const intelecto = Number(character?.atributos?.intelecto) || 0;
+    const intelecto = effectiveAttributes(character).intelecto;
     if (intelecto > 0) list.push({ label: "Mental", value: intelecto, source: "Eu Já Sabia" });
   }
   if (hasOriginPower(character, "Mutação")) {
@@ -602,19 +625,19 @@ function ritualDtItemBonus(character, ritual, knowsSangueRitual) {
 // Ocultista Monstruoso (Ser Escarificado, Arquivos Secretos #7 p.85) troca
 // Presença pelo atributo do elemento escolhido também para essa DT.
 export function ritualDifficulty(character, ritual, knowsSangueRitual = false) {
-  const presenca = Number(character?.atributos?.presenca) || 0;
-  const monstrousAttribute = character?.classe === "Ocultista" ? monstrousEffortAttribute(character) : null;
-  const dtAttribute = monstrousAttribute ? Number(character?.atributos?.[monstrousAttribute]) || 0 : presenca;
-  return 10 + turnSpendLimit(character) + dtAttribute + ritualDtItemBonus(character, ritual, knowsSangueRitual);
+  const attributes = effectiveAttributes(character);
+  const presenca = attributes.presenca;
+  const monstrousAttribute = hasSelectedPower(character, "ser-escarificado") ? monstrousEffortAttribute(character) : null;
+  const dtAttribute = monstrousAttribute ? attributes[monstrousAttribute] : presenca;
+  const owned = new Map(ownedAbilities(character).map((entry) => [entry.id, entry]));
+  const specialist = (character.habilidadeEscolhas ?? []).some((choice) => owned.get(choice.abilityId)?.name === "Especialista em Elemento" && choice.type === "elemento" && (ritual?.elements ?? [ritual?.element]).includes(choice.valueId)) ? 2 : 0;
+  return 10 + turnSpendLimit(character) + dtAttribute + ritualDtItemBonus(character, ritual, knowsSangueRitual) + (hasSelectedPower(character, "rituais-eficientes") ? 5 : 0) + specialist;
 }
 
 export function calculateDerived(character) {
   const classData = CLASSES[character.classe];
-  const forca = Number(character.atributos?.forca) || 0;
-  const vigor = Number(character.atributos?.vigor) || 0;
-  const presenca = Number(character.atributos?.presenca) || 0;
-  const intelecto = Number(character.atributos?.intelecto) || 0;
-  const agilidade = Number(character.atributos?.agilidade) || 0;
+  const skillChoices = classData ? classData.choiceSkills(Number(character.atributos?.intelecto) || 0) + (hasSelectedPower(character, "a-forca-do-saber") ? 1 : 0) : 0;
+  const { forca, vigor, presenca, intelecto, agilidade } = effectiveAttributes(character);
   const rawNex = Number(character.nex);
   const nex = Number.isFinite(rawNex) ? Math.min(100, Math.max(0, rawNex)) : 0;
   const level = characterLevel(character);
@@ -666,6 +689,8 @@ export function calculateDerived(character) {
   const possessionMax = character.trilha === "Possuído" && level >= 2
     ? 3 + transcenderLevels.length * 2
     : 0;
+  const trailVitality = (hasSelectedPower(character, "casca-grossa") ? level : 0) + (hasSelectedPower(character, "ser-amaldicoado") && monstrousElement(character) === "Morte" && monstrousRitualActive(character) ? forca : 0);
+  const trailEffort = hasSelectedPower(character, "a-forca-do-saber") ? intelecto : 0;
 
   if (!classData) {
     return {
@@ -705,7 +730,7 @@ export function calculateDerived(character) {
       defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
       deslocamento: 9 + formationMovement(character),
       advances,
-      skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
+      skillChoices,
       fixedSkills: classData.fixedSkills,
       skillChoiceGroups: classData.skillChoiceGroups,
       level: 0,
@@ -720,13 +745,13 @@ export function calculateDerived(character) {
   }
 
   return {
-    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality + sangueDeFerroBonus,
-    peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort + combatenteEsforcadoBonus + potencialAprimoradoBonus,
+    pvMax: classData.initial.pv + vigor + advances * (classData.gain.pv + vigor) + vitalityBonus + originVitality + sangueDeFerroBonus + trailVitality,
+    peMax: classData.initial.pe + effortAttribute + advances * (classData.gain.pe + effortAttribute) + personalityEffort + willEffortBonus + originEffort + combatenteEsforcadoBonus + potencialAprimoradoBonus + trailEffort,
     sanMax: Math.max(0, classInitialSan + advances * classData.gain.san - transcenderSanPenalty),
     defesa: 10 + agilidade + beforeSoBonus(character) + (activeEffectsExcludeEquipmentDefense(character) ? 0 : equipmentDefenseBonus(character)) + abilityDefenseBonus(character) + activeEffectDefenseBonus(character),
     deslocamento: 9 + formationMovement(character),
     advances,
-    skillChoices: classData.choiceSkills(Number(character.atributos?.intelecto) || 0),
+    skillChoices,
     fixedSkills: classData.fixedSkills,
     skillChoiceGroups: classData.skillChoiceGroups,
     level,
@@ -734,7 +759,7 @@ export function calculateDerived(character) {
     usesDetermination,
     transcenderSanPenalty,
     pdMax: usesDetermination
-      ? classData.determination.initial + effortAttribute + advances * (classData.determination.gain + effortAttribute)
+        ? classData.determination.initial + effortAttribute + advances * (classData.determination.gain + effortAttribute) + trailEffort
       : 0,
     ppMax: possessionMax,
   };
@@ -776,11 +801,11 @@ const POWER_SKILL_GRANTS = [
 
 function powerGrantedSkills(character) {
   const selected = (character?.habilidadesSelecionadas ?? []).map(String);
-  const progressNex = usesSeparateLevel(character) ? characterLevel(character) * 5 : Number(character?.nex) || 0;
   const trailSkills = [];
-  if (progressNex >= 10 && character?.trilha === "Caçador") trailSkills.push("Sobrevivência");
-  if (progressNex >= 10 && character?.trilha === "Monstruoso") trailSkills.push("Ocultismo");
-  if (progressNex >= 10 && character?.trilha === "Exorcista") trailSkills.push("Religião");
+  if (hasSelectedPower(character, "rastrear-o-paranormal")) trailSkills.push("Sobrevivência");
+  if (["ser-amaldicoado", "ser-experimentado", "ser-escarificado"].some((name) => hasSelectedPower(character, name))) trailSkills.push("Ocultismo");
+  if (hasSelectedPower(character, "revelacao-do-mal")) trailSkills.push("Religião");
+  if (hasSelectedPower(character, "meus-bebes") || hasSelectedPower(character, "mascate")) trailSkills.push("Profissão");
   const cqb = cqbChoice(character);
   if (ownsCqb(character) && ["Luta", "Pontaria"].includes(cqb)) trailSkills.push(cqb);
   return uniqueSkills([...POWER_SKILL_GRANTS
@@ -875,6 +900,7 @@ export function skillSelectionStatus(character) {
 }
 
 export function applyDerived(character, resetCurrent = false) {
+  character.rituaisSelecionados = [...new Set([...(character.rituaisSelecionados ?? []), ...automaticTrailRituals(character).map((ritual) => ritual.id)])];
   sanitizeSkillSelections(character);
   const derived = calculateDerived(character);
   const skillConfig = getSkillConfiguration(character);
@@ -885,6 +911,7 @@ export function applyDerived(character, resetCurrent = false) {
   for (const skill of powerGrantedSkills(character)) {
     character.grausPericia[skill] = Math.max(5, Number(character.grausPericia[skill]) || 0);
   }
+  if (hasSelectedPower(character, "poder-da-fe")) character.grausPericia.Religião = Math.max(10, Number(character.grausPericia.Religião) || 0);
 
   for (const resource of ["pv", "pe", "san"]) {
     const maxKey = `${resource}Max`;

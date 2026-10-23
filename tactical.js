@@ -1,9 +1,9 @@
 import { useAbility, turnSpendLimit, beforeSoBonus } from "./session.js?v=34";
-import { ITEM_BY_ID } from "./items.js?v=60";
-import { upgradedItem } from "./item-upgrades.js?v=59";
-import { SKILLS, abilitySkillBonus, calculateDerived } from "./rules.js?v=72";
-import { ritualUseOptions } from "./use-options.js?v=73";
-import { SKILL_ATTRIBUTES, RITUALS } from "./content.js?v=57";
+import { ITEM_BY_ID } from "./items.js?v=61";
+import { upgradedItem } from "./item-upgrades.js?v=60";
+import { SKILLS, abilitySkillBonus, calculateDerived } from "./rules.js?v=73";
+import { ritualUseOptions } from "./use-options.js?v=74";
+import { SKILL_ATTRIBUTES, RITUALS } from "./content.js?v=58";
 import { tacticalDrones, tacticalEffects, progressNex, selectedPower, trailPower, preparedAmmo, pruneTacticalInventory } from "./tactical-state.js?v=1";
 
 const copy = (v) => v === undefined ? undefined : JSON.parse(JSON.stringify(v));
